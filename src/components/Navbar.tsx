@@ -38,24 +38,6 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
-            <button
-              onClick={() => scrollToSection("home")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sobre Nós
-            </button>
-            <button
-              onClick={() => scrollToSection("services")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cobertura
-            </button>
             <Button
               onClick={handleMeuCorre}
               variant="outline"
@@ -84,24 +66,6 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-4 border-t border-border">
-            <button
-              onClick={() => scrollToSection("home")}
-              className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Home
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Sobre Nós
-            </button>
-            <button
-              onClick={() => scrollToSection("services")}
-              className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cobertura
-            </button>
             <Button
               onClick={handleMeuCorre}
               variant="outline"
