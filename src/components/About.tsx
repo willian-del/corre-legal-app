@@ -1,17 +1,13 @@
 import { Shield, Heart, Zap } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
 const About = () => {
-  return (
-    <section id="about" className="py-24 bg-background">
+  return <section id="about" className="py-24 bg-background">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             Sobre o <span className="text-primary">Corre Legal</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed mb-8">
-            Trabalhar na rua é viver na correria. A cada corrida ou entrega, surgem imprevistos: multa injusta, acidente, cliente complicado, ou aquele problema que ninguém explica direito. A gente sabe como é — por isso criamos o Corre Seguro: pra quem vive do corre, rodando pra fazer o dia acontecer, ter um parceiro que cuida de você quando o perrengue aparece.
-          </p>
+          <p className="text-xl text-muted-foreground leading-relaxed mb-8">Trabalhar na rua é viver na correria. A cada corrida ou entrega, imprevisto é o que não falta. A gente sabe como é — por isso criamos o Corre Seguro: pra quem vive do corre, rodando pra fazer o dia acontecer, ter um parceiro que cuida de você quando o perrengue aparece.</p>
           
           <Card className="bg-gradient-primary border-primary/20">
             <CardContent className="pt-6">
@@ -63,8 +59,6 @@ const About = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default About;
