@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Quote } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -6,32 +6,30 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Testimonials = () => {
   const testimonials = [
     {
-      name: "Carlos Silva",
-      role: "Motorista de App",
-      content: "Fui bloqueado injustamente e o Corre Legal me ajudou a reverter a situação em poucos dias. Atendimento excelente!",
-      rating: 5,
+      name: "Carlos",
+      role: "Motorista há 3 anos",
+      location: "São Paulo/SP",
+      content: "Tive um problema com bloqueio na plataforma e o pessoal do Corre Legal resolveu rapidinho. Me ajudaram a entender meus direitos e voltei a trabalhar em menos de uma semana. Recomendo demais!",
+      initials: "CS",
     },
     {
-      name: "Ana Paula",
+      name: "Fernanda",
       role: "Entregadora",
-      content: "Precisava de ajuda com uma multa indevida e fui atendida super rápido pelo WhatsApp. Resolveram tudo!",
-      rating: 5,
+      location: "Belo Horizonte/MG",
+      content: "Precisei de orientação pra regularizar minha documentação e fui super bem atendida. O atendimento pelo WhatsApp é rápido e os advogados explicam tudo direitinho. Valeu demais!",
+      initials: "FC",
     },
     {
-      name: "Roberto Santos",
-      role: "Motorista de App",
-      content: "O apoio jurídico do Corre Legal me deu a tranquilidade que eu precisava. Preço justo e profissionais competentes.",
-      rating: 5,
-    },
-    {
-      name: "Juliana Costa",
-      role: "Entregadora",
-      content: "Estava com problemas no divórcio e eles me orientaram perfeitamente. Muito obrigada por todo suporte!",
-      rating: 5,
+      name: "Marcão",
+      role: "Motorista",
+      location: "Recife/PE",
+      content: "Quando levei uma multa injusta, não sabia o que fazer. O Corre Legal me ajudou a recorrer e conseguimos reverter. Agora eu sei que tenho pra quem correr quando precisar!",
+      initials: "MS",
     },
   ];
 
@@ -57,20 +55,27 @@ const Testimonials = () => {
           >
             <CarouselContent>
               {testimonials.map((testimonial, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/2">
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="bg-card rounded-2xl p-8 border border-border h-full">
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-5 h-5 fill-primary text-primary" />
-                      ))}
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-14 w-14">
+                          <AvatarImage src="" alt={testimonial.name} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                            {testimonial.initials}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-bold text-foreground text-lg">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                        </div>
+                      </div>
+                      <Quote className="w-10 h-10 text-primary/20 shrink-0" />
                     </div>
-                    <p className="text-foreground leading-relaxed mb-6 text-lg">
+                    <p className="text-foreground leading-relaxed text-base italic">
                       "{testimonial.content}"
                     </p>
-                    <div className="border-t border-border pt-4">
-                      <p className="font-bold text-foreground">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                    </div>
                   </div>
                 </CarouselItem>
               ))}
