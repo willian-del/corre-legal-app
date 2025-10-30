@@ -1,4 +1,5 @@
 import { Shield, Heart, Zap } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 const About = () => {
   return (
@@ -8,9 +9,17 @@ const About = () => {
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             Sobre o <span className="text-primary">Corre Legal</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            Trabalhar na rua é viver na correria. A cada corrida ou entrega, surgem imprevistos: multa injusta, acidente, cliente complicado, ou aquele problema que ninguém explica direito. A gente sabe como é — por isso criamos o Corre Seguro: pra quem vive do corre, rodando pra fazer o dia acontecer, ter um parceiro que cuida de você quando o perrengue aparece. O Corre Seguro é um plano de proteção e suporte pensado pra motoristas de aplicativo e entregadores. É tipo um "clube do corre", que te ajuda a resolver pepinos com praticidade, preço justo e gente que entende a sua rotina.
+          <p className="text-xl text-muted-foreground leading-relaxed mb-8">
+            Trabalhar na rua é viver na correria. A cada corrida ou entrega, surgem imprevistos: multa injusta, acidente, cliente complicado, ou aquele problema que ninguém explica direito. A gente sabe como é — por isso criamos o Corre Seguro: pra quem vive do corre, rodando pra fazer o dia acontecer, ter um parceiro que cuida de você quando o perrengue aparece.
           </p>
+          
+          <Card className="bg-gradient-primary border-primary/20">
+            <CardContent className="pt-6">
+              <p className="text-lg text-primary-foreground leading-relaxed font-medium">
+                O <span className="font-bold">Corre Seguro</span> é um plano de proteção e suporte pensado pra motoristas de aplicativo e entregadores. É tipo um "clube do corre", que te ajuda a resolver pepinos com praticidade, preço justo e gente que entende a sua rotina.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
