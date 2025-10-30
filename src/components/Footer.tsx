@@ -41,7 +41,7 @@ const Footer = () => {
                   }}
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Serviços
+                  Cobertura
                 </button>
               </li>
               <li>
