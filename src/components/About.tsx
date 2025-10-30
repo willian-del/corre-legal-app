@@ -42,14 +42,6 @@ const About = () => {
           </div>
         </div>
 
-        <div className="max-w-3xl mx-auto mt-16 text-center">
-          <div className="bg-card rounded-2xl p-8 border border-border">
-            <h3 className="text-2xl font-bold mb-4 text-foreground">Nossa Missão</h3>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Democratizar o acesso à justiça para quem movimenta as cidades. Oferecemos suporte jurídico completo não apenas para você, mas também para seus familiares, garantindo tranquilidade em todas as áreas da vida.
-            </p>
-          </div>
-        </div>
       </div>
     </section>;
 };
