@@ -1,3 +1,5 @@
+import Logo from "./Logo";
+
 const Footer = () => {
   return (
     <footer className="bg-background border-t border-border py-12">
@@ -5,9 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary-glow flex items-center justify-center font-bold text-background">
-                CL
-              </div>
+              <Logo size={40} />
               <span className="text-xl font-bold text-foreground">Corre Legal</span>
             </div>
             <p className="text-muted-foreground">
