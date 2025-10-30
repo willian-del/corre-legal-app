@@ -47,14 +47,14 @@ const Footer = () => {
               <li>
                 <button
                   onClick={() => {
-                    const element = document.getElementById("contact");
+                    const element = document.getElementById("pricing");
                     if (element) {
                       element.scrollIntoView({ behavior: "smooth" });
                     }
                   }}
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Contato
+                  Contrate Agora
                 </button>
               </li>
             </ul>
