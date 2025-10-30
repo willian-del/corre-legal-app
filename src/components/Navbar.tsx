@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import Logo from "./Logo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -12,6 +16,15 @@ const Navbar = () => {
       element.scrollIntoView({ behavior: "smooth" });
       setIsOpen(false);
     }
+  };
+
+  const handleMeuCorre = () => {
+    if (user) {
+      navigate('/meu-corre');
+    } else {
+      navigate('/auth');
+    }
+    setIsOpen(false);
   };
 
   return (
@@ -43,6 +56,14 @@ const Navbar = () => {
             >
               Cobertura
             </button>
+            <Button
+              onClick={handleMeuCorre}
+              variant="outline"
+              className="gap-2"
+            >
+              <User size={18} />
+              Meu Corre
+            </Button>
             <Button
               onClick={() => scrollToSection("pricing")}
               className="bg-primary text-primary-foreground hover:bg-primary-glow"
@@ -81,6 +102,14 @@ const Navbar = () => {
             >
               Cobertura
             </button>
+            <Button
+              onClick={handleMeuCorre}
+              variant="outline"
+              className="w-full gap-2"
+            >
+              <User size={18} />
+              Meu Corre
+            </Button>
             <Button
               onClick={() => scrollToSection("pricing")}
               className="w-full bg-primary text-primary-foreground hover:bg-primary-glow"
