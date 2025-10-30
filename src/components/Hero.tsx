@@ -25,7 +25,7 @@ const Hero = () => {
             O parceiro legal para o <span className="text-primary">corre de todo dia</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-            Acolhimento jurídico para quem vive do corre — motoristas e entregadores.
+            Motoristas de Aplicativo e Entregadores
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <Button
