@@ -7,7 +7,7 @@ const Footer = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <Logo size={40} />
+              <Logo size={56} />
               <span className="text-xl font-bold text-foreground">Corre Legal</span>
             </div>
             <p className="text-muted-foreground">
