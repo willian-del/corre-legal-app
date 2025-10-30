@@ -15,7 +15,7 @@ const About = () => {
           
           <Card className="bg-gradient-primary border-primary/20">
             <CardContent className="pt-6">
-              <p className="text-lg text-primary-foreground leading-relaxed font-medium">
+              <p className="text-lg text-white leading-relaxed font-medium">
                 O <span className="font-bold">Corre Seguro</span> é um plano de proteção e suporte pensado pra motoristas de aplicativo e entregadores. É tipo um "clube do corre", que te ajuda a resolver pepinos com praticidade, preço justo e gente que entende a sua rotina.
               </p>
             </CardContent>
