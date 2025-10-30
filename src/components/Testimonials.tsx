@@ -40,13 +40,13 @@ const Testimonials = () => {
   ];
 
   return (
-    <section id="testimonials" className="py-24 bg-background">
+    <section id="testimonials" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
+        <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 text-foreground">
             Quem já roda com a <span className="text-primary">gente</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
             Veja como ajudamos profissionais como você a resolver suas questões jurídicas.
           </p>
         </div>
@@ -62,32 +62,32 @@ const Testimonials = () => {
             <CarouselContent>
               {testimonials.map((testimonial, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="bg-card rounded-2xl p-8 border border-border h-full">
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-14 w-14">
+                  <div className="bg-card rounded-2xl p-6 md:p-8 border border-border h-full">
+                    <div className="flex items-start justify-between mb-4 md:mb-6">
+                      <div className="flex items-center gap-3 md:gap-4">
+                        <Avatar className="h-12 w-12 md:h-14 md:w-14">
                           <AvatarImage src={testimonial.image} alt={testimonial.name} />
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                             {testimonial.initials}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-bold text-foreground text-lg">{testimonial.name}</p>
-                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                          <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                          <p className="font-bold text-foreground text-base md:text-lg">{testimonial.name}</p>
+                          <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
+                          <p className="text-xs md:text-sm text-muted-foreground">{testimonial.location}</p>
                         </div>
                       </div>
-                      <Quote className="w-10 h-10 text-primary/20 shrink-0" />
+                      <Quote className="w-8 h-8 md:w-10 md:h-10 text-primary/20 shrink-0" />
                     </div>
-                    <p className="text-foreground leading-relaxed text-base italic">
+                    <p className="text-foreground leading-relaxed text-sm md:text-base italic">
                       "{testimonial.content}"
                     </p>
                   </div>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
+            <CarouselPrevious className="-left-4 md:-left-12" />
+            <CarouselNext className="-right-4 md:-right-12" />
           </Carousel>
         </div>
       </div>
