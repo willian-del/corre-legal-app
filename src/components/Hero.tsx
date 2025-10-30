@@ -21,21 +21,9 @@ const Hero = () => {
             Seu parceiro legal para o <span className="text-primary">corre de todo dia</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">Acolhimento jurídico para motoristas de aplicativo e entregadores</p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button size="lg" onClick={scrollToContact} className="bg-primary text-primary-foreground hover:bg-primary-glow text-lg px-8 py-6 shadow-glow">
-              Contrate Agora
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => {
-            const element = document.getElementById("services");
-            if (element) {
-              element.scrollIntoView({
-                behavior: "smooth"
-              });
-            }
-          }} className="text-lg px-8 py-6 border-primary/30 hover:border-primary hover:bg-primary/10">
-              Conheça os Serviços
-            </Button>
-          </div>
+          <Button size="lg" onClick={scrollToContact} className="bg-primary text-primary-foreground hover:bg-primary-glow text-lg px-8 py-6 shadow-glow">
+            Contrate Agora
+          </Button>
         </div>
       </div>
     </section>;
