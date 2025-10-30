@@ -37,7 +37,7 @@ const Services = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            Nossos <span className="text-primary">Serviços</span>
+            Sua <span className="text-primary">Cobertura</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">Seja no carro ou na moto, oferecemos suporte jurídico completo em diversas áreas para quem roda de aplicativo de transporte ou entrega.</p>
         </div>
