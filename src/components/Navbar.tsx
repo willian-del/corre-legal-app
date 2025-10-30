@@ -37,18 +37,20 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4">
             <Button
               onClick={handleMeuCorre}
               variant="outline"
-              className="gap-2"
+              size="default"
+              className="gap-2 h-10"
             >
               <User size={18} />
               Meu Corre
             </Button>
             <Button
               onClick={() => scrollToSection("pricing")}
-              className="bg-primary text-primary-foreground hover:bg-primary-glow"
+              size="default"
+              className="bg-primary text-primary-foreground hover:bg-primary-glow h-10"
             >
               Contrate Agora
             </Button>
@@ -69,14 +71,16 @@ const Navbar = () => {
             <Button
               onClick={handleMeuCorre}
               variant="outline"
-              className="w-full gap-2"
+              size="default"
+              className="w-full gap-2 h-10"
             >
               <User size={18} />
               Meu Corre
             </Button>
             <Button
               onClick={() => scrollToSection("pricing")}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow"
+              size="default"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10"
             >
               Contrate Agora
             </Button>
