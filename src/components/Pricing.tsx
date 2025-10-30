@@ -66,9 +66,9 @@ const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-24 bg-secondary/30">
+    <section id="pricing" className="py-16 bg-secondary/30">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-16">
+        <div className="max-w-3xl mx-auto text-center mb-10">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             Nossos <span className="text-primary">Planos</span>
           </h2>
@@ -77,13 +77,13 @@ const Pricing = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {plans.map((plan, index) => {
             const Icon = plan.icon;
             return (
               <div
                 key={index}
-                className={`bg-card rounded-2xl p-8 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative ${
+                className={`bg-card rounded-2xl p-6 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative ${
                   plan.highlighted
                     ? "border-2 border-primary lg:scale-105 shadow-elevated"
                     : "border border-border hover:border-primary/50"
@@ -95,17 +95,17 @@ const Pricing = () => {
                   </div>
                 )}
 
-                <div className="text-center mb-6">
+                <div className="text-center mb-4">
                   {Icon && (
-                    <div className="flex justify-center mb-4">
-                      <Icon className={`w-12 h-12 ${plan.iconColor}`} />
+                    <div className="flex justify-center mb-3">
+                      <Icon className={`w-10 h-10 ${plan.iconColor}`} />
                     </div>
                   )}
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {plan.name}
                   </h3>
                   <div className="mb-3">
-                    <span className="text-4xl font-bold text-foreground">R$ {plan.price}</span>
+                    <span className="text-3xl font-bold text-foreground">R$ {plan.price}</span>
                     <span className="text-muted-foreground">/mês</span>
                   </div>
                   <p className="text-muted-foreground text-sm">
@@ -113,7 +113,7 @@ const Pricing = () => {
                   </p>
                 </div>
 
-                <ul className="space-y-4 mb-8">
+                <ul className="space-y-3 mb-6">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check className={`w-5 h-5 ${plan.checkColor} flex-shrink-0 mt-0.5`} />
@@ -125,7 +125,7 @@ const Pricing = () => {
                 <Button
                   onClick={handleSubscribe}
                   variant={plan.highlighted ? "default" : "default"}
-                  className={`w-full text-base py-6 ${
+                  className={`w-full text-base py-5 ${
                     plan.highlighted
                       ? "bg-accent hover:bg-accent/90 text-accent-foreground"
                       : "bg-primary hover:bg-primary/90 text-primary-foreground"
