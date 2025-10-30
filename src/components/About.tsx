@@ -15,7 +15,7 @@ const About = () => {
             <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6">
               <Shield className="w-7 h-7 text-primary" />
             </div>
-            <h3 className="text-2xl font-bold mb-4 text-foreground">Proteção Legal</h3>
+            <h3 className="text-2xl font-bold mb-4 text-foreground">Suporte Jurídico</h3>
             <p className="text-muted-foreground leading-relaxed">
               Defendemos seus direitos com expertise jurídica especializada para profissionais de aplicativos.
             </p>
