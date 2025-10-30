@@ -7,7 +7,7 @@ const About = () => {
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             Sobre o <span className="text-primary">Corre Legal</span>
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed mb-8">Trabalhar na rua é viver na correria. A cada corrida ou entrega, imprevisto é o que não falta. A gente sabe como é — por isso criamos o Corre Seguro: pra quem vive do corre, rodando pra fazer o dia acontecer, ter um parceiro que cuida de você quando o perrengue aparece.</p>
+          <p className="text-xl text-muted-foreground leading-relaxed mb-8">Trabalhar na rua é viver na correria. A cada corrida ou entrega, imprevisto é o que não falta. A gente sabe como é — O Corre Legal nasceu pra isso — ser o parceiro que te ajuda a resolver os perrengues do corre com agilidade, preço justo e gente que entende sua rotina.</p>
           
           <Card className="bg-gradient-primary border-primary/20">
             <CardContent className="pt-6">
