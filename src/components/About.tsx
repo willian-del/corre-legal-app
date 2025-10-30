@@ -9,7 +9,7 @@ const About = () => {
             Sobre o <span className="text-primary">Corre Legal</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Somos especializados em oferecer apoio jurídico rápido, humano e descomplicado para motoristas de aplicativos e entregadores.
+            Trabalhar na rua é viver na correria. A cada corrida ou entrega, surgem imprevistos: multa injusta, acidente, cliente complicado, ou aquele problema que ninguém explica direito. A gente sabe como é — por isso criamos o Corre Seguro: pra quem vive do corre, rodando pra fazer o dia acontecer, ter um parceiro que cuida de você quando o perrengue aparece. O Corre Seguro é um plano de proteção e suporte pensado pra motoristas de aplicativo e entregadores. É tipo um "clube do corre", que te ajuda a resolver pepinos com praticidade, preço justo e gente que entende a sua rotina.
           </p>
         </div>
 
