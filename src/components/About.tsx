@@ -27,7 +27,7 @@ const About = () => {
             </div>
             <h3 className="text-2xl font-bold mb-4 text-foreground">Atendimento Humano</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Tratamos cada caso com empatia e compreensão, porque sabemos o valor do seu trabalho.
+              Advogados especialistas te orientam e ajudam a resolver o problema com quem entende sua rotina.
             </p>
           </div>
 
