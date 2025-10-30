@@ -1,4 +1,4 @@
-import { Check, Sparkles, Crown } from "lucide-react";
+import { Check, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Pricing = () => {
@@ -15,8 +15,8 @@ const Pricing = () => {
       buttonText: "Assinar Bronze",
       buttonVariant: "default" as const,
       checkColor: "text-primary",
-      icon: null,
-      iconColor: "",
+      icon: Medal,
+      iconColor: "text-amber-700",
       isPopular: false
     },
     {
@@ -32,8 +32,8 @@ const Pricing = () => {
       buttonText: "Assinar Prata",
       buttonVariant: "default" as const,
       checkColor: "text-accent",
-      icon: Sparkles,
-      iconColor: "text-accent",
+      icon: Medal,
+      iconColor: "text-gray-400",
       isPopular: true,
       highlighted: true
     },
@@ -51,8 +51,8 @@ const Pricing = () => {
       buttonText: "Assinar Ouro",
       buttonVariant: "default" as const,
       checkColor: "text-primary",
-      icon: Crown,
-      iconColor: "text-primary",
+      icon: Medal,
+      iconColor: "text-yellow-500",
       isPopular: false,
       highlighted: false
     }
