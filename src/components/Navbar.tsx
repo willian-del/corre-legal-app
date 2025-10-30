@@ -50,14 +50,8 @@ const Navbar = () => {
             >
               Testemunhos
             </button>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Contato
-            </button>
             <Button
-              onClick={() => scrollToSection("contact")}
+              onClick={() => scrollToSection("pricing")}
               className="bg-primary text-primary-foreground hover:bg-primary-glow"
             >
               Contrate Agora
@@ -100,14 +94,8 @@ const Navbar = () => {
             >
               Testemunhos
             </button>
-            <button
-              onClick={() => scrollToSection("contact")}
-              className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Contato
-            </button>
             <Button
-              onClick={() => scrollToSection("contact")}
+              onClick={() => scrollToSection("pricing")}
               className="w-full bg-primary text-primary-foreground hover:bg-primary-glow"
             >
               Contrate Agora
