@@ -1,6 +1,9 @@
+import { useNavigate } from "react-router-dom";
 import Logo from "./Logo";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
   return (
     <footer className="bg-background border-t border-border py-12">
       <div className="container mx-auto px-4">
@@ -21,27 +24,22 @@ const Footer = () => {
               <li>
                 <button
                   onClick={() => {
-                    const element = document.getElementById("about");
+                    const element = document.getElementById("testimonials");
                     if (element) {
                       element.scrollIntoView({ behavior: "smooth" });
                     }
                   }}
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Sobre Nós
+                  Depoimentos
                 </button>
               </li>
               <li>
                 <button
-                  onClick={() => {
-                    const element = document.getElementById("services");
-                    if (element) {
-                      element.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
+                  onClick={() => navigate('/meu-corre')}
                   className="text-muted-foreground hover:text-primary transition-colors"
                 >
-                  Cobertura
+                  Meu Corre
                 </button>
               </li>
               <li>
