@@ -27,7 +27,7 @@ const About = () => {
             </div>
             <h3 className="text-2xl font-bold mb-4 text-foreground">Atendimento Humano</h3>
             <p className="text-muted-foreground leading-relaxed">
-              Advogados especialistas te orientam e ajudam a resolver o problema com quem entende sua rotina.
+              Advogados especialistas te ajudam a resolver o problema com quem entende sua rotina.
             </p>
           </div>
 
