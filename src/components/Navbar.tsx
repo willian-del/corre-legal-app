@@ -41,13 +41,7 @@ const Navbar = () => {
               onClick={() => scrollToSection("services")}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
-              Serviços
-            </button>
-            <button
-              onClick={() => scrollToSection("testimonials")}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Testemunhos
+              Cobertura
             </button>
             <Button
               onClick={() => scrollToSection("pricing")}
@@ -85,13 +79,7 @@ const Navbar = () => {
               onClick={() => scrollToSection("services")}
               className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors"
             >
-              Serviços
-            </button>
-            <button
-              onClick={() => scrollToSection("testimonials")}
-              className="block w-full text-left text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Testemunhos
+              Cobertura
             </button>
             <Button
               onClick={() => scrollToSection("pricing")}
