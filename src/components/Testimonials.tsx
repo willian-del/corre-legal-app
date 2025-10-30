@@ -25,7 +25,7 @@ const Testimonials = () => {
       name: "Fernanda",
       role: "Entregadora",
       location: "Belo Horizonte/MG",
-      content: "Comprei um celular com defeito e a loja não queria trocar. O Corre Legal me orientou sobre meus direitos e consegui resolver. Agora sei que tenho apoio quando precisar!",
+      content: "Comprei um celular com defeito e a loja não queria trocar. O Corre Legal me orientou sobre meus direitos e consegui resolver.",
       initials: "FC",
       image: fernandaImg,
     },
