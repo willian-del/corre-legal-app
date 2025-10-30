@@ -56,27 +56,6 @@ const Services = () => {
               </div>;
         })}
         </div>
-
-        <div className="max-w-4xl mx-auto mt-16">
-          <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 border border-primary/20">
-            <h3 className="text-2xl font-bold mb-4 text-foreground text-center">Planos Acessíveis</h3>
-            <p className="text-lg text-muted-foreground text-center leading-relaxed mb-6">
-              Desenvolvemos planos sob medida para atender suas necessidades jurídicas com mensalidades que cabem no seu bolso.
-            </p>
-            <div className="flex justify-center">
-              <button onClick={() => {
-              const element = document.getElementById("contact");
-              if (element) {
-                element.scrollIntoView({
-                  behavior: "smooth"
-                });
-              }
-            }} className="bg-primary text-primary-foreground hover:bg-primary-glow px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-glow">
-                Consultar Planos
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </section>;
 };
