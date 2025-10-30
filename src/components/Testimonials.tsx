@@ -40,7 +40,7 @@ const Testimonials = () => {
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            O Que Dizem Nossos <span className="text-primary">Clientes</span>
+            Quem já roda com a <span className="text-primary">gente</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
             Veja como ajudamos profissionais como você a resolver suas questões jurídicas.
