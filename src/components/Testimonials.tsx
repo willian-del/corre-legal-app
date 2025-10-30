@@ -7,6 +7,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import carlosImg from "@/assets/testimonials/carlos.jpg";
+import fernandaImg from "@/assets/testimonials/fernanda.jpg";
+import marcaoImg from "@/assets/testimonials/marcao.jpg";
 
 const Testimonials = () => {
   const testimonials = [
@@ -16,6 +19,7 @@ const Testimonials = () => {
       location: "São Paulo/SP",
       content: "Tive um problema com bloqueio na plataforma e o pessoal do Corre Legal resolveu rapidinho. Me ajudaram a entender meus direitos e voltei a trabalhar em menos de uma semana. Recomendo demais!",
       initials: "CS",
+      image: carlosImg,
     },
     {
       name: "Fernanda",
@@ -23,6 +27,7 @@ const Testimonials = () => {
       location: "Belo Horizonte/MG",
       content: "Precisei de orientação pra regularizar minha documentação e fui super bem atendida. O atendimento pelo WhatsApp é rápido e os advogados explicam tudo direitinho. Valeu demais!",
       initials: "FC",
+      image: fernandaImg,
     },
     {
       name: "Marcão",
@@ -30,6 +35,7 @@ const Testimonials = () => {
       location: "Recife/PE",
       content: "Quando levei uma multa injusta, não sabia o que fazer. O Corre Legal me ajudou a recorrer e conseguimos reverter. Agora eu sei que tenho pra quem correr quando precisar!",
       initials: "MS",
+      image: marcaoImg,
     },
   ];
 
@@ -60,7 +66,7 @@ const Testimonials = () => {
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-4">
                         <Avatar className="h-14 w-14">
-                          <AvatarImage src="" alt={testimonial.name} />
+                          <AvatarImage src={testimonial.image} alt={testimonial.name} />
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                             {testimonial.initials}
                           </AvatarFallback>
