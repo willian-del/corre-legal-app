@@ -180,7 +180,7 @@ const Auth = () => {
           </TabsList>
 
           <TabsContent value="login">
-            <Card>
+            <Card className="min-h-[620px]">
               <CardHeader>
                 <CardTitle>Bem-vindo de volta</CardTitle>
                 <CardDescription>Entre com suas credenciais para acessar sua conta</CardDescription>
@@ -208,7 +208,7 @@ const Auth = () => {
           </TabsContent>
 
           <TabsContent value="signup">
-            <Card>
+            <Card className="min-h-[620px]">
               <CardHeader>
                 <CardTitle>Criar conta</CardTitle>
                 <CardDescription>Preencha os dados para criar sua conta</CardDescription>
