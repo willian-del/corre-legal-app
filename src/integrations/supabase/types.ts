@@ -17,6 +17,7 @@ export type Database = {
       profiles: {
         Row: {
           cpf: string | null
+          cpf_hash: string | null
           created_at: string | null
           full_name: string | null
           id: string
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           cpf?: string | null
+          cpf_hash?: string | null
           created_at?: string | null
           full_name?: string | null
           id: string
@@ -35,6 +37,7 @@ export type Database = {
         }
         Update: {
           cpf?: string | null
+          cpf_hash?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
@@ -88,7 +91,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      hash_cpf: { Args: { cpf_plain: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

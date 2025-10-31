@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { encryptData, hashData } from '@/lib/encryption';
 
 interface AuthContextType {
   user: User | null;
@@ -44,16 +45,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      const { error } = await supabase.auth.signUp({
+      // Criptografar CPF antes de enviar
+      const encryptedCpf = encryptData(cpf);
+      const hashedCpf = hashData(cpf);
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
-            cpf: cpf,
             phone: phone,
             service_type: serviceType
+            // NÃO enviar CPF para raw_user_meta_data por segurança
           }
         }
       });
@@ -65,6 +70,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           description: error.message
         });
         return { error };
+      }
+
+      // Inserir perfil com CPF criptografado separadamente
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ 
+            cpf: encryptedCpf,
+            cpf_hash: hashedCpf 
+          })
+          .eq('id', data.user.id);
+
+        if (profileError) {
+          console.error('Erro ao atualizar CPF criptografado:', profileError);
+        }
       }
 
       toast({

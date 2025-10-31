@@ -10,6 +10,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
+
+// Função para validar CPF com dígitos verificadores
+const isValidCPF = (cpf: string): boolean => {
+  const numbers = cpf.replace(/\D/g, '');
+  
+  if (numbers.length !== 11) return false;
+  if (/^(\d)\1+$/.test(numbers)) return false; // CPFs como 111.111.111-11
+  
+  // Validar primeiro dígito verificador
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(numbers.charAt(i)) * (10 - i);
+  }
+  let digit1 = 11 - (sum % 11);
+  if (digit1 >= 10) digit1 = 0;
+  
+  if (digit1 !== parseInt(numbers.charAt(9))) return false;
+  
+  // Validar segundo dígito verificador
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(numbers.charAt(i)) * (11 - i);
+  }
+  let digit2 = 11 - (sum % 11);
+  if (digit2 >= 10) digit2 = 0;
+  
+  return digit2 === parseInt(numbers.charAt(10));
+};
+
 const loginSchema = z.object({
   email: z.string().email({
     message: "Email inválido"
@@ -18,6 +47,7 @@ const loginSchema = z.object({
     message: "Senha deve ter no mínimo 6 caracteres"
   })
 });
+
 const signupSchema = loginSchema.extend({
   fullName: z.string().min(3, {
     message: "Nome deve ter no mínimo 3 caracteres"
@@ -28,7 +58,10 @@ const signupSchema = loginSchema.extend({
     .refine((val) => {
       const numbers = val.replace(/\D/g, '');
       return numbers.length === 11;
-    }, { message: "CPF deve ter 11 dígitos" }),
+    }, { message: "CPF deve ter 11 dígitos" })
+    .refine((val) => isValidCPF(val), { 
+      message: "CPF inválido - verifique os dígitos" 
+    }),
   phone: z.string()
     .min(10, { message: "Telefone deve ter no mínimo 10 dígitos" })
     .max(15, { message: "Telefone inválido" })
