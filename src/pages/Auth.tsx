@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
 const loginSchema = z.object({
@@ -301,6 +302,17 @@ const Auth = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        <div className="mt-6 text-center">
+          <Button
+            variant="link"
+            onClick={() => navigate('/')}
+            className="text-muted-foreground hover:text-primary"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar para a página inicial
+          </Button>
+        </div>
       </div>
     </div>;
 };
