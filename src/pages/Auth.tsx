@@ -166,7 +166,7 @@ const Auth = () => {
   return <div className="min-h-screen flex items-center justify-center bg-secondary/30 px-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
-          <Logo />
+          <Logo size={72} />
         </div>
 
         <div className="text-center mb-6 animate-in fade-in duration-500">
