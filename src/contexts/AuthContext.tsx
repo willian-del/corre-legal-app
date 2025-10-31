@@ -45,9 +45,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
-      // Criptografar CPF antes de enviar
+      // Criptografar CPF antes de qualquer operação
       const encryptedCpf = encryptData(cpf);
-      const hashedCpf = hashData(cpf);
+      const cpfHash = hashData(cpf);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -56,9 +56,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
+            // NÃO enviar CPF para raw_user_meta_data (segurança)
             phone: phone,
             service_type: serviceType
-            // NÃO enviar CPF para raw_user_meta_data por segurança
           }
         }
       });
@@ -72,18 +72,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
-      // Inserir perfil com CPF criptografado separadamente
+      // Inserir perfil com CPF criptografado após criar usuário
       if (data.user) {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ 
             cpf: encryptedCpf,
-            cpf_hash: hashedCpf 
+            cpf_hash: cpfHash 
           })
           .eq('id', data.user.id);
 
         if (profileError) {
-          console.error('Erro ao atualizar CPF criptografado:', profileError);
+          console.error('Erro ao salvar CPF criptografado:', profileError);
         }
       }
 
