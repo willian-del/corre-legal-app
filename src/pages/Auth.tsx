@@ -122,6 +122,15 @@ const Auth = () => {
           <Logo />
         </div>
 
+        <div className="text-center mb-6 space-y-2 animate-in fade-in duration-500">
+          <h1 className="text-2xl md:text-3xl font-bold text-primary">
+            Bem-vindo ao seu novo parceiro de corre!
+          </h1>
+          <p className="text-muted-foreground text-base md:text-lg">
+            Conectando você aos melhores profissionais com rapidez e confiança
+          </p>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>
