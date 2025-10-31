@@ -20,6 +20,20 @@ const signupSchema = loginSchema.extend({
   fullName: z.string().min(3, {
     message: "Nome deve ter no mínimo 3 caracteres"
   }).max(100),
+  cpf: z.string()
+    .min(11, { message: "CPF deve ter 11 dígitos" })
+    .max(14, { message: "CPF inválido" })
+    .refine((val) => {
+      const numbers = val.replace(/\D/g, '');
+      return numbers.length === 11;
+    }, { message: "CPF deve ter 11 dígitos" }),
+  phone: z.string()
+    .min(10, { message: "Telefone deve ter no mínimo 10 dígitos" })
+    .max(15, { message: "Telefone inválido" })
+    .refine((val) => {
+      const numbers = val.replace(/\D/g, '');
+      return numbers.length >= 10 && numbers.length <= 11;
+    }, { message: "Telefone inválido" }),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
@@ -46,6 +60,8 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [phone, setPhone] = useState('');
   const [signupErrors, setSignupErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
@@ -86,7 +102,9 @@ const Auth = () => {
       email: signupEmail,
       password: signupPassword,
       confirmPassword,
-      fullName
+      fullName,
+      cpf,
+      phone
     });
     if (!result.success) {
       const errors: any = {};
@@ -97,9 +115,14 @@ const Auth = () => {
       return;
     }
     setIsSubmitting(true);
+    
+    // Remove formatting before sending
+    const cleanCpf = cpf.replace(/\D/g, '');
+    const cleanPhone = phone.replace(/\D/g, '');
+    
     const {
       error
-    } = await signUp(signupEmail, signupPassword, fullName);
+    } = await signUp(signupEmail, signupPassword, fullName, cleanCpf, cleanPhone);
     setIsSubmitting(false);
     if (!error) {
       setActiveTab('login');
@@ -107,7 +130,25 @@ const Auth = () => {
       setSignupPassword('');
       setConfirmPassword('');
       setFullName('');
+      setCpf('');
+      setPhone('');
     }
+  };
+
+  const formatCpf = (value: string) => {
+    const numbers = value.replace(/\D/g, '').slice(0, 11);
+    if (numbers.length <= 3) return numbers;
+    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '').slice(0, 11);
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
   };
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-secondary/30">
@@ -176,9 +217,35 @@ const Auth = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="signup-cpf">CPF</Label>
+                    <Input 
+                      id="signup-cpf" 
+                      type="text" 
+                      placeholder="000.000.000-00" 
+                      value={cpf} 
+                      onChange={e => setCpf(formatCpf(e.target.value))} 
+                      required 
+                    />
+                    {signupErrors.cpf && <p className="text-sm text-destructive">{signupErrors.cpf}</p>}
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="signup-email">Email</Label>
                     <Input id="signup-email" type="email" placeholder="seu@email.com" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} required />
                     {signupErrors.email && <p className="text-sm text-destructive">{signupErrors.email}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-phone">Telefone</Label>
+                    <Input 
+                      id="signup-phone" 
+                      type="text" 
+                      placeholder="(00) 00000-0000" 
+                      value={phone} 
+                      onChange={e => setPhone(formatPhone(e.target.value))} 
+                      required 
+                    />
+                    {signupErrors.phone && <p className="text-sm text-destructive">{signupErrors.phone}</p>}
                   </div>
 
                   <div className="space-y-2">
