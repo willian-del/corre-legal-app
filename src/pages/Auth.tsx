@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
 const loginSchema = z.object({
@@ -34,6 +35,9 @@ const signupSchema = loginSchema.extend({
       const numbers = val.replace(/\D/g, '');
       return numbers.length >= 10 && numbers.length <= 11;
     }, { message: "Telefone inválido" }),
+  serviceType: z.string().min(1, {
+    message: "Selecione o tipo de serviço"
+  }),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
@@ -62,6 +66,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState('');
   const [cpf, setCpf] = useState('');
   const [phone, setPhone] = useState('');
+  const [serviceType, setServiceType] = useState('');
   const [signupErrors, setSignupErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
@@ -104,7 +109,8 @@ const Auth = () => {
       confirmPassword,
       fullName,
       cpf,
-      phone
+      phone,
+      serviceType
     });
     if (!result.success) {
       const errors: any = {};
@@ -122,7 +128,7 @@ const Auth = () => {
     
     const {
       error
-    } = await signUp(signupEmail, signupPassword, fullName, cleanCpf, cleanPhone);
+    } = await signUp(signupEmail, signupPassword, fullName, cleanCpf, cleanPhone, serviceType);
     setIsSubmitting(false);
     if (!error) {
       setActiveTab('login');
@@ -132,6 +138,7 @@ const Auth = () => {
       setFullName('');
       setCpf('');
       setPhone('');
+      setServiceType('');
     }
   };
 
@@ -246,6 +253,32 @@ const Auth = () => {
                       required 
                     />
                     {signupErrors.phone && <p className="text-sm text-destructive">{signupErrors.phone}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-service">Qual o seu corre?</Label>
+                    <Select value={serviceType} onValueChange={setServiceType}>
+                      <SelectTrigger id="signup-service" className="bg-background">
+                        <SelectValue placeholder="Selecione seu serviço" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-popover z-50">
+                        <SelectItem value="uber">Uber</SelectItem>
+                        <SelectItem value="99">99</SelectItem>
+                        <SelectItem value="indrive">inDrive</SelectItem>
+                        <SelectItem value="ifood">iFood</SelectItem>
+                        <SelectItem value="rappi">Rappi</SelectItem>
+                        <SelectItem value="loggi">Loggi</SelectItem>
+                        <SelectItem value="lalamove">Lalamove</SelectItem>
+                        <SelectItem value="delivery-much">Delivery Much</SelectItem>
+                        <SelectItem value="aiqfome">Aiqfome</SelectItem>
+                        <SelectItem value="borzo">Borzo</SelectItem>
+                        <SelectItem value="total-express">Total Express</SelectItem>
+                        <SelectItem value="mercado-livre">Mercado Livre / Mercado Envios</SelectItem>
+                        <SelectItem value="uello">Uello</SelectItem>
+                        <SelectItem value="outros">Outros</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {signupErrors.serviceType && <p className="text-sm text-destructive">{signupErrors.serviceType}</p>}
                   </div>
 
                   <div className="space-y-2">

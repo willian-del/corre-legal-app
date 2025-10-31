@@ -6,7 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  signUp: (email: string, password: string, fullName: string, cpf: string, phone: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, cpf: string, phone: string, serviceType: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string, cpf: string, phone: string) => {
+  const signUp = async (email: string, password: string, fullName: string, cpf: string, phone: string, serviceType: string) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
       
@@ -52,7 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           data: {
             full_name: fullName,
             cpf: cpf,
-            phone: phone
+            phone: phone,
+            service_type: serviceType
           }
         }
       });
