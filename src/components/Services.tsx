@@ -12,7 +12,7 @@ const Services = () => {
       ]
     },
     {
-      title: "Bloqueio e Reativação de Conta",
+      title: "Suporte no Bloqueio e Reativação de Conta",
       description: "Apoio para compreender o motivo do bloqueio e orientação nas etapas para solicitar reativação. Auxiliamos você a estruturar o pedido, organizar documentos e aumentar suas chances de retorno às plataformas.",
       coverage: [
         "Análise do caso e possível causa do bloqueio",
