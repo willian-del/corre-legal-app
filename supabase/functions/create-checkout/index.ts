@@ -7,6 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const maskEmail = (email: string): string => {
+  const [local, domain] = email.split('@');
+  return `${local.slice(0, 2)}***@${domain}`;
+};
+
+const maskPriceId = (priceId: string): string => {
+  return `price_***${priceId.slice(-4)}`;
+};
+
+const maskId = (id: string, prefix: string = ''): string => {
+  return `${prefix}***${id.slice(-4)}`;
+};
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
@@ -33,11 +46,40 @@ serve(async (req) => {
     const user = data.user;
     
     if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    logStep("User authenticated", { userId: user.id, email: maskEmail(user.email) });
+
+    // Rate limiting: verificar última tentativa de checkout
+    const { data: recentCheckouts } = await supabaseClient
+      .from('user_subscriptions')
+      .select('created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (recentCheckouts && recentCheckouts.length > 0) {
+      const lastCheckoutTime = new Date(recentCheckouts[0].created_at).getTime();
+      const now = Date.now();
+      const cooldownPeriod = 60 * 1000; // 1 minuto
+      
+      if (now - lastCheckoutTime < cooldownPeriod) {
+        logStep("Rate limit exceeded", { userId: user.id });
+        throw new Error("Por favor, aguarde um momento antes de fazer outra solicitação");
+      }
+    }
+    logStep("Rate limit check passed", { userId: user.id });
+
+    // Input validation
+    const VALID_PLANS = ['bronze', 'prata', 'ouro'] as const;
+    type ValidPlan = typeof VALID_PLANS[number];
 
     const { plan_type } = await req.json();
-    if (!plan_type) throw new Error("plan_type is required");
-    logStep("Received plan_type", { plan_type });
+    
+    if (!plan_type || !VALID_PLANS.includes(plan_type as ValidPlan)) {
+      logStep("ERROR: Invalid plan_type", { plan_type });
+      throw new Error("Invalid plan type. Must be bronze, prata, or ouro");
+    }
+    
+    logStep("Received valid plan_type", { plan_type });
 
     // Get price IDs from environment variables
     const priceIds = {
@@ -51,7 +93,7 @@ serve(async (req) => {
       logStep("ERROR: Price ID not found for plan", { plan_type });
       throw new Error(`Price ID not configured for plan: ${plan_type}`);
     }
-    logStep("Price ID found", { plan_type, price_id });
+    logStep("Price ID found", { plan_type, price_id: maskPriceId(price_id) });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -63,7 +105,7 @@ serve(async (req) => {
     
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId });
+      logStep("Found existing customer", { customerId: maskId(customerId, 'cus_') });
     } else {
       logStep("No existing customer found, will create on checkout");
     }
@@ -87,7 +129,7 @@ serve(async (req) => {
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", { sessionId: maskId(session.id, 'cs_'), url: '[REDACTED]' });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

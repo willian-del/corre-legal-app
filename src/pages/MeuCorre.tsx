@@ -37,7 +37,11 @@ const MeuCorre = () => {
     });
 
     if (error) {
-      console.error('Erro ao buscar assinatura:', error);
+      // Não logar detalhes do erro de banco no console
+      // Em produção, isso seria enviado para um serviço de error tracking
+      if (import.meta.env.DEV) {
+        console.error('Erro ao buscar assinatura:', error);
+      }
       setLoading(false);
       return;
     }

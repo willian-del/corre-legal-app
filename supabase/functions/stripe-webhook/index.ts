@@ -7,6 +7,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
+const maskEmail = (email: string): string => {
+  const [local, domain] = email.split('@');
+  return `${local.slice(0, 2)}***@${domain}`;
+};
+
+const maskPriceId = (priceId: string): string => {
+  return `price_***${priceId.slice(-4)}`;
+};
+
+const maskId = (id: string, prefix: string = ''): string => {
+  return `${prefix}***${id.slice(-4)}`;
+};
+
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
@@ -72,7 +85,7 @@ serve(async (req) => {
       if (!user) {
         throw new Error(`No user found with email: ${customerEmail}`);
       }
-      logStep("Found user", { userId: user.id, email: customerEmail });
+      logStep("Found user", { userId: user.id, email: maskEmail(customerEmail) });
 
       // Get line items to determine plan type
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
@@ -91,7 +104,7 @@ serve(async (req) => {
       else if (priceId === priceIds.bronze) planType = 'bronze';
 
       const amountTotal = session.amount_total || 0;
-      logStep("Determined plan type", { planType, priceId, amountTotal });
+      logStep("Determined plan type", { planType, priceId: maskPriceId(priceId || ''), amountTotal });
 
       // Check if this payment was already processed (idempotency)
       const { data: existingSubscription } = await supabaseClient
@@ -102,7 +115,7 @@ serve(async (req) => {
 
       if (existingSubscription) {
         logStep("Subscription already processed (idempotent)", { 
-          paymentIntent: session.payment_intent,
+          paymentIntent: maskId(session.payment_intent as string, 'pi_'),
           existingId: existingSubscription.id 
         });
         return new Response(JSON.stringify({ received: true }), {

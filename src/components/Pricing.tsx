@@ -91,10 +91,14 @@ const Pricing = () => {
         throw new Error("No checkout URL received");
       }
     } catch (error) {
-      console.error("Error creating checkout:", error);
+      // Log completo apenas para debug (não em produção)
+      if (import.meta.env.DEV) {
+        console.error("Error creating checkout:", error);
+      }
+      
       toast({
-        title: "Erro ao processar",
-        description: error instanceof Error ? error.message : "Tente novamente",
+        title: "Erro ao processar pagamento",
+        description: "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente ou entre em contato com o suporte.",
         variant: "destructive",
       });
     } finally {
