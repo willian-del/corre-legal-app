@@ -4,7 +4,7 @@ const Services = () => {
       title: "Canal de Atendimento Jurídico",
       description: "Orientação jurídica especializada para as principais situações do seu dia a dia — dentro e fora dos apps, para você e sua família. Sempre que surgir um problema ou dúvida, você recebe orientação clara sobre seus direitos e próximos passos.",
       coverage: [
-        "Direito do Consumidor (compras, golpes e serviços)",
+        "Direito do Consumidor (compras e serviços)",
         "Família (separação, guarda, pensão e acordos)",
         "Herança e Inventário",
         "Moradia e Imóveis (aluguel, compra, venda)",
