@@ -1,6 +1,10 @@
 import CryptoJS from 'crypto-js';
 
-const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY || 'lovable-default-key-change-in-production-min-32-chars';
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+
+if (!ENCRYPTION_KEY) {
+  throw new Error('VITE_ENCRYPTION_KEY must be configured in environment variables');
+}
 
 export const encryptData = (data: string): string => {
   return CryptoJS.AES.encrypt(data, ENCRYPTION_KEY).toString();

@@ -3,7 +3,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, stripe-signature",
 };
 
@@ -92,6 +92,36 @@ serve(async (req) => {
 
       const amountTotal = session.amount_total || 0;
       logStep("Determined plan type", { planType, priceId, amountTotal });
+
+      // Check if this payment was already processed (idempotency)
+      const { data: existingSubscription } = await supabaseClient
+        .from('user_subscriptions')
+        .select('id')
+        .eq('stripe_payment_intent_id', session.payment_intent as string)
+        .single();
+
+      if (existingSubscription) {
+        logStep("Subscription already processed (idempotent)", { 
+          paymentIntent: session.payment_intent,
+          existingId: existingSubscription.id 
+        });
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
+
+      // Verify payment was completed
+      if (session.payment_status !== 'paid') {
+        logStep("Payment not completed", { 
+          sessionId: session.id, 
+          status: session.payment_status 
+        });
+        return new Response(JSON.stringify({ received: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
 
       // Calculate expiration date (6 months from now)
       const expiresAt = new Date();
