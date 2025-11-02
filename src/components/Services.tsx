@@ -18,7 +18,7 @@ const Services = () => {
         "Análise do caso e possível causa do bloqueio",
         "Orientação sobre documentos e prazos",
         "Modelos prontos de solicitação e recurso",
-        "Acompanhamento até a conclusão do processo",
+        "Orientação em cada fase do processo",
         "Estratégias para evitar novos bloqueios"
       ]
     },
