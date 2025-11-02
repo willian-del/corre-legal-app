@@ -16,7 +16,7 @@ const Services = () => {
       description: "Apoio para compreender o motivo do bloqueio e orientação nas etapas para solicitar reativação. Auxiliamos você a estruturar o pedido, organizar documentos e aumentar suas chances de retorno às plataformas.",
       coverage: [
         "Análise do caso e possível causa do bloqueio",
-        "Orientação sobre documentos, mensagens e prazos",
+        "Orientação sobre documentos e prazos",
         "Modelos prontos de solicitação e recurso",
         "Acompanhamento até a conclusão do processo",
         "Estratégias para evitar novos bloqueios"
