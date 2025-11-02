@@ -80,7 +80,7 @@ const Pricing = () => {
             return (
               <div
                 key={index}
-                className={`bg-card rounded-2xl p-5 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative ${
+                className={`bg-card rounded-2xl p-5 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative flex flex-col ${
                   plan.highlighted
                     ? "border-2 border-primary lg:scale-105 shadow-elevated"
                     : "border border-border hover:border-primary/50"
@@ -109,7 +109,7 @@ const Pricing = () => {
                   </p>
                 </div>
 
-                <ul className="space-y-2 mb-5">
+                <ul className="space-y-2 mb-5 flex-grow">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
                       <Check className={`w-4 h-4 ${plan.checkColor} flex-shrink-0 mt-0.5`} />
