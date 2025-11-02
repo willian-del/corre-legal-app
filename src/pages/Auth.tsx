@@ -206,6 +206,21 @@ const Auth = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-primary">Bem-vindo ao seu parceiro de corre!</h1>
         </div>
 
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
+          <p className="text-sm text-amber-800 dark:text-amber-200 mb-3">
+            <strong>Ainda não contratou um plano?</strong><br/>
+            Para acessar a área de cliente, você precisa primeiro contratar um dos nossos planos.
+            Após o pagamento, você receberá suas credenciais de acesso por email.
+          </p>
+          <Button 
+            onClick={() => navigate('/#pricing')} 
+            variant="outline"
+            className="w-full border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+          >
+            Ver Planos e Contratar
+          </Button>
+        </div>
+
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Login</TabsTrigger>

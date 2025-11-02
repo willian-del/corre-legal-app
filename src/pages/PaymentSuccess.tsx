@@ -28,17 +28,21 @@ const PaymentSuccess = () => {
           </p>
           
           <div className="bg-secondary/30 rounded-lg p-4 mb-6">
+            <p className="text-sm text-muted-foreground mb-2">
+              <strong>📧 Verifique seu email!</strong>
+            </p>
             <p className="text-sm text-muted-foreground">
-              Você receberá um email de confirmação com todos os detalhes da sua assinatura.
+              Enviamos suas credenciais de acesso para o email cadastrado no pagamento.
+              Use essas credenciais para fazer login e acessar sua área de cliente.
             </p>
           </div>
 
           <Button
-            onClick={() => navigate("/meu-corre")}
+            onClick={() => navigate("/auth")}
             className="w-full"
             size="lg"
           >
-            Ir para Meu Corre
+            Fazer Login
           </Button>
 
           <Button

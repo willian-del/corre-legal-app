@@ -77,15 +77,45 @@ serve(async (req) => {
         throw new Error("No customer email found in session");
       }
 
-      // Get user by email
+      // Get or create user by email
       const { data: userData, error: userError } = await supabaseClient.auth.admin.listUsers();
       if (userError) throw userError;
 
-      const user = userData.users.find(u => u.email === customerEmail);
+      let user = userData.users.find(u => u.email === customerEmail);
+      
       if (!user) {
-        throw new Error(`No user found with email: ${customerEmail}`);
+        logStep("User not found, creating new account", { email: maskEmail(customerEmail) });
+        
+        // Generate secure temporary password
+        const tempPassword = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+          .slice(0, 12);
+        
+        // Create new user account
+        const { data: newUserData, error: createError } = await supabaseClient.auth.admin.createUser({
+          email: customerEmail,
+          password: tempPassword,
+          email_confirm: true,
+        });
+        
+        if (createError || !newUserData.user) {
+          logStep("ERROR creating user", { error: createError });
+          throw new Error(`Failed to create user: ${createError?.message}`);
+        }
+        
+        user = newUserData.user;
+        logStep("User account created", { userId: user.id, email: maskEmail(customerEmail) });
+        
+        // TODO: Send email with temporary password
+        // This should be implemented with email service (Resend, etc)
+        logStep("TODO: Send welcome email with credentials", { 
+          email: maskEmail(customerEmail),
+          tempPassword: '***' 
+        });
+      } else {
+        logStep("Found existing user", { userId: user.id, email: maskEmail(customerEmail) });
       }
-      logStep("Found user", { userId: user.id, email: maskEmail(customerEmail) });
 
       // Get line items to determine plan type
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);

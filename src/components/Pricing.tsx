@@ -67,16 +67,6 @@ const Pricing = () => {
   ];
 
   const handleSubscribe = async (planType: PlanType) => {
-    if (!user) {
-      toast({
-        title: "Login necessário",
-        description: "Faça login para contratar um plano",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
-
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {

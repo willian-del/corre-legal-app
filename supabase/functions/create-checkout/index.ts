@@ -38,36 +38,6 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
-    
-    const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: maskEmail(user.email) });
-
-    // Rate limiting: verificar última tentativa de checkout
-    const { data: recentCheckouts } = await supabaseClient
-      .from('user_subscriptions')
-      .select('created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (recentCheckouts && recentCheckouts.length > 0) {
-      const lastCheckoutTime = new Date(recentCheckouts[0].created_at).getTime();
-      const now = Date.now();
-      const cooldownPeriod = 60 * 1000; // 1 minuto
-      
-      if (now - lastCheckoutTime < cooldownPeriod) {
-        logStep("Rate limit exceeded", { userId: user.id });
-        throw new Error("Por favor, aguarde um momento antes de fazer outra solicitação");
-      }
-    }
-    logStep("Rate limit check passed", { userId: user.id });
-
     // Input validation
     const VALID_PLANS = ['bronze', 'prata', 'ouro'] as const;
     type ValidPlan = typeof VALID_PLANS[number];
@@ -99,21 +69,8 @@ serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    // Check if customer exists
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    let customerId;
-    
-    if (customers.data.length > 0) {
-      customerId = customers.data[0].id;
-      logStep("Found existing customer", { customerId: maskId(customerId, 'cus_') });
-    } else {
-      logStep("No existing customer found, will create on checkout");
-    }
-
-    // Create checkout session for one-time payment
+    // Create checkout session for one-time payment (without authentication)
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
       line_items: [
         {
           price: price_id,
@@ -123,10 +80,7 @@ serve(async (req) => {
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success`,
       cancel_url: `${req.headers.get("origin")}/#pricing`,
-      metadata: {
-        user_id: user.id,
-        user_email: user.email,
-      },
+      customer_creation: 'always',
     });
 
     logStep("Checkout session created", { sessionId: maskId(session.id, 'cs_'), url: '[REDACTED]' });
