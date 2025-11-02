@@ -6,9 +6,9 @@ const Services = () => {
       coverage: [
         "Direito do Consumidor (compras e serviços)",
         "Família (separação, guarda, pensão e acordos)",
-        "Herança e Inventário",
         "Moradia e Imóveis (aluguel, compra, venda)",
-        "Responsabilidade Civil (acidentes e indenizações)"
+        "Responsabilidade Civil (acidentes e indenizações)",
+        "Herança, Inventário e Contratos"
       ]
     },
     {
