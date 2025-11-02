@@ -23,7 +23,7 @@ const Services = () => {
       ]
     },
     {
-      title: "Gestão e Defesa de Multas",
+      title: "Gestão de Multas e Problemas com a CNH",
       description: "Orientação para avaliar, contestar e recorrer multas — protegendo sua CNH e seu direito de trabalhar. Você recebe instruções claras sobre como agir, prazos, documentos e argumentos para aumentar as chances de sucesso.",
       coverage: [
         "Avaliação da multa e análise de viabilidade de recurso",
