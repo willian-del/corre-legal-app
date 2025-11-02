@@ -5,7 +5,7 @@ const Services = () => {
       description: "Orientação jurídica especializada para as principais situações do seu dia a dia — dentro e fora dos apps, para você e sua família. Sempre que surgir um problema ou dúvida, você recebe orientação clara sobre seus direitos e próximos passos.",
       coverage: [
         "Direito do Consumidor e Contratos",
-        "Família (separação, guarda, pensão e acordos)",
+        "Direito de Família (separação, guarda e pensão)",
         "Herança e Inventário",
         "Moradia e Imóveis (aluguel, compra, venda)",
         "Responsabilidade Civil e indenizações"
