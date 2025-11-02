@@ -79,9 +79,9 @@ const Auth = () => {
           <Logo size={72} />
         </div>
 
-        <div className="text-center mb-6 animate-in fade-in duration-500">
+        <div className="text-center mb-6">
           <h1 className="text-2xl md:text-3xl font-bold text-primary">
-            Bem-vindo ao seu parceiro de corre!
+            Bem-vindo ao Corre Legal
           </h1>
         </div>
 
