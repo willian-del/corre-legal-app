@@ -1,7 +1,7 @@
 const Services = () => {
   const services = [
     {
-      title: "Canal de Atendimento Jurídico",
+      title: "Canal de Atendimento Jurídico Especializado",
       description: "Orientação jurídica especializada para as principais situações do seu dia a dia — dentro e fora dos apps, para você e sua família. Sempre que surgir um problema ou dúvida, você recebe orientação clara sobre seus direitos e próximos passos.",
       coverage: [
         "Direito do Consumidor (compras e serviços)",
