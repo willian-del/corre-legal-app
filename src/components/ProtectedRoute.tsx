@@ -8,10 +8,11 @@ import { Shield } from 'lucide-react';
 interface ProtectedRouteProps {
   children: ReactNode;
   requireSubscription?: boolean;
+  requireCompleteProfile?: boolean;
 }
 
-const ProtectedRoute = ({ children, requireSubscription = true }: ProtectedRouteProps) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteProfile = true }: ProtectedRouteProps) => {
+  const { user, loading, profileComplete } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
@@ -24,14 +25,25 @@ const ProtectedRoute = ({ children, requireSubscription = true }: ProtectedRoute
         return;
       }
 
-      if (user && requireSubscription) {
-        const active = await checkActiveSubscription(user.id);
-        setHasSubscription(active);
-        setChecking(false);
-        
-        if (!active) {
-          // User logged in but no active subscription
-          // Don't auto-redirect, show message instead
+      if (user) {
+        // Check profile completeness first
+        if (requireCompleteProfile && profileComplete === false) {
+          navigate('/onboarding');
+          return;
+        }
+
+        // Then check subscription if required
+        if (requireSubscription) {
+          const active = await checkActiveSubscription(user.id);
+          setHasSubscription(active);
+          setChecking(false);
+          
+          if (!active) {
+            // User logged in but no active subscription
+            // Don't auto-redirect, show message instead
+          }
+        } else {
+          setChecking(false);
         }
       } else {
         setChecking(false);
@@ -39,7 +51,7 @@ const ProtectedRoute = ({ children, requireSubscription = true }: ProtectedRoute
     }
 
     checkAccess();
-  }, [user, loading, navigate, location, requireSubscription]);
+  }, [user, loading, profileComplete, navigate, location, requireSubscription, requireCompleteProfile]);
 
   if (loading || checking) {
     return (

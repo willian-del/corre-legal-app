@@ -221,18 +221,11 @@ const Auth = () => {
           </Button>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Login</TabsTrigger>
-            <TabsTrigger value="signup">Cadastro</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="login">
-            <Card className="min-h-[620px]">
-              <CardHeader>
-                <CardTitle>Bem-vindo de volta</CardTitle>
-                <CardDescription>Entre com suas credenciais para acessar sua conta</CardDescription>
-              </CardHeader>
+        <Card>
+          <CardHeader>
+            <CardTitle>Bem-vindo de volta</CardTitle>
+            <CardDescription>Entre com suas credenciais para acessar sua conta</CardDescription>
+          </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">

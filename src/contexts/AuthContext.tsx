@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { encryptData, hashData } from '@/lib/encryption';
+import { isProfileComplete } from '@/lib/profile-utils';
 
 interface AuthContextType {
   user: User | null;
@@ -11,6 +12,8 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
+  profileComplete: boolean | null;
+  checkProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,7 +22,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
   const { toast } = useToast();
+
+  const checkProfile = async () => {
+    if (!user) {
+      setProfileComplete(null);
+      return;
+    }
+    
+    const complete = await isProfileComplete(user.id);
+    setProfileComplete(complete);
+  };
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -28,6 +42,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Check profile completeness after auth state changes
+        if (session?.user) {
+          setTimeout(() => {
+            isProfileComplete(session.user.id).then(complete => {
+              setProfileComplete(complete);
+            });
+          }, 0);
+        } else {
+          setProfileComplete(null);
+        }
       }
     );
 
@@ -36,6 +61,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      if (session?.user) {
+        setTimeout(() => {
+          isProfileComplete(session.user.id).then(complete => {
+            setProfileComplete(complete);
+          });
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -144,7 +177,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, signUp, signIn, signOut, loading }}>
+    <AuthContext.Provider value={{ user, session, signUp, signIn, signOut, loading, profileComplete, checkProfile }}>
       {children}
     </AuthContext.Provider>
   );

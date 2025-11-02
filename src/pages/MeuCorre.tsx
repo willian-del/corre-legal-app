@@ -3,9 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
+import { getProfile, updateProfile } from '@/lib/profile-utils';
+import { useToast } from '@/hooks/use-toast';
+import { decryptData } from '@/lib/encryption';
 
 interface UserSubscription {
   id: string;
@@ -18,16 +25,46 @@ interface UserSubscription {
 }
 
 const MeuCorre = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, checkProfile } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Profile editing
+  const [phone, setPhone] = useState('');
+  const [serviceType, setServiceType] = useState('');
+  const [maskedCpf, setMaskedCpf] = useState('***.***.***-**');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchSubscription();
+      fetchProfile();
     }
   }, [user]);
+
+  const fetchProfile = async () => {
+    if (!user) return;
+
+    const profile = await getProfile(user.id);
+    if (profile) {
+      setPhone(profile.phone || '');
+      setServiceType(profile.service_type || '');
+      
+      // Mostrar CPF mascarado
+      if (profile.cpf) {
+        try {
+          const decrypted = decryptData(profile.cpf);
+          if (decrypted && decrypted.length === 11) {
+            setMaskedCpf(`***.***.***-${decrypted.slice(-2)}`);
+          }
+        } catch (e) {
+          setMaskedCpf('***.***.***-**');
+        }
+      }
+    }
+  };
 
   const fetchSubscription = async () => {
     if (!user) return;
@@ -66,6 +103,44 @@ const MeuCorre = () => {
   const handleRefresh = () => {
     setLoading(true);
     fetchSubscription();
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+
+    setIsEditingProfile(true);
+
+    const { error } = await updateProfile(user.id, {
+      phone: phone.replace(/\D/g, ''),
+      service_type: serviceType
+    });
+
+    setIsEditingProfile(false);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar",
+        description: error.message
+      });
+      return;
+    }
+
+    toast({
+      title: "Dados atualizados!",
+      description: "Suas informações foram salvas com sucesso."
+    });
+
+    await checkProfile();
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '').slice(0, 11);
+    if (numbers.length <= 2) return numbers;
+    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
   };
 
   if (loading) {
@@ -199,6 +274,91 @@ const MeuCorre = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Meus Dados */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    <CardTitle>Meus Dados</CardTitle>
+                  </div>
+                  <CardDescription>
+                    Edite suas informações pessoais
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleUpdateProfile} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={user?.email || ''} 
+                        disabled 
+                        className="bg-muted"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        O email não pode ser alterado
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="cpf">CPF</Label>
+                      <Input 
+                        id="cpf" 
+                        type="text" 
+                        value={maskedCpf} 
+                        disabled 
+                        className="bg-muted"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        ⚠️ O CPF não pode ser alterado por segurança
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Telefone</Label>
+                      <Input 
+                        id="phone" 
+                        type="text" 
+                        placeholder="(00) 00000-0000" 
+                        value={phone} 
+                        onChange={e => setPhone(formatPhone(e.target.value))} 
+                        required 
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="service-type">Tipo de Serviço</Label>
+                      <Select value={serviceType} onValueChange={setServiceType}>
+                        <SelectTrigger id="service-type">
+                          <SelectValue placeholder="Selecione seu serviço" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="uber">Uber</SelectItem>
+                          <SelectItem value="99">99</SelectItem>
+                          <SelectItem value="indrive">inDrive</SelectItem>
+                          <SelectItem value="ifood">iFood</SelectItem>
+                          <SelectItem value="rappi">Rappi</SelectItem>
+                          <SelectItem value="loggi">Loggi</SelectItem>
+                          <SelectItem value="lalamove">Lalamove</SelectItem>
+                          <SelectItem value="delivery-much">Delivery Much</SelectItem>
+                          <SelectItem value="aiqfome">Aiqfome</SelectItem>
+                          <SelectItem value="borzo">Borzo</SelectItem>
+                          <SelectItem value="total-express">Total Express</SelectItem>
+                          <SelectItem value="mercado-livre">Mercado Livre / Mercado Envios</SelectItem>
+                          <SelectItem value="uello">Uello</SelectItem>
+                          <SelectItem value="outros">Outros</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <Button type="submit" className="w-full" disabled={isEditingProfile}>
+                      {isEditingProfile ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
             </>
           ) : (
             <div className="bg-card rounded-2xl p-8 border-2 border-primary/20 text-center">

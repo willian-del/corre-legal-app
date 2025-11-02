@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import MeuCorre from "./pages/MeuCorre";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
@@ -24,14 +25,27 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
+            
+            {/* Onboarding - apenas requer autenticação */}
+            <Route
+              path="/onboarding"
+              element={
+                <ProtectedRoute requireCompleteProfile={false} requireSubscription={false}>
+                  <Onboarding />
+                </ProtectedRoute>
+              }
+            />
+            
+            {/* Meu Corre - requer perfil completo + assinatura */}
             <Route
               path="/meu-corre"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute requireCompleteProfile={true} requireSubscription={true}>
                   <MeuCorre />
                 </ProtectedRoute>
               }
             />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
