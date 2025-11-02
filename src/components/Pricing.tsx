@@ -5,14 +5,12 @@ const Pricing = () => {
   const plans = [
     {
       name: "Bronze",
-      price: "14,90",
+      price: "60,00",
       description: "Ideal pra quem quer suporte básico",
       features: [
-        "Canal de atendimento jurídico",
-        "Orientações rápidas",
-        "Suporte via WhatsApp"
+        "Canal de Atendimento Jurídico Especializado"
       ],
-      buttonText: "Assinar Bronze",
+      buttonText: "Contratar Bronze",
       buttonVariant: "default" as const,
       checkColor: "text-primary",
       icon: Medal,
@@ -21,15 +19,13 @@ const Pricing = () => {
     },
     {
       name: "Prata",
-      price: "19,90",
+      price: "120,00",
       description: "Ideal pra quem quer mais segurança",
       features: [
-        "Tudo do Bronze",
-        "Ajuda em casos de sinistro",
-        "Suporte em acidentes",
-        "Acompanhamento de processos"
+        "Canal de Atendimento Jurídico Especializado",
+        "Suporte no Bloqueio e Reativação de Conta"
       ],
-      buttonText: "Assinar Prata",
+      buttonText: "Contratar Prata",
       buttonVariant: "default" as const,
       checkColor: "text-accent",
       icon: Medal,
@@ -39,16 +35,14 @@ const Pricing = () => {
     },
     {
       name: "Ouro",
-      price: "24,90",
+      price: "180,00",
       description: "Ideal pra quem quer rodar tranquilo e protegido",
       features: [
-        "Tudo do Prata",
-        "Monitoramento de multas",
-        "Defesa de multas",
-        "Prevenção proativa",
-        "Prioridade no atendimento"
+        "Canal de Atendimento Jurídico Especializado",
+        "Suporte no Bloqueio e Reativação de Conta",
+        "Gestão de Multas e Problemas com a CNH"
       ],
-      buttonText: "Assinar Ouro",
+      buttonText: "Contratar Ouro",
       buttonVariant: "default" as const,
       checkColor: "text-primary",
       icon: Medal,
@@ -73,7 +67,7 @@ const Pricing = () => {
             Nossos <span className="text-primary">Planos</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Escolha o plano ideal para suas necessidades e rode com tranquilidade
+            Escolha o plano ideal e garanta 6 meses de cobertura jurídica
           </p>
         </div>
 
@@ -106,7 +100,7 @@ const Pricing = () => {
                   </h3>
                   <div className="mb-3">
                     <span className="text-3xl font-bold text-foreground">R$ {plan.price}</span>
-                    <span className="text-muted-foreground">/mês</span>
+                    <span className="text-muted-foreground text-sm">por 6 meses</span>
                   </div>
                   <p className="text-muted-foreground text-sm">
                     {plan.description}
