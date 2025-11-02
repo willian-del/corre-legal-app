@@ -2,36 +2,15 @@ const Services = () => {
   const services = [
     {
       title: "Canal de Atendimento Jurídico",
-      description: "Orientação jurídica especializada para as principais situações do seu dia a dia — dentro e fora dos apps, para você e sua família. Sempre que surgir um problema ou dúvida, você recebe orientação clara sobre seus direitos e próximos passos.",
-      coverage: [
-        "Direito do Consumidor e Contratos",
-        "Família (separação, guarda, pensão e acordos)",
-        "Herança e Inventário",
-        "Moradia e Imóveis (aluguel, compra, venda)",
-        "Responsabilidade Civil e indenizações"
-      ]
+      description: "Orientação jurídica especializada para as principais situações do seu dia a dia — dentro e fora dos apps, para você e sua família. Sempre que surgir um problema ou dúvida, você recebe orientação clara sobre seus direitos e próximos passos."
     },
     {
       title: "Bloqueio e Reativação de Conta",
-      description: "Apoio para compreender o motivo do bloqueio e orientação nas etapas para solicitar reativação. Auxiliamos você a estruturar o pedido, organizar documentos e aumentar suas chances de retorno às plataformas.",
-      coverage: [
-        "Análise do caso e possível causa do bloqueio",
-        "Orientação sobre documentos, mensagens e prazos",
-        "Modelos prontos de solicitação e recurso",
-        "Acompanhamento até a conclusão do processo",
-        "Estratégias para evitar novos bloqueios"
-      ]
+      description: "Apoio para compreender o motivo do bloqueio e orientação nas etapas para solicitar reativação. Auxiliamos você a estruturar o pedido, organizar documentos e aumentar suas chances de retorno às plataformas."
     },
     {
       title: "Gestão de Multas e Problemas com a CNH",
-      description: "Orientação para avaliar, contestar e recorrer multas — protegendo sua CNH e seu direito de trabalhar. Você recebe instruções claras sobre como agir, prazos, documentos e argumentos para aumentar as chances de sucesso.",
-      coverage: [
-        "Avaliação da multa e análise de viabilidade de recurso",
-        "Modelos de defesa prontos para uso",
-        "Orientação passo a passo em cada fase do processo",
-        "Suspensão e cassação de CNH",
-        "Boas práticas para evitar novas penalidades"
-      ]
+      description: "Orientação para avaliar, contestar e recorrer multas — protegendo sua CNH e seu direito de trabalhar. Você recebe instruções claras sobre como agir, prazos, documentos e argumentos para aumentar as chances de sucesso."
     }
   ];
   return <section id="services" className="py-16 md:py-20 bg-secondary/30">
@@ -47,7 +26,7 @@ const Services = () => {
           {services.map((service, index) => (
             <div 
               key={index} 
-              className="bg-card rounded-xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col"
+              className="bg-card rounded-xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg"
             >
               {/* Título */}
               <h3 className="text-xl font-bold mb-2 text-foreground">
@@ -55,24 +34,9 @@ const Services = () => {
               </h3>
               
               {/* Description */}
-              <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {service.description}
               </p>
-              
-              {/* Coverage List */}
-              <div className="mb-3 flex-grow">
-                <p className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">
-                  Você conta com:
-                </p>
-                <ul className="space-y-1">
-                  {service.coverage.map((item, idx) => (
-                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary mt-0.5 flex-shrink-0">•</span>
-                      <span className="leading-snug">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           ))}
         </div>

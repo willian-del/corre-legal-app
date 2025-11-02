@@ -6,11 +6,14 @@ const Pricing = () => {
     {
       name: "Bronze",
       price: "14,90",
-      description: "Ideal pra quem quer suporte básico",
+      description: "Ideal para quem precisa de orientação jurídica básica",
       features: [
-        "Canal de atendimento jurídico",
-        "Orientações rápidas",
-        "Suporte via WhatsApp"
+        "Canal de Atendimento Jurídico",
+        "Direito do Consumidor e Contratos",
+        "Família (separação, guarda, pensão)",
+        "Herança e Inventário",
+        "Moradia e Imóveis",
+        "Responsabilidade Civil e indenizações"
       ],
       buttonText: "Assinar Bronze",
       buttonVariant: "default" as const,
@@ -22,12 +25,14 @@ const Pricing = () => {
     {
       name: "Prata",
       price: "19,90",
-      description: "Ideal pra quem quer mais segurança",
+      description: "Proteção completa para motoristas e entregadores",
       features: [
         "Tudo do Bronze",
-        "Ajuda em casos de sinistro",
-        "Suporte em acidentes",
-        "Acompanhamento de processos"
+        "Bloqueio e Reativação de Conta",
+        "Análise de causa do bloqueio",
+        "Modelos prontos de solicitação",
+        "Acompanhamento até a conclusão",
+        "Estratégias para evitar novos bloqueios"
       ],
       buttonText: "Assinar Prata",
       buttonVariant: "default" as const,
@@ -40,12 +45,14 @@ const Pricing = () => {
     {
       name: "Ouro",
       price: "24,90",
-      description: "Ideal pra quem quer rodar tranquilo e protegido",
+      description: "Proteção total para sua CNH e documentação",
       features: [
         "Tudo do Prata",
-        "Monitoramento de multas",
-        "Defesa de multas",
-        "Prevenção proativa",
+        "Gestão de Multas e CNH",
+        "Avaliação e análise de viabilidade",
+        "Modelos de defesa prontos",
+        "Orientação em suspensão/cassação",
+        "Boas práticas preventivas",
         "Prioridade no atendimento"
       ],
       buttonText: "Assinar Ouro",
