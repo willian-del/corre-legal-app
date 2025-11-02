@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      plan_prices: {
+        Row: {
+          active: boolean | null
+          amount_cents: number
+          created_at: string | null
+          currency: string
+          description: string | null
+          features: Json | null
+          id: string
+          plan_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          amount_cents: number
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          plan_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          amount_cents?: number
+          created_at?: string | null
+          currency?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          plan_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cpf: string | null
@@ -49,37 +85,64 @@ export type Database = {
       }
       user_subscriptions: {
         Row: {
+          alert_15_days_sent: boolean | null
+          alert_30_days_sent: boolean | null
+          alert_7_days_sent: boolean | null
+          amount_paid: number | null
           created_at: string | null
+          currency: string | null
           current_period_end: string | null
           current_period_start: string | null
+          expires_at: string | null
           id: string
+          paid_at: string | null
+          payment_method: string | null
           plan_type: string
           status: string
           stripe_customer_id: string | null
+          stripe_payment_intent_id: string | null
           stripe_subscription_id: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          alert_15_days_sent?: boolean | null
+          alert_30_days_sent?: boolean | null
+          alert_7_days_sent?: boolean | null
+          amount_paid?: number | null
           created_at?: string | null
+          currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          expires_at?: string | null
           id?: string
+          paid_at?: string | null
+          payment_method?: string | null
           plan_type: string
           status: string
           stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          alert_15_days_sent?: boolean | null
+          alert_30_days_sent?: boolean | null
+          alert_7_days_sent?: boolean | null
+          amount_paid?: number | null
           created_at?: string | null
+          currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
+          expires_at?: string | null
           id?: string
+          paid_at?: string | null
+          payment_method?: string | null
           plan_type?: string
           status?: string
           stripe_customer_id?: string | null
+          stripe_payment_intent_id?: string | null
           stripe_subscription_id?: string | null
           updated_at?: string | null
           user_id?: string
@@ -91,6 +154,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_active_subscription: {
+        Args: { _user_id: string }
+        Returns: {
+          amount_paid: number
+          days_remaining: number
+          expires_at: string
+          id: string
+          payment_method: string
+          plan_type: string
+          status: string
+        }[]
+      }
+      has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       hash_cpf: { Args: { cpf_plain: string }; Returns: string }
     }
     Enums: {
