@@ -70,6 +70,31 @@ serve(async (req) => {
     });
 
     // Create checkout session for one-time payment (without authentication)
+    // Determine a robust origin for redirect URLs
+    const originHeader = req.headers.get("origin") || "";
+    const refererHeader = req.headers.get("referer") || "";
+    const envOrigin = Deno.env.get("ALLOWED_ORIGIN") || "";
+
+    let origin = "";
+    if (/^https?:\/\//.test(originHeader)) {
+      origin = originHeader;
+    } else if (refererHeader) {
+      try {
+        origin = new URL(refererHeader).origin;
+      } catch (_) {
+        // ignore URL parse error
+      }
+    }
+    if (!origin && /^https?:\/\//.test(envOrigin)) {
+      origin = envOrigin;
+    }
+    if (!origin) {
+      throw new Error("No valid origin found. Set ALLOWED_ORIGIN with a full https URL.");
+    }
+
+    const base = origin.replace(/\/$/, "");
+    logStep("Using redirect origin", { origin: base });
+
     const session = await stripe.checkout.sessions.create({
       line_items: [
         {
@@ -78,8 +103,8 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success`,
-      cancel_url: `${req.headers.get("origin")}/#pricing`,
+      success_url: `${base}/payment-success`,
+      cancel_url: `${base}/#pricing`,
       customer_creation: 'always',
     });
 
