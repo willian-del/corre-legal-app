@@ -28,7 +28,7 @@ const Services = () => {
       coverage: [
         "Avaliação da multa e viabilidade de recurso",
         "Modelos de defesa prontos para uso",
-        "Orientação passo a passo em cada fase do processo",
+        "Orientação em cada fase do processo",
         "Suspensão e cassação de CNH",
         "Boas práticas para evitar novas penalidades"
       ]
