@@ -3,14 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Package, FileText, AlertCircle } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw } from 'lucide-react';
 import Logo from '@/components/Logo';
+import { PLAN_DETAILS } from '@/lib/stripe-config';
 
 interface UserSubscription {
+  id: string;
   plan_type: string;
   status: string;
-  current_period_end: string | null;
+  expires_at: string;
+  days_remaining: number;
+  payment_method: string;
+  amount_paid: number;
 }
 
 const MeuCorre = () => {
@@ -26,21 +30,24 @@ const MeuCorre = () => {
   }, [user]);
 
   const fetchSubscription = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select('plan_type, status, current_period_end')
-        .eq('user_id', user?.id)
-        .eq('status', 'active')
-        .maybeSingle();
+    if (!user) return;
 
-      if (error) throw error;
-      setSubscription(data);
-    } catch (error) {
+    const { data, error } = await supabase.rpc('get_active_subscription', {
+      _user_id: user.id
+    });
+
+    if (error) {
       console.error('Erro ao buscar assinatura:', error);
-    } finally {
       setLoading(false);
+      return;
     }
+
+    if (data && data.length > 0) {
+      setSubscription(data[0]);
+    } else {
+      setSubscription(null);
+    }
+    setLoading(false);
   };
 
   const handleSignOut = async () => {
@@ -50,6 +57,11 @@ const MeuCorre = () => {
 
   const handleSubscribe = () => {
     navigate('/#pricing');
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    fetchSubscription();
   };
 
   if (loading) {
@@ -80,130 +92,124 @@ const MeuCorre = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
-            Meu <span className="text-primary">Corre</span>
-          </h1>
-          <p className="text-muted-foreground mb-8">
-            Bem-vindo à sua área exclusiva
-          </p>
-
-          {/* No Subscription Alert */}
-          {!subscription && (
-            <Card className="mb-8 border-primary/50">
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <AlertCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
-                  <div className="flex-1">
-                    <CardTitle>Você ainda não possui um plano ativo</CardTitle>
-                    <CardDescription className="mt-2">
-                      Para ter acesso completo à área do cliente e todos os benefícios do Corre Legal, 
-                      você precisa assinar um de nossos planos.
-                    </CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={handleSubscribe} className="gap-2">
-                  <Package size={18} />
-                  Ver Planos Disponíveis
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* User Info Card */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Suas Informações
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
-                  <p className="font-medium">{user?.email}</p>
-                </div>
-                {user?.user_metadata?.full_name && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Nome</p>
-                    <p className="font-medium">{user.user_metadata.full_name}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {subscription && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    Seu Plano
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Plano Atual</p>
-                    <p className="font-medium capitalize">{subscription.plan_type}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Status</p>
-                    <p className="font-medium">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
-                        Ativo
-                      </span>
-                    </p>
-                  </div>
-                  {subscription.current_period_end && (
-                    <div>
-                      <p className="text-sm text-muted-foreground">Renovação</p>
-                      <p className="font-medium">
-                        {new Date(subscription.current_period_end).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
+              Meu <span className="text-primary">Corre</span>
+            </h1>
+            <p className="text-muted-foreground">
+              Bem-vindo, {user?.user_metadata?.full_name || user?.email}
+            </p>
           </div>
 
-          {/* Coming Soon Features */}
-          {subscription && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Funcionalidades
-                </CardTitle>
-                <CardDescription>
-                  Recursos disponíveis em breve
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-secondary/50 rounded-lg">
-                    <h4 className="font-semibold mb-1">Atendimentos</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Abrir e acompanhar chamados
+          {subscription ? (
+            <>
+              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 border-2 border-primary/20">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-8 h-8 text-primary" />
+                    <div>
+                      <h2 className="text-2xl font-bold text-foreground">Plano Ativo</h2>
+                      <p className="text-muted-foreground">Você está protegido!</p>
+                    </div>
+                  </div>
+                  <Button
+                    onClick={handleRefresh}
+                    variant="outline"
+                    size="sm"
+                    disabled={loading}
+                  >
+                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    Atualizar
+                  </Button>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4 mb-6">
+                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Shield className="w-5 h-5 text-primary" />
+                      <span className="text-sm text-muted-foreground">Plano</span>
+                    </div>
+                    <p className="text-xl font-bold text-foreground capitalize">
+                      {PLAN_DETAILS[subscription.plan_type as keyof typeof PLAN_DETAILS]?.name || subscription.plan_type}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      R$ {subscription.amount_paid.toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-4 bg-secondary/50 rounded-lg">
-                    <h4 className="font-semibold mb-1">Documentos</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Upload e gerenciamento de arquivos
+
+                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-5 h-5 text-primary" />
+                      <span className="text-sm text-muted-foreground">Validade</span>
+                    </div>
+                    <p className="text-xl font-bold text-foreground">
+                      {new Date(subscription.expires_at).toLocaleDateString('pt-BR')}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {subscription.days_remaining} dias restantes
                     </p>
                   </div>
-                  <div className="p-4 bg-secondary/50 rounded-lg">
-                    <h4 className="font-semibold mb-1">Histórico</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Ver histórico de atendimentos
+
+                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CreditCard className="w-5 h-5 text-primary" />
+                      <span className="text-sm text-muted-foreground">Pagamento</span>
+                    </div>
+                    <p className="text-lg font-bold text-foreground capitalize">
+                      {subscription.payment_method === 'credit_card' ? 'Cartão' : subscription.payment_method}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Status: Ativo
                     </p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                <Button
+                  onClick={handleSubscribe}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Renovar Plano
+                </Button>
+              </div>
+
+              <div className="bg-card rounded-2xl p-8 border border-border">
+                <h3 className="text-xl font-bold text-foreground mb-4">
+                  Recursos em Desenvolvimento
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    "Central de Atendimento Jurídico",
+                    "Histórico de Solicitações",
+                    "Documentos e Contratos",
+                    "Chat com Suporte",
+                  ].map((feature, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg"
+                    >
+                      <Clock className="w-5 h-5 text-primary" />
+                      <span className="text-muted-foreground">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="bg-card rounded-2xl p-8 border-2 border-primary/20 text-center">
+              <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-foreground mb-2">
+                Você ainda não possui um plano ativo
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Para ter acesso completo à área do cliente e todos os benefícios do Corre Legal,
+                você precisa contratar um de nossos planos.
+              </p>
+              <Button onClick={handleSubscribe} size="lg">
+                Ver Planos Disponíveis
+              </Button>
+            </div>
           )}
         </div>
       </main>

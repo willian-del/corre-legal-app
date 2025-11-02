@@ -1,7 +1,18 @@
 import { Check, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { STRIPE_PRICES, type PlanType } from "@/lib/stripe-config";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Pricing = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+
   const plans = [
     {
       name: "Bronze",
@@ -55,10 +66,41 @@ const Pricing = () => {
     }
   ];
 
-  const handleSubscribe = () => {
-    const element = document.getElementById("contact");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+  const handleSubscribe = async (planType: PlanType) => {
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Faça login para contratar um plano",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const priceId = STRIPE_PRICES[planType];
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { price_id: priceId }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      } else {
+        throw new Error("No checkout URL received");
+      }
+    } catch (error) {
+      console.error("Error creating checkout:", error);
+      toast({
+        title: "Erro ao processar",
+        description: error instanceof Error ? error.message : "Tente novamente",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -119,15 +161,16 @@ const Pricing = () => {
                 </ul>
 
                 <Button
-                  onClick={handleSubscribe}
+                  onClick={() => handleSubscribe(plan.name.toLowerCase() as PlanType)}
                   variant={plan.highlighted ? "default" : "default"}
+                  disabled={loading}
                   className={`w-full text-sm py-4 ${
                     plan.highlighted
                       ? "bg-accent hover:bg-accent/90 text-accent-foreground"
                       : "bg-primary hover:bg-primary/90 text-primary-foreground"
                   }`}
                 >
-                  {plan.buttonText}
+                  {loading ? "Processando..." : plan.buttonText}
                 </Button>
               </div>
             );
