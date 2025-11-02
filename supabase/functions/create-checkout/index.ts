@@ -35,9 +35,23 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { price_id } = await req.json();
-    if (!price_id) throw new Error("price_id is required");
-    logStep("Received price_id", { price_id });
+    const { plan_type } = await req.json();
+    if (!plan_type) throw new Error("plan_type is required");
+    logStep("Received plan_type", { plan_type });
+
+    // Get price IDs from environment variables
+    const priceIds = {
+      bronze: Deno.env.get("STRIPE_PRICE_BRONZE"),
+      prata: Deno.env.get("STRIPE_PRICE_PRATA"),
+      ouro: Deno.env.get("STRIPE_PRICE_OURO")
+    };
+
+    const price_id = priceIds[plan_type as keyof typeof priceIds];
+    if (!price_id) {
+      logStep("ERROR: Price ID not found for plan", { plan_type });
+      throw new Error(`Price ID not configured for plan: ${plan_type}`);
+    }
+    logStep("Price ID found", { plan_type, price_id });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",

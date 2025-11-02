@@ -78,22 +78,20 @@ serve(async (req) => {
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
       const priceId = lineItems.data[0]?.price?.id;
       
-      // Map price_id to plan_type
-      const { data: planPrice } = await supabaseClient
-        .from('plan_prices')
-        .select('plan_type')
-        .eq('active', true)
-        .single();
+      // Get price IDs from environment variables to determine plan type
+      const priceIds = {
+        bronze: Deno.env.get("STRIPE_PRICE_BRONZE"),
+        prata: Deno.env.get("STRIPE_PRICE_PRATA"),
+        ouro: Deno.env.get("STRIPE_PRICE_OURO")
+      };
 
       let planType = 'bronze'; // default
-      // You'll need to match the price_id to plan_type based on your Stripe products
-      // For now, we'll check the amount to determine the plan
-      const amountTotal = session.amount_total || 0;
-      if (amountTotal === 18000) planType = 'ouro';
-      else if (amountTotal === 12000) planType = 'prata';
-      else if (amountTotal === 6000) planType = 'bronze';
+      if (priceId === priceIds.ouro) planType = 'ouro';
+      else if (priceId === priceIds.prata) planType = 'prata';
+      else if (priceId === priceIds.bronze) planType = 'bronze';
 
-      logStep("Determined plan type", { planType, amountTotal });
+      const amountTotal = session.amount_total || 0;
+      logStep("Determined plan type", { planType, priceId, amountTotal });
 
       // Calculate expiration date (6 months from now)
       const expiresAt = new Date();

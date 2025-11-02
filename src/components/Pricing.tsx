@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { STRIPE_PRICES, type PlanType } from "@/lib/stripe-config";
+import { type PlanType } from "@/lib/stripe-config";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -79,10 +79,8 @@ const Pricing = () => {
 
     setLoading(true);
     try {
-      const priceId = STRIPE_PRICES[planType];
-      
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { price_id: priceId }
+        body: { plan_type: planType }
       });
 
       if (error) throw error;
