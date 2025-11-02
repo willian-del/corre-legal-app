@@ -8,7 +8,7 @@ const Services = () => {
         "Família (separação, guarda, pensão e acordos)",
         "Herança e Inventário",
         "Moradia e Imóveis (aluguel, compra, venda)",
-        "Responsabilidade Civil e indenizações"
+        "Responsabilidade Civil (acidentes e indenizações)"
       ]
     },
     {
