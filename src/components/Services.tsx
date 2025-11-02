@@ -47,24 +47,28 @@ const Services = () => {
           {services.map((service, index) => (
             <div 
               key={index} 
-              className="bg-card rounded-xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col"
+              className="bg-card rounded-xl border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-lg flex flex-col overflow-hidden"
             >
-              {/* Título */}
-              <h3 className="text-xl font-bold mb-2 text-foreground">
-                {service.title}
-              </h3>
+              {/* CAIXA SUPERIOR - Informações principais */}
+              <div className="p-6 pb-5">
+                <h3 className="text-xl font-bold mb-3 text-foreground">
+                  {service.title}
+                </h3>
+                
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {service.description}
+                </p>
+              </div>
               
-              {/* Description */}
-              <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                {service.description}
-              </p>
+              {/* SEPARADOR */}
+              <div className="border-t border-border/50"></div>
               
-              {/* Coverage List */}
-              <div className="mb-3 flex-grow">
-                <p className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">
+              {/* CAIXA INFERIOR - Benefícios */}
+              <div className="p-6 pt-5 bg-muted/30">
+                <p className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
                   Você conta com:
                 </p>
-                <ul className="space-y-1">
+                <ul className="space-y-2">
                   {service.coverage.map((item, idx) => (
                     <li key={idx} className="text-[11px] text-muted-foreground flex items-start gap-2">
                       <span className="text-primary mt-0.5 flex-shrink-0">•</span>
