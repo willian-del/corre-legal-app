@@ -8,6 +8,7 @@ const Pricing = () => {
       price: "60,00",
       description: "Ideal pra quem quer suporte básico",
       features: [
+        "6 meses de cobertura",
         "Canal de Atendimento Jurídico Especializado"
       ],
       buttonText: "Contratar Bronze",
@@ -22,6 +23,7 @@ const Pricing = () => {
       price: "120,00",
       description: "Ideal pra quem quer mais segurança",
       features: [
+        "6 meses de cobertura",
         "Canal de Atendimento Jurídico Especializado",
         "Suporte no Bloqueio e Reativação de Conta"
       ],
@@ -38,6 +40,7 @@ const Pricing = () => {
       price: "180,00",
       description: "Ideal pra quem quer rodar tranquilo e protegido",
       features: [
+        "6 meses de cobertura",
         "Canal de Atendimento Jurídico Especializado",
         "Suporte no Bloqueio e Reativação de Conta",
         "Gestão de Multas e Problemas com a CNH"
@@ -77,7 +80,7 @@ const Pricing = () => {
             return (
               <div
                 key={index}
-                className={`bg-card rounded-2xl p-6 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative ${
+                className={`bg-card rounded-2xl p-5 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative ${
                   plan.highlighted
                     ? "border-2 border-primary lg:scale-105 shadow-elevated"
                     : "border border-border hover:border-primary/50"
@@ -89,29 +92,28 @@ const Pricing = () => {
                   </div>
                 )}
 
-                <div className="text-center mb-4">
+                <div className="text-center mb-3">
                   {Icon && (
-                    <div className="flex justify-center mb-3">
-                      <Icon className={`w-10 h-10 ${plan.iconColor}`} />
+                    <div className="flex justify-center mb-2">
+                      <Icon className={`w-8 h-8 ${plan.iconColor}`} />
                     </div>
                   )}
-                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                  <h3 className="text-xl font-bold text-foreground mb-1">
                     {plan.name}
                   </h3>
-                  <div className="mb-3">
-                    <span className="text-3xl font-bold text-foreground">R$ {plan.price}</span>
-                    <span className="text-muted-foreground text-sm">por 6 meses</span>
+                  <div className="mb-2">
+                    <span className="text-2xl font-bold text-foreground">R$ {plan.price}</span>
                   </div>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-muted-foreground text-xs">
                     {plan.description}
                   </p>
                 </div>
 
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-2 mb-5">
                   {plan.features.map((feature, featureIndex) => (
                     <li key={featureIndex} className="flex items-start gap-3">
-                      <Check className={`w-5 h-5 ${plan.checkColor} flex-shrink-0 mt-0.5`} />
-                      <span className="text-muted-foreground text-sm leading-relaxed">{feature}</span>
+                      <Check className={`w-4 h-4 ${plan.checkColor} flex-shrink-0 mt-0.5`} />
+                      <span className="text-muted-foreground text-xs leading-relaxed">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -119,7 +121,7 @@ const Pricing = () => {
                 <Button
                   onClick={handleSubscribe}
                   variant={plan.highlighted ? "default" : "default"}
-                  className={`w-full text-base py-5 ${
+                  className={`w-full text-sm py-4 ${
                     plan.highlighted
                       ? "bg-accent hover:bg-accent/90 text-accent-foreground"
                       : "bg-primary hover:bg-primary/90 text-primary-foreground"
