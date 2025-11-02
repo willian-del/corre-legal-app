@@ -66,7 +66,7 @@ const Services = () => {
                 </p>
                 <ul className="space-y-1">
                   {service.coverage.map((item, idx) => (
-                    <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
+                    <li key={idx} className="text-[11px] text-muted-foreground flex items-start gap-2">
                       <span className="text-primary mt-0.5 flex-shrink-0">•</span>
                       <span className="leading-snug">{item}</span>
                     </li>
