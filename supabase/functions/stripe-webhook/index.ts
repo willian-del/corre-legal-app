@@ -25,6 +25,32 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Email validation functions
+const DISPOSABLE_EMAIL_DOMAINS = [
+  'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'mailinator.com',
+  '10minutemail.com', 'trashmail.com', 'yopmail.com', 'maildrop.cc'
+];
+
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+const isDisposableEmail = (email: string): boolean => {
+  const domain = email.split('@')[1]?.toLowerCase();
+  return DISPOSABLE_EMAIL_DOMAINS.includes(domain);
+};
+
+const validateEmail = (email: string): { valid: boolean; reason?: string } => {
+  if (!isValidEmail(email)) {
+    return { valid: false, reason: 'Invalid email format' };
+  }
+  if (isDisposableEmail(email)) {
+    return { valid: false, reason: 'Disposable email addresses are not allowed' };
+  }
+  return { valid: true };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -76,6 +102,18 @@ serve(async (req) => {
       if (!customerEmail) {
         throw new Error("No customer email found in session");
       }
+
+      // Validate email
+      const emailValidation = validateEmail(customerEmail);
+      if (!emailValidation.valid) {
+        logStep("Email validation failed", { 
+          email: maskEmail(customerEmail), 
+          reason: emailValidation.reason 
+        });
+        throw new Error(`Email validation failed: ${emailValidation.reason}`);
+      }
+      
+      logStep("Email validated", { email: maskEmail(customerEmail) });
 
       // Get or create user by email
       const { data: userData, error: userError } = await supabaseClient.auth.admin.listUsers();

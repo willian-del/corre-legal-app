@@ -38,6 +38,23 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Authentication check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      logStep("ERROR: No authorization header");
+      throw new Error("Authentication required");
+    }
+    
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      logStep("ERROR: Invalid authentication", { error: authError?.message });
+      throw new Error("Invalid authentication");
+    }
+    
+    logStep("User authenticated", { userId: user.id });
+
     // Input validation
     const VALID_PLANS = ['bronze', 'prata', 'ouro'] as const;
     type ValidPlan = typeof VALID_PLANS[number];

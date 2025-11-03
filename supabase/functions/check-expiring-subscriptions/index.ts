@@ -16,6 +16,28 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // API key authentication check
+  const apiKey = req.headers.get("x-api-key");
+  const expectedApiKey = Deno.env.get("CRON_API_KEY");
+  
+  if (!expectedApiKey) {
+    logStep("ERROR: CRON_API_KEY not configured");
+    return new Response(JSON.stringify({ error: "Server configuration error" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
+  
+  if (!apiKey || apiKey !== expectedApiKey) {
+    logStep("ERROR: Invalid or missing API key");
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+    });
+  }
+  
+  logStep("API key validated");
+
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
