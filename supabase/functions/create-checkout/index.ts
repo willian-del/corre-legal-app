@@ -132,7 +132,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${base}/payment-success`,
+      success_url: `${base}/payment-success?session_id={CHECKOUT_SESSION_ID}&first_purchase=true`,
       cancel_url: `${base}/#pricing`,
       customer_creation: 'always',
     });

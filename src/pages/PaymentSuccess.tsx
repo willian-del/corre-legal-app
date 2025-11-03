@@ -1,15 +1,65 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const PaymentSuccess = () => {
+  const [countdown, setCountdown] = useState(5);
+  const [redirectTo, setRedirectTo] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const isFirstPurchase = searchParams.get('first_purchase') === 'true';
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Determine redirect destination
+  useEffect(() => {
+    const determineRedirect = async () => {
+      if (!user) {
+        setRedirectTo('/auth');
+        return;
+      }
+
+      // Check if profile is complete (has CPF)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('cpf_hash')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile?.cpf_hash) {
+        setRedirectTo('/onboarding');
+      } else {
+        setRedirectTo('/meu-corre');
+      }
+    };
+
+    determineRedirect();
+  }, [user]);
+
+  // Automatic redirect countdown
+  useEffect(() => {
+    if (!redirectTo) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate(redirectTo);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [redirectTo, navigate]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -37,12 +87,26 @@ const PaymentSuccess = () => {
                 Próximos passos:
               </p>
               <ol className="text-sm text-muted-foreground text-left space-y-2 max-w-md mx-auto">
-                <li>1. Se esta é sua primeira compra, verifique seu email para receber suas credenciais de acesso</li>
+                <li>1. {isFirstPurchase ? 'Verifique seu email para receber suas credenciais de acesso' : 'Seu plano foi renovado com sucesso'}</li>
                 <li>2. Faça login na área de cliente</li>
-                <li>3. Complete seu cadastro com CPF e telefone (apenas no primeiro acesso)</li>
-                <li>4. Aproveite todos os benefícios do seu plano!</li>
+                <li>3. {isFirstPurchase ? 'Complete seu cadastro com CPF e telefone' : 'Aproveite todos os benefícios do seu plano!'}</li>
+                <li>4. {isFirstPurchase ? 'Altere sua senha temporária por uma segura' : 'Consulte os detalhes da sua cobertura no painel'}</li>
               </ol>
+              
+              {isFirstPurchase && (
+                <p className="text-xs text-muted-foreground mt-3 pt-3 border-t border-primary/20">
+                  💡 Se você não receber o email em 5 minutos, verifique sua pasta de spam ou lixo eletrônico.
+                </p>
+              )}
             </div>
+
+            {redirectTo && countdown > 0 && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                <p className="text-sm text-center text-primary">
+                  Redirecionando em <strong>{countdown}</strong> segundo{countdown !== 1 ? 's' : ''}...
+                </p>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
               <Button 

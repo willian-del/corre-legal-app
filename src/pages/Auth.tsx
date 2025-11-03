@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -28,6 +30,11 @@ const Auth = () => {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginErrors, setLoginErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Password reset
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetEmailSent, setResetEmailSent] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -61,6 +68,28 @@ const Auth = () => {
     if (!error) {
       const redirectTo = searchParams.get('redirect') || '/';
       navigate(redirectTo);
+    }
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail) {
+      toast.error('Por favor, digite seu email');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth?reset=true`
+    });
+    setIsSubmitting(false);
+
+    if (!error) {
+      setResetEmailSent(true);
+      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
+    } else {
+      toast.error('Erro ao enviar email de recuperação. Verifique se o email está correto.');
     }
   };
 
@@ -102,47 +131,113 @@ const Auth = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Fazer Login</CardTitle>
+            <CardTitle>{showPasswordReset ? 'Recuperar Senha' : 'Fazer Login'}</CardTitle>
             <CardDescription>
-              Entre com suas credenciais recebidas por email
+              {showPasswordReset 
+                ? 'Digite seu email para receber instruções de recuperação' 
+                : 'Entre com suas credenciais recebidas por email'
+              }
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="login-email">Email</Label>
-                <Input
-                  id="login-email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={loginEmail}
-                  onChange={e => setLoginEmail(e.target.value)}
-                  required
-                />
-                {loginErrors.email && (
-                  <p className="text-sm text-destructive">{loginErrors.email}</p>
-                )}
-              </div>
+            {showPasswordReset ? (
+              <>
+                {resetEmailSent ? (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
+                      <p className="text-sm text-green-800 dark:text-green-200">
+                        ✅ Email enviado com sucesso!<br />
+                        Verifique sua caixa de entrada e siga as instruções.
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      className="w-full" 
+                      onClick={() => {
+                        setShowPasswordReset(false);
+                        setResetEmailSent(false);
+                        setResetEmail('');
+                      }}
+                    >
+                      Voltar para o Login
+                    </Button>
+                  </div>
+                ) : (
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={resetEmail}
+                        onChange={e => setResetEmail(e.target.value)}
+                        required
+                      />
+                    </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="login-password">Senha</Label>
-                <Input
-                  id="login-password"
-                  type="password"
-                  placeholder="••••••"
-                  value={loginPassword}
-                  onChange={e => setLoginPassword(e.target.value)}
-                  required
-                />
-                {loginErrors.password && (
-                  <p className="text-sm text-destructive">{loginErrors.password}</p>
-                )}
-              </div>
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      {isSubmitting ? 'Enviando...' : 'Enviar Email de Recuperação'}
+                    </Button>
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Entrando...' : 'Entrar'}
-              </Button>
-            </form>
+                    <Button 
+                      type="button"
+                      variant="ghost" 
+                      className="w-full" 
+                      onClick={() => setShowPasswordReset(false)}
+                    >
+                      Voltar para o Login
+                    </Button>
+                  </form>
+                )}
+              </>
+            ) : (
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={loginEmail}
+                    onChange={e => setLoginEmail(e.target.value)}
+                    required
+                  />
+                  {loginErrors.email && (
+                    <p className="text-sm text-destructive">{loginErrors.email}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label htmlFor="login-password">Senha</Label>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="text-xs h-auto p-0"
+                      onClick={() => setShowPasswordReset(true)}
+                    >
+                      Esqueci minha senha
+                    </Button>
+                  </div>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="••••••"
+                    value={loginPassword}
+                    onChange={e => setLoginPassword(e.target.value)}
+                    required
+                  />
+                  {loginErrors.password && (
+                    <p className="text-sm text-destructive">{loginErrors.password}</p>
+                  )}
+                </div>
+
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? 'Entrando...' : 'Entrar'}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
 

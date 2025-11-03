@@ -143,15 +143,37 @@ serve(async (req) => {
         }
         
         user = newUserData.user;
+        const isNewUser = true;
         logStep("User account created", { userId: user.id, email: maskEmail(customerEmail) });
         
-        // TODO: Send email with temporary password
-        // This should be implemented with email service (Resend, etc)
-        logStep("TODO: Send welcome email with credentials", { 
-          email: maskEmail(customerEmail),
-          tempPassword: '***' 
-        });
+        // Send confirmation email with credentials for new users
+        try {
+          const emailData = {
+            email: customerEmail,
+            planType,
+            amountPaid: amountTotal,
+            expiresAt: expiresAt.toISOString(),
+            isNewUser: true,
+            temporaryPassword: tempPassword
+          };
+
+          logStep("Sending confirmation email for new user");
+          const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
+            body: emailData
+          });
+
+          if (emailError) {
+            logStep("ERROR sending confirmation email", { error: emailError });
+            // Don't fail the webhook if email fails, just log
+          } else {
+            logStep("Confirmation email sent successfully");
+          }
+        } catch (emailError) {
+          logStep("EXCEPTION sending confirmation email", { error: emailError });
+          // Continue even if email fails
+        }
       } else {
+        const isNewUser = false;
         logStep("Found existing user", { userId: user.id, email: maskEmail(customerEmail) });
       }
 
@@ -236,6 +258,35 @@ serve(async (req) => {
         planType, 
         expiresAt: expiresAt.toISOString() 
       });
+
+      // Send confirmation email for existing users (renewal)
+      const isExistingUser = userData.users.find(u => u.email === customerEmail) !== undefined;
+      if (isExistingUser) {
+        try {
+          const emailData = {
+            email: customerEmail,
+            planType,
+            amountPaid: amountTotal,
+            expiresAt: expiresAt.toISOString(),
+            isNewUser: false
+          };
+
+          logStep("Sending confirmation email for existing user");
+          const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
+            body: emailData
+          });
+
+          if (emailError) {
+            logStep("ERROR sending confirmation email", { error: emailError });
+            // Don't fail the webhook if email fails
+          } else {
+            logStep("Confirmation email sent successfully");
+          }
+        } catch (emailError) {
+          logStep("EXCEPTION sending confirmation email", { error: emailError });
+          // Continue even if email fails
+        }
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {
