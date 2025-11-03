@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
 
 const PaymentSuccess = () => {
@@ -12,11 +13,14 @@ const PaymentSuccess = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center">
-        <div className="bg-card rounded-2xl p-8 shadow-elevated border border-border">
+      <div className="max-w-md w-full text-center animate-in fade-in duration-500">
+        <Badge variant="default" className="mb-4 shadow-glow">
+          Sucesso
+        </Badge>
+        <div className="bg-gradient-to-b from-card to-card/50 rounded-2xl p-8 shadow-elevated border border-primary/20">
           <div className="space-y-6 text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-12 h-12 text-green-600" />
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto shadow-glow">
+              <CheckCircle className="w-12 h-12 text-primary" />
             </div>
             
             <div>
@@ -28,11 +32,11 @@ const PaymentSuccess = () => {
               </p>
             </div>
 
-            <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
-                <strong>Próximos passos:</strong>
+            <div className="bg-gradient-to-br from-secondary/50 to-secondary/30 border border-primary/30 rounded-lg p-4">
+              <p className="text-sm text-primary mb-2 font-semibold">
+                Próximos passos:
               </p>
-              <ol className="text-sm text-blue-800 dark:text-blue-200 text-left space-y-2 max-w-md mx-auto">
+              <ol className="text-sm text-muted-foreground text-left space-y-2 max-w-md mx-auto">
                 <li>1. Se esta é sua primeira compra, verifique seu email para receber suas credenciais de acesso</li>
                 <li>2. Faça login na área de cliente</li>
                 <li>3. Complete seu cadastro com CPF e telefone (apenas no primeiro acesso)</li>
@@ -44,6 +48,7 @@ const PaymentSuccess = () => {
               <Button 
                 onClick={() => navigate('/auth')}
                 size="lg"
+                className="shadow-glow hover:shadow-glow"
               >
                 Fazer Login
               </Button>
@@ -51,6 +56,7 @@ const PaymentSuccess = () => {
                 onClick={() => navigate('/')}
                 variant="outline"
                 size="lg"
+                className="border-primary/30 hover:bg-primary/10"
               >
                 Voltar ao Início
               </Button>
