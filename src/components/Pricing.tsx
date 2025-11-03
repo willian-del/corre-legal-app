@@ -11,7 +11,7 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const plans = [
     {
@@ -67,32 +67,80 @@ const Pricing = () => {
   ];
 
   const handleSubscribe = async (planType: PlanType) => {
-    setLoading(true);
+    setLoadingPlan(planType);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: { plan_type: planType }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Detectar erro de configuração de Price ID
+        if (error.message?.includes('INVALID_PRICE_ID')) {
+          throw new Error('CONFIG_ERROR');
+        }
+        throw error;
+      }
 
       if (data?.url) {
-        window.open(data.url, '_blank');
+        const newWindow = window.open(data.url, '_blank');
+        
+        // Detectar se o pop-up foi bloqueado
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+          toast({
+            title: "Pop-up bloqueado",
+            description: "Por favor, permita pop-ups para este site e tente novamente.",
+            variant: "destructive",
+            action: (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => window.open(data.url, '_blank')}
+              >
+                Tentar novamente
+              </Button>
+            ),
+          });
+          return;
+        }
+        
+        toast({
+          title: "Redirecionando para pagamento",
+          description: "Você será direcionado para o Stripe para finalizar o pagamento.",
+        });
       } else {
         throw new Error("No checkout URL received");
       }
-    } catch (error) {
-      // Log completo apenas para debug (não em produção)
+    } catch (error: any) {
       if (import.meta.env.DEV) {
         console.error("Error creating checkout:", error);
       }
       
+      let title = "Erro ao processar pagamento";
+      let description = "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente.";
+      
+      if (error.message === 'CONFIG_ERROR') {
+        title = "Erro de configuração";
+        description = "Há um problema na configuração dos planos. Por favor, entre em contato com o suporte (Código: CONFIG_PRICE_ID_INVALID).";
+      } else if (error.message?.includes('Network')) {
+        description = "Problema de conexão. Verifique sua internet e tente novamente.";
+      }
+      
       toast({
-        title: "Erro ao processar pagamento",
-        description: "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente ou entre em contato com o suporte.",
+        title,
+        description,
         variant: "destructive",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => handleSubscribe(planType)}
+          >
+            Tentar novamente
+          </Button>
+        ),
       });
     } finally {
-      setLoading(false);
+      setLoadingPlan(null);
     }
   };
 
@@ -155,14 +203,16 @@ const Pricing = () => {
                 <Button
                   onClick={() => handleSubscribe(plan.name.toLowerCase() as PlanType)}
                   variant={plan.highlighted ? "default" : "default"}
-                  disabled={loading}
+                  disabled={loadingPlan !== null}
                   className={`w-full text-sm py-4 ${
                     plan.highlighted
                       ? "bg-accent hover:bg-accent/90 text-accent-foreground"
                       : "bg-primary hover:bg-primary/90 text-primary-foreground"
                   }`}
                 >
-                  {loading ? "Processando..." : plan.buttonText}
+                  {loadingPlan === plan.name.toLowerCase() 
+                    ? "Processando..." 
+                    : plan.buttonText}
                 </Button>
               </div>
             );

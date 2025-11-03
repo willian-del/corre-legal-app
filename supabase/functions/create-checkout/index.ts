@@ -63,7 +63,14 @@ serve(async (req) => {
       logStep("ERROR: Price ID not found for plan", { plan_type });
       throw new Error(`Price ID not configured for plan: ${plan_type}`);
     }
-    logStep("Price ID found", { plan_type, price_id: maskPriceId(price_id) });
+    
+    // Validate that it's a valid Stripe Price ID
+    if (!price_id.startsWith('price_')) {
+      logStep("ERROR: Invalid Price ID format", { plan_type, price_id: maskPriceId(price_id) });
+      throw new Error(`INVALID_PRICE_ID: Configured value for ${plan_type} is not a valid Stripe Price ID (expected price_...)`);
+    }
+    
+    logStep("Price ID found and validated", { plan_type, price_id: maskPriceId(price_id) });
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -76,24 +83,29 @@ serve(async (req) => {
     const envOrigin = Deno.env.get("ALLOWED_ORIGIN") || "";
 
     let origin = "";
+    let originSource = "";
+    
     if (/^https?:\/\//.test(originHeader)) {
       origin = originHeader;
+      originSource = "Origin header";
     } else if (refererHeader) {
       try {
         origin = new URL(refererHeader).origin;
+        originSource = "Referer header";
       } catch (_) {
         // ignore URL parse error
       }
     }
     if (!origin && /^https?:\/\//.test(envOrigin)) {
       origin = envOrigin;
+      originSource = "ALLOWED_ORIGIN env";
     }
     if (!origin) {
       throw new Error("No valid origin found. Set ALLOWED_ORIGIN with a full https URL.");
     }
 
     const base = origin.replace(/\/$/, "");
-    logStep("Using redirect origin", { origin: base });
+    logStep("Using redirect origin", { origin: base, source: originSource, plan_type });
 
     const session = await stripe.checkout.sessions.create({
       line_items: [
