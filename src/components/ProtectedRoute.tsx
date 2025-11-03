@@ -77,7 +77,22 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
             Você precisa contratar um plano ativo para acessar esta área.
             Escolha o plano ideal para você e comece a usar todos os benefícios do Corre Legal.
           </p>
-          <Button onClick={() => navigate('/#pricing')} size="lg" className="w-full mb-3">
+          <Button 
+            onClick={() => {
+              navigate('/');
+              setTimeout(() => {
+                const pricingSection = document.getElementById('pricing');
+                if (pricingSection) {
+                  pricingSection.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                  });
+                }
+              }, 100);
+            }} 
+            size="lg" 
+            className="w-full mb-3"
+          >
             Ver Planos Disponíveis
           </Button>
           <Button onClick={() => navigate('/')} variant="ghost" className="w-full">
