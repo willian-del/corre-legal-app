@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import heroImage from "@/assets/hero-image.jpg";
 const Hero = () => {
-  const scrollToContact = () => {
-    const element = document.getElementById("contact");
+  const scrollToPricing = () => {
+    const element = document.getElementById("pricing");
     if (element) {
       element.scrollIntoView({
-        behavior: "smooth"
+        behavior: "smooth",
+        block: "start"
       });
     }
   };
@@ -21,7 +22,7 @@ const Hero = () => {
             Seu parceiro legal para o <span className="text-primary">corre de todo dia</span>
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">Acolhimento jurídico para motoristas de aplicativo e entregadores</p>
-          <Button size="lg" onClick={scrollToContact} className="bg-primary text-primary-foreground hover:bg-primary-glow text-lg px-8 py-6 shadow-glow">
+          <Button size="lg" onClick={scrollToPricing} className="bg-primary text-primary-foreground hover:bg-primary-glow text-lg px-8 py-6 shadow-glow">
             Contrate Agora
           </Button>
         </div>
