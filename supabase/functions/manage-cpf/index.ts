@@ -1,0 +1,259 @@
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+// Server-side encryption using Web Crypto API with AES-GCM
+async function encryptCPF(cpf: string): Promise<string> {
+  const encryptionKey = Deno.env.get('CPF_ENCRYPTION_KEY');
+  if (!encryptionKey) {
+    throw new Error('CPF_ENCRYPTION_KEY not configured');
+  }
+
+  const encoder = new TextEncoder();
+  const data = encoder.encode(cpf);
+  
+  // Generate key from secret
+  const keyData = encoder.encode(encryptionKey.padEnd(32, '0').substring(0, 32));
+  const key = await crypto.subtle.importKey(
+    'raw',
+    keyData,
+    { name: 'AES-GCM' },
+    false,
+    ['encrypt']
+  );
+
+  // Generate random IV
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  
+  // Encrypt
+  const encrypted = await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
+    key,
+    data
+  );
+
+  // Combine IV and encrypted data
+  const combined = new Uint8Array(iv.length + encrypted.byteLength);
+  combined.set(iv, 0);
+  combined.set(new Uint8Array(encrypted), iv.length);
+
+  // Convert to base64
+  return btoa(String.fromCharCode(...combined));
+}
+
+// Hash CPF for lookups (SHA-256 with salt)
+async function hashCPF(cpf: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const salt = 'lovable-salt-2024';
+  const data = encoder.encode(cpf + salt);
+  
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  return hashHex;
+}
+
+// Mask CPF for display (only show last 2 digits)
+function maskCPF(cpf: string): string {
+  const cleaned = cpf.replace(/\D/g, '');
+  if (cleaned.length !== 11) {
+    return '***.***.***-**';
+  }
+  return `***.***.***-${cleaned.slice(-2)}`;
+}
+
+// Validate CPF using official algorithm
+function isValidCPF(cpf: string): boolean {
+  const cleaned = cpf.replace(/\D/g, '');
+  
+  if (cleaned.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cleaned)) return false; // All same digits
+  
+  // Validate first digit
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(cleaned.charAt(i)) * (10 - i);
+  }
+  let digit1 = 11 - (sum % 11);
+  if (digit1 >= 10) digit1 = 0;
+  
+  if (digit1 !== parseInt(cleaned.charAt(9))) return false;
+  
+  // Validate second digit
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(cleaned.charAt(i)) * (11 - i);
+  }
+  let digit2 = 11 - (sum % 11);
+  if (digit2 >= 10) digit2 = 0;
+  
+  if (digit2 !== parseInt(cleaned.charAt(10))) return false;
+  
+  return true;
+}
+
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('[MANAGE-CPF] Missing authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Não autorizado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Verify user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      console.error('[MANAGE-CPF] Authentication failed:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Não autorizado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { cpf, operation } = await req.json();
+
+    if (operation === 'save') {
+      // Validate input
+      if (!cpf || typeof cpf !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'CPF inválido' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Validate CPF format
+      if (!isValidCPF(cpf)) {
+        console.log(`[MANAGE-CPF] Invalid CPF format for user ${user.id}`);
+        return new Response(
+          JSON.stringify({ error: 'CPF inválido' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Check if CPF already exists for another user
+      const cpfHash = await hashCPF(cpf);
+      
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      );
+
+      const { data: existingProfile, error: checkError } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('cpf_hash', cpfHash)
+        .neq('id', user.id)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('[MANAGE-CPF] Error checking existing CPF:', checkError);
+      }
+
+      if (existingProfile) {
+        console.log(`[MANAGE-CPF] CPF already exists for another user`);
+        return new Response(
+          JSON.stringify({ error: 'CPF já cadastrado' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Encrypt CPF
+      const encryptedCPF = await encryptCPF(cpf);
+
+      // Store in database
+      const { error: updateError } = await supabaseAdmin
+        .from('profiles')
+        .update({
+          cpf: encryptedCPF,
+          cpf_hash: cpfHash,
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        console.error('[MANAGE-CPF] Error saving CPF:', updateError);
+        return new Response(
+          JSON.stringify({ error: 'Erro ao salvar CPF' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Return masked CPF
+      const maskedCPF = maskCPF(cpf);
+      
+      console.log(`[MANAGE-CPF] CPF saved successfully for user ${user.id}`);
+      
+      return new Response(
+        JSON.stringify({ success: true, maskedCPF }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } else if (operation === 'get') {
+      // Get masked CPF (never return decrypted version)
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      );
+
+      const { data, error } = await supabaseAdmin
+        .from('profiles')
+        .select('cpf, cpf_hash')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('[MANAGE-CPF] Error fetching profile:', error);
+        return new Response(
+          JSON.stringify({ error: 'Erro ao buscar CPF' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (!data || !data.cpf_hash) {
+        return new Response(
+          JSON.stringify({ maskedCPF: null }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Return masked format (we can't decrypt, just show it's set)
+      // If we had the last 2 digits stored separately, we could show them
+      // For now, just indicate CPF is set
+      return new Response(
+        JSON.stringify({ maskedCPF: '***.***.***-**' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ error: 'Operação inválida' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error: any) {
+    console.error('[MANAGE-CPF] Unexpected error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Erro interno do servidor' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});

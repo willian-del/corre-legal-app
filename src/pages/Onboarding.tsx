@@ -119,6 +119,7 @@ const Onboarding = () => {
     const cleanCpf = cpf.replace(/\D/g, '');
     const cleanPhone = phone.replace(/\D/g, '');
 
+    // CPF será criptografado de forma segura no servidor via edge function
     const { error } = await updateProfile(user.id, {
       cpf: cleanCpf,
       phone: cleanPhone,
@@ -131,7 +132,7 @@ const Onboarding = () => {
       toast({
         variant: "destructive",
         title: "Erro ao salvar dados",
-        description: error.message
+        description: error.message || "Não foi possível salvar seus dados"
       });
       return;
     }

@@ -10,9 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
-import { getProfile, updateProfile } from '@/lib/profile-utils';
+import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
 import { useToast } from '@/hooks/use-toast';
-import { decryptData } from '@/lib/encryption';
 
 interface UserSubscription {
   id: string;
@@ -52,17 +51,9 @@ const MeuCorre = () => {
       setPhone(profile.phone || '');
       setServiceType(profile.service_type || '');
       
-      // Mostrar CPF mascarado
-      if (profile.cpf) {
-        try {
-          const decrypted = decryptData(profile.cpf);
-          if (decrypted && decrypted.length === 11) {
-            setMaskedCpf(`***.***.***-${decrypted.slice(-2)}`);
-          }
-        } catch (e) {
-          setMaskedCpf('***.***.***-**');
-        }
-      }
+      // Get masked CPF from secure edge function
+      const maskedCpf = await getMaskedCPF(user.id);
+      setMaskedCpf(maskedCpf || 'Não informado');
     }
   };
 
