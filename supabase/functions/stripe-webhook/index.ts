@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
@@ -75,6 +76,24 @@ const validateEmail = (email: string): { valid: boolean; reason?: string } => {
   return { valid: true };
 };
 
+// Zod schemas for input validation
+const stripeSessionSchema = z.object({
+  id: z.string().min(1),
+  customer_email: z.string().email().optional(),
+  customer_details: z.object({
+    email: z.string().email().optional()
+  }).optional(),
+  amount_total: z.number().int().nonnegative(),
+  currency: z.string().min(3).max(3).optional(),
+  payment_status: z.enum(['paid', 'unpaid', 'no_payment_required']),
+  customer: z.union([z.string(), z.null()]).optional(),
+  payment_intent: z.union([z.string(), z.null()]).optional(),
+  payment_method_types: z.array(z.string()).optional(),
+  metadata: z.record(z.any()).optional(),
+});
+
+const planTypeSchema = z.enum(['bronze', 'prata', 'ouro']);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -129,6 +148,18 @@ serve(async (req) => {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       logStep("Processing checkout.session.completed", { sessionId: session.id });
+
+      // Validate session data structure
+      logStep("Validating session data");
+      try {
+        stripeSessionSchema.parse(session);
+      } catch (validationError) {
+        logStep("Session validation failed", { error: validationError });
+        return new Response(
+          JSON.stringify({ error: 'Invalid session data structure' }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
 
       const customerEmail = session.customer_email || session.customer_details?.email;
       if (!customerEmail) {
@@ -201,6 +232,17 @@ serve(async (req) => {
       if (priceId === priceIds.ouro) planType = 'ouro';
       else if (priceId === priceIds.prata) planType = 'prata';
       else if (priceId === priceIds.bronze) planType = 'bronze';
+
+      // Validate plan type
+      try {
+        planTypeSchema.parse(planType);
+      } catch (validationError) {
+        logStep("Invalid plan type", { planType });
+        return new Response(
+          JSON.stringify({ error: 'Invalid subscription plan type' }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        );
+      }
 
       const amountTotal = session.amount_total || 0;
       logStep("Determined plan type", { planType, priceId: maskPriceId(priceId || ''), amountTotal });
