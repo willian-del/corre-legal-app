@@ -23,7 +23,7 @@ const loginSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, signIn, loading } = useAuth();
+  const { user, signIn, loading, profileComplete } = useAuth();
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -37,11 +37,23 @@ const Auth = () => {
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
   useEffect(() => {
-    if (!loading && user) {
-      const redirectTo = searchParams.get('redirect') || '/';
-      navigate(redirectTo);
+    if (!loading && user && profileComplete !== null) {
+      const redirectParam = searchParams.get('redirect');
+      
+      // Se há um redirect explícito na URL, usar ele
+      if (redirectParam) {
+        navigate(redirectParam);
+        return;
+      }
+      
+      // Redirecionamento inteligente baseado no perfil
+      if (!profileComplete) {
+        navigate('/onboarding');
+      } else {
+        navigate('/meu-corre');
+      }
     }
-  }, [user, loading, navigate, searchParams]);
+  }, [user, loading, profileComplete, navigate, searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,10 +77,11 @@ const Auth = () => {
     const { error } = await signIn(loginEmail, loginPassword);
     setIsSubmitting(false);
 
-    if (!error) {
-      const redirectTo = searchParams.get('redirect') || '/';
-      navigate(redirectTo);
+    if (error) {
+      return;
     }
+
+    // O redirecionamento será feito pelo useEffect acima
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
