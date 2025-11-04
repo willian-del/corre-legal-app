@@ -180,41 +180,9 @@ serve(async (req) => {
         }
         
         user = newUserData.user;
-        const isNewUser = true;
         logStep("User account created", { userId: user.id, email: maskEmail(customerEmail) });
         
-        // Send confirmation email with credentials for new users
-        try {
-          const emailData = {
-            email: customerEmail,
-            planType,
-            amountPaid: amountTotal,
-            expiresAt: expiresAt.toISOString(),
-            isNewUser: true,
-            temporaryPassword: tempPassword
-          };
-
-          logStep("Sending confirmation email for new user");
-          const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
-            body: emailData,
-            headers: {
-              'x-internal-key': Deno.env.get('INTERNAL_EMAIL_SECRET') || ''
-            }
-          });
-
-          if (emailError) {
-            logStep("ERROR sending confirmation email", { error: emailError });
-            // Don't fail the webhook if email fails, just log
-          } else {
-            logStep("Confirmation email sent successfully");
-          }
-        } catch (emailError) {
-          logStep("EXCEPTION sending confirmation email", { error: emailError });
-          // Continue even if email fails
-        }
-      } else {
-        const isNewUser = false;
-        logStep("Found existing user", { userId: user.id, email: maskEmail(customerEmail) });
+        // Note: Email will be sent after subscription is created with all details
       }
 
       // Get line items to determine plan type
@@ -299,36 +267,41 @@ serve(async (req) => {
         expiresAt: expiresAt.toISOString() 
       });
 
-      // Send confirmation email for existing users (renewal)
-      const isExistingUser = userData.users.find(u => u.email === customerEmail) !== undefined;
-      if (isExistingUser) {
-        try {
-          const emailData = {
-            email: customerEmail,
-            planType,
-            amountPaid: amountTotal,
-            expiresAt: expiresAt.toISOString(),
-            isNewUser: false
-          };
+      // Send confirmation email (for both new and existing users)
+      try {
+        // Check if this was a new user (by checking if they were just created)
+        const isNewUser = !userData.users.find(u => u.email === customerEmail);
+        const tempPassword = isNewUser ? Array.from(crypto.getRandomValues(new Uint8Array(16)))
+          .map(b => b.toString(16).padStart(2, '0'))
+          .join('')
+          .slice(0, 12) : undefined;
+          
+        const emailData = {
+          email: customerEmail,
+          planType,
+          amountPaid: amountTotal,
+          expiresAt: expiresAt.toISOString(),
+          isNewUser,
+          ...(isNewUser && tempPassword ? { temporaryPassword: tempPassword } : {})
+        };
 
-          logStep("Sending confirmation email for existing user");
-          const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
-            body: emailData,
-            headers: {
-              'x-internal-key': Deno.env.get('INTERNAL_EMAIL_SECRET') || ''
-            }
-          });
-
-          if (emailError) {
-            logStep("ERROR sending confirmation email", { error: emailError });
-            // Don't fail the webhook if email fails
-          } else {
-            logStep("Confirmation email sent successfully");
+        logStep(isNewUser ? "Sending confirmation email for new user" : "Sending confirmation email for existing user");
+        const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
+          body: emailData,
+          headers: {
+            'x-internal-key': Deno.env.get('INTERNAL_EMAIL_SECRET') || ''
           }
-        } catch (emailError) {
-          logStep("EXCEPTION sending confirmation email", { error: emailError });
-          // Continue even if email fails
+        });
+
+        if (emailError) {
+          logStep("ERROR sending confirmation email", { error: emailError });
+          // Don't fail the webhook if email fails
+        } else {
+          logStep("Confirmation email sent successfully");
         }
+      } catch (emailError) {
+        logStep("EXCEPTION sending confirmation email", { error: emailError });
+        // Continue even if email fails
       }
     }
 
