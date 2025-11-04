@@ -26,6 +26,13 @@ export async function updateProfile(userId: string, data: {
   service_type: string;
 }) {
   try {
+    // Verify we have a valid session before making any updates
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('No active session when trying to update profile');
+      return { error: { message: 'Sessão expirada. Por favor, faça login novamente.' } };
+    }
+
     // Update phone and service type directly
     const updates: any = {
       phone: data.phone,
@@ -69,6 +76,13 @@ export async function updateProfile(userId: string, data: {
 // Get masked CPF from secure edge function
 export async function getMaskedCPF(userId: string): Promise<string | null> {
   try {
+    // Verify we have a valid session before calling the edge function
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('No active session when trying to get masked CPF');
+      return null;
+    }
+
     const { data, error } = await supabase.functions.invoke('manage-cpf', {
       body: {
         operation: 'get'

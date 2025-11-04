@@ -46,14 +46,19 @@ const MeuCorre = () => {
   const fetchProfile = async () => {
     if (!user) return;
 
-    const profile = await getProfile(user.id);
-    if (profile) {
-      setPhone(profile.phone || '');
-      setServiceType(profile.service_type || '');
-      
-      // Get masked CPF from secure edge function
-      const maskedCpf = await getMaskedCPF(user.id);
-      setMaskedCpf(maskedCpf || 'Não informado');
+    try {
+      const profile = await getProfile(user.id);
+      if (profile) {
+        setPhone(profile.phone || '');
+        setServiceType(profile.service_type || '');
+        
+        // Get masked CPF from secure edge function (only if session is valid)
+        const maskedCpf = await getMaskedCPF(user.id);
+        setMaskedCpf(maskedCpf || 'Não informado');
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      // Don't show error toast - CPF might just not be set yet
     }
   };
 
