@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": Deno.env.get("ALLOWED_ORIGIN") || "*",
@@ -267,41 +268,132 @@ serve(async (req) => {
         expiresAt: expiresAt.toISOString() 
       });
 
-      // Send confirmation email (for both new and existing users)
+      // Send confirmation email directly (for both new and existing users)
       try {
-        // Check if this was a new user (by checking if they were just created)
         const isNewUser = !userData.users.find(u => u.email === customerEmail);
         const tempPassword = isNewUser ? Array.from(crypto.getRandomValues(new Uint8Array(16)))
           .map(b => b.toString(16).padStart(2, '0'))
           .join('')
           .slice(0, 12) : undefined;
-          
-        const emailData = {
-          email: customerEmail,
-          planType,
-          amountPaid: amountTotal,
-          expiresAt: expiresAt.toISOString(),
-          isNewUser,
-          ...(isNewUser && tempPassword ? { temporaryPassword: tempPassword } : {})
-        };
 
         logStep(isNewUser ? "Sending confirmation email for new user" : "Sending confirmation email for existing user");
-        const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
-          body: emailData,
-          headers: {
-            'x-internal-key': Deno.env.get('INTERNAL_EMAIL_SECRET') || ''
-          }
+
+        const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+        const siteUrl = Deno.env.get("ALLOWED_ORIGIN") || "https://seu-site.lovable.app";
+        
+        // Format data for display
+        const expirationDate = expiresAt.toLocaleDateString('pt-BR', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
+        const formattedAmount = (amountTotal / 100).toLocaleString('pt-BR', {
+          style: 'currency',
+          currency: 'BRL'
+        });
+        const planName = planType.charAt(0).toUpperCase() + planType.slice(1);
+
+        // Build email HTML
+        const emailHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Pagamento Confirmado</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 40px 20px;">
+              <tr>
+                <td align="center">
+                  <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    <tr>
+                      <td style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px; text-align: center; border-radius: 12px 12px 0 0;">
+                        <h1 style="color: #ffffff; margin: 0; font-size: 28px;">✅ Pagamento Confirmado!</h1>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 40px 30px;">
+                        <p style="color: #333333; font-size: 16px; line-height: 1.6; margin-top: 0;">Olá! 🎉</p>
+                        <p style="color: #333333; font-size: 16px; line-height: 1.6;">Seu pagamento foi confirmado com sucesso! Bem-vindo ao <strong>Plano ${planName}</strong>.</p>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-left: 4px solid #10b981; border-radius: 8px; margin: 30px 0;">
+                          <tr>
+                            <td style="padding: 20px;">
+                              <h3 style="color: #10b981; margin: 0 0 15px 0; font-size: 18px;">📋 Detalhes do Seu Plano</h3>
+                              <table width="100%" cellpadding="5" cellspacing="0">
+                                <tr>
+                                  <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Plano:</strong></td>
+                                  <td style="color: #333333; font-size: 14px; padding: 5px 0; text-align: right;">${planName}</td>
+                                </tr>
+                                <tr>
+                                  <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Valor pago:</strong></td>
+                                  <td style="color: #333333; font-size: 14px; padding: 5px 0; text-align: right;">${formattedAmount}</td>
+                                </tr>
+                                <tr>
+                                  <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Válido até:</strong></td>
+                                  <td style="color: #333333; font-size: 14px; padding: 5px 0; text-align: right;">${expirationDate}</td>
+                                </tr>
+                                <tr>
+                                  <td style="color: #666666; font-size: 14px; padding: 5px 0;"><strong>Cobertura:</strong></td>
+                                  <td style="color: #333333; font-size: 14px; padding: 5px 0; text-align: right;">6 meses</td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                        ${isNewUser && tempPassword ? `
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fff7ed; border-left: 4px solid #f59e0b; border-radius: 8px; margin: 30px 0;">
+                          <tr>
+                            <td style="padding: 20px;">
+                              <h3 style="color: #f59e0b; margin: 0 0 15px 0; font-size: 18px;">🔐 Suas Credenciais de Acesso</h3>
+                              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 10px 0;"><strong>Email:</strong> ${customerEmail}</p>
+                              <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 10px 0;"><strong>Senha temporária:</strong> <code style="background-color: #fef3c7; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 16px; color: #92400e;">${tempPassword}</code></p>
+                              <p style="color: #dc2626; font-size: 13px; line-height: 1.6; margin: 15px 0 0 0;">⚠️ <strong>IMPORTANTE:</strong> Altere sua senha no primeiro acesso!</p>
+                            </td>
+                          </tr>
+                        </table>
+                        ` : ''}
+                        <h3 style="color: #333333; margin: 30px 0 15px 0; font-size: 18px;">🚀 Próximos Passos:</h3>
+                        <ol style="color: #666666; font-size: 15px; line-height: 1.8; padding-left: 20px;">
+                          <li>Acesse a área de cliente clicando no botão abaixo</li>
+                          <li>${isNewUser ? 'Faça login com as credenciais fornecidas acima' : 'Faça login com seu email e senha'}</li>
+                          <li>${isNewUser ? 'Complete seu cadastro com CPF e telefone' : 'Aproveite todos os benefícios do seu plano!'}</li>
+                          ${isNewUser ? '<li>Altere sua senha temporária por uma senha segura</li>' : ''}
+                        </ol>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                          <tr>
+                            <td align="center">
+                              <a href="${siteUrl}/auth" style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);">Acessar Área de Cliente</a>
+                            </td>
+                          </tr>
+                        </table>
+                        <p style="color: #666666; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0;">Precisa de ajuda? Responda este email ou entre em contato conosco.</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="background-color: #f9fafb; padding: 20px 30px; text-align: center; border-radius: 0 0 12px 12px;">
+                        <p style="color: #999999; font-size: 12px; margin: 0;">© ${new Date().getFullYear()} Corre Mais. Todos os direitos reservados.</p>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
+        `;
+
+        await resend.emails.send({
+          from: "Corre Mais <onboarding@resend.dev>",
+          to: [customerEmail],
+          subject: `✅ Pagamento Confirmado - Plano ${planName}`,
+          html: emailHtml,
         });
 
-        if (emailError) {
-          logStep("ERROR sending confirmation email", { error: emailError });
-          // Don't fail the webhook if email fails
-        } else {
-          logStep("Confirmation email sent successfully");
-        }
+        logStep("Confirmation email sent successfully");
       } catch (emailError) {
-        logStep("EXCEPTION sending confirmation email", { error: emailError });
-        // Continue even if email fails
+        logStep("ERROR sending confirmation email", { error: emailError });
+        // Continue even if email fails - don't block webhook
       }
     }
 

@@ -6,8 +6,5 @@ verify_jwt = false
 [functions.check-expiring-subscriptions]
 verify_jwt = false
 
-[functions.send-confirmation-email]
-verify_jwt = false
-
 [functions.manage-cpf]
 verify_jwt = false

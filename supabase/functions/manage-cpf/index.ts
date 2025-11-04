@@ -1,10 +1,21 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Input validation schemas
+const saveCpfSchema = z.object({
+  operation: z.literal('save'),
+  cpf: z.string().min(11).max(14).regex(/^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/, 'Invalid CPF format')
+});
+
+const getCpfSchema = z.object({
+  operation: z.literal('get')
+});
 
 // Server-side encryption using Web Crypto API with AES-GCM
 async function encryptCPF(cpf: string): Promise<string> {
@@ -130,16 +141,35 @@ serve(async (req) => {
       );
     }
 
-    const { cpf, operation } = await req.json();
-
-    if (operation === 'save') {
-      // Validate input
-      if (!cpf || typeof cpf !== 'string') {
+    // Parse and validate request body
+    const body = await req.json();
+    
+    // Validate input with zod
+    let validated;
+    try {
+      if (body.operation === 'save') {
+        validated = saveCpfSchema.parse(body);
+      } else if (body.operation === 'get') {
+        validated = getCpfSchema.parse(body);
+      } else {
         return new Response(
-          JSON.stringify({ error: 'CPF inválido' }),
+          JSON.stringify({ error: 'Operação inválida' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.log(`[MANAGE-CPF] Input validation failed:`, error.errors);
+        return new Response(
+          JSON.stringify({ error: 'Formato de dados inválido' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw error;
+    }
+
+    if (validated.operation === 'save') {
+      const { cpf } = validated;
 
       // Validate CPF format
       if (!isValidCPF(cpf)) {
@@ -207,7 +237,7 @@ serve(async (req) => {
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
-    } else if (operation === 'get') {
+    } else if (validated.operation === 'get') {
       // Get masked CPF (never return decrypted version)
       const supabaseAdmin = createClient(
         Deno.env.get('SUPABASE_URL')!,
@@ -244,6 +274,7 @@ serve(async (req) => {
       );
     }
 
+    // This should never be reached due to validation, but TypeScript needs it
     return new Response(
       JSON.stringify({ error: 'Operação inválida' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
