@@ -125,16 +125,20 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    // Verify user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('[MANAGE-CPF] Authentication failed:', authError);
+    // Extract user id from JWT (function already enforces JWT verification)
+    let userId: string | null = null;
+    try {
+      const token = authHeader.replace('Bearer ', '').trim();
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      userId = payload.sub as string;
+    } catch (e) {
+      console.error('[MANAGE-CPF] Failed to parse JWT', e);
+      return new Response(
+        JSON.stringify({ error: 'Não autorizado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    if (!userId) {
       return new Response(
         JSON.stringify({ error: 'Não autorizado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -173,7 +177,7 @@ serve(async (req) => {
 
       // Validate CPF format
       if (!isValidCPF(cpf)) {
-        console.log(`[MANAGE-CPF] Invalid CPF format for user ${user.id}`);
+        console.log(`[MANAGE-CPF] Invalid CPF format for user ${userId}`);
         return new Response(
           JSON.stringify({ error: 'CPF inválido' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -192,7 +196,7 @@ serve(async (req) => {
         .from('profiles')
         .select('id')
         .eq('cpf_hash', cpfHash)
-        .neq('id', user.id)
+        .neq('id', userId)
         .maybeSingle();
 
       if (checkError) {
@@ -217,7 +221,7 @@ serve(async (req) => {
           cpf: encryptedCPF,
           cpf_hash: cpfHash,
         })
-        .eq('id', user.id);
+        .eq('id', userId);
 
       if (updateError) {
         console.error('[MANAGE-CPF] Error saving CPF:', updateError);
@@ -230,7 +234,7 @@ serve(async (req) => {
       // Return masked CPF
       const maskedCPF = maskCPF(cpf);
       
-      console.log(`[MANAGE-CPF] CPF saved successfully for user ${user.id}`);
+      console.log(`[MANAGE-CPF] CPF saved successfully for user ${userId}`);
       
       return new Response(
         JSON.stringify({ success: true, maskedCPF }),
@@ -247,7 +251,7 @@ serve(async (req) => {
       const { data, error } = await supabaseAdmin
         .from('profiles')
         .select('cpf, cpf_hash')
-        .eq('id', user.id)
+        .eq('id', userId)
         .maybeSingle();
 
       if (error) {
