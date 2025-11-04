@@ -8,7 +8,7 @@ const Services = () => {
         "Família (separação, guarda, pensão e acordos)",
         "Moradia e Imóveis (aluguel, compra, venda)",
         "Responsabilidade Civil (acidentes e indenizações)",
-        "Herança, Inventário e Contratos"
+        "Contratos Abusivos e injustos com o consumidor."
       ]
     },
     {
