@@ -25,10 +25,33 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
-// Email validation functions
+// Email validation functions - Comprehensive disposable email domain list
 const DISPOSABLE_EMAIL_DOMAINS = [
+  // Common disposable email services
   'tempmail.com', 'throwaway.email', 'guerrillamail.com', 'mailinator.com',
-  '10minutemail.com', 'trashmail.com', 'yopmail.com', 'maildrop.cc'
+  '10minutemail.com', 'trashmail.com', 'yopmail.com', 'maildrop.cc',
+  
+  // Additional popular disposable domains
+  'temp-mail.org', 'getnada.com', '33mail.com', 'emailondeck.com',
+  'fakeinbox.com', 'tmpmail.net', 'mintemail.com', 'sharklasers.com',
+  'guerrillamail.info', 'grr.la', 'guerrillamail.biz', 'guerrillamail.de',
+  'spam4.me', 'getairmail.com', 'dispostable.com', 'emailsensei.com',
+  'tempr.email', 'mohmal.com', 'crazymailing.com', 'mailcatch.com',
+  'mytrashmail.com', 'mailnesia.com', 'spamgourmet.com', 'incognitomail.org',
+  'anonymbox.com', 'dodgit.com', 'emltmp.com', 'spambox.us',
+  'mail-temporaire.fr', 'jetable.org', 'fakemail.net', 'throwawaymail.com',
+  
+  // Numbered variations
+  '10minutemail.net', '10minutemail.co.uk', '20minutemail.com',
+  '30minutemail.com', '60minutemail.com',
+  
+  // TLD variations of common services
+  'guerrillamail.net', 'guerrillamail.org', 'guerrillamail.com',
+  'mailinator.net', 'mailinator.org', 'safetymail.info',
+  
+  // Other known services
+  'zoemail.org', 'haltospam.com', 'spamfree24.org', 'spamfree24.com',
+  'spamfree24.eu', 'trillianpro.com', 'bobmail.info', 'mail.by',
 ];
 
 const isValidEmail = (email: string): boolean => {
@@ -84,9 +107,17 @@ serve(async (req) => {
     let event: Stripe.Event;
     try {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-      logStep("Webhook signature verified", { eventType: event.type });
+      logStep("Webhook signature verified", { eventType: event.type, eventId: event.id });
     } catch (err) {
-      logStep("Webhook signature verification failed", { error: err });
+      // SECURITY: Log failed signature verification attempts for monitoring
+      const errorDetails = {
+        error: err instanceof Error ? err.message : String(err),
+        signature: signature?.substring(0, 20) + '...',
+        timestamp: new Date().toISOString(),
+        attempt: 'signature_verification_failed'
+      };
+      logStep("⚠️ SECURITY ALERT: Webhook signature verification failed", errorDetails);
+      
       return new Response(JSON.stringify({ error: "Invalid signature" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -106,14 +137,20 @@ serve(async (req) => {
       // Validate email
       const emailValidation = validateEmail(customerEmail);
       if (!emailValidation.valid) {
-        logStep("Email validation failed", { 
+        // SECURITY: Log email validation failures for monitoring
+        logStep("⚠️ SECURITY: Email validation failed", { 
           email: maskEmail(customerEmail), 
-          reason: emailValidation.reason 
+          reason: emailValidation.reason,
+          eventId: event.id,
+          timestamp: new Date().toISOString()
         });
         throw new Error(`Email validation failed: ${emailValidation.reason}`);
       }
       
-      logStep("Email validated", { email: maskEmail(customerEmail) });
+      logStep("Email validated successfully", { 
+        email: maskEmail(customerEmail),
+        domain: customerEmail.split('@')[1] 
+      });
 
       // Get or create user by email
       const { data: userData, error: userError } = await supabaseClient.auth.admin.listUsers();
@@ -159,7 +196,10 @@ serve(async (req) => {
 
           logStep("Sending confirmation email for new user");
           const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
-            body: emailData
+            body: emailData,
+            headers: {
+              'x-internal-key': Deno.env.get('INTERNAL_EMAIL_SECRET') || ''
+            }
           });
 
           if (emailError) {
@@ -273,7 +313,10 @@ serve(async (req) => {
 
           logStep("Sending confirmation email for existing user");
           const { error: emailError } = await supabaseClient.functions.invoke('send-confirmation-email', {
-            body: emailData
+            body: emailData,
+            headers: {
+              'x-internal-key': Deno.env.get('INTERNAL_EMAIL_SECRET') || ''
+            }
           });
 
           if (emailError) {

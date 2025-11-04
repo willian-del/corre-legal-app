@@ -32,6 +32,26 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Authentication check - only allow internal calls with API key
+    const apiKey = req.headers.get('x-internal-key');
+    const internalSecret = Deno.env.get('INTERNAL_EMAIL_SECRET');
+    
+    if (!apiKey || !internalSecret || apiKey !== internalSecret) {
+      logStep("ERROR: Unauthorized access attempt", { 
+        hasApiKey: !!apiKey, 
+        hasSecret: !!internalSecret 
+      });
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - This function can only be called internally' }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+    
+    logStep("Authentication successful");
+
     const { email, planType, amountPaid, expiresAt, isNewUser, temporaryPassword }: EmailData = await req.json();
     
     logStep("Received email data", { email, planType, isNewUser, amountPaid });
