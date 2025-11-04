@@ -79,12 +79,12 @@ const validateEmail = (email: string): { valid: boolean; reason?: string } => {
 // Zod schemas for input validation
 const stripeSessionSchema = z.object({
   id: z.string().min(1),
-  customer_email: z.string().email().optional(),
+  customer_email: z.union([z.string().email(), z.null()]).optional(),
   customer_details: z.object({
-    email: z.string().email().optional()
+    email: z.union([z.string().email(), z.null()]).optional()
   }).optional(),
-  amount_total: z.number().int().nonnegative(),
-  currency: z.string().min(3).max(3).optional(),
+  amount_total: z.number().int().nonnegative().nullable().optional(),
+  currency: z.string().min(3).max(3).nullable().optional(),
   payment_status: z.enum(['paid', 'unpaid', 'no_payment_required']),
   customer: z.union([z.string(), z.null()]).optional(),
   payment_intent: z.union([z.string(), z.null()]).optional(),
@@ -161,7 +161,18 @@ serve(async (req) => {
         );
       }
 
-      const customerEmail = session.customer_email || session.customer_details?.email;
+      let customerEmail = session.customer_email ?? session.customer_details?.email ?? null;
+      if (!customerEmail && typeof session.customer === 'string') {
+        try {
+          const customerObj = await stripe.customers.retrieve(session.customer);
+          const isDeleted = (customerObj as any).deleted === true;
+          if (!isDeleted) {
+            customerEmail = (customerObj as Stripe.Customer).email ?? null;
+          }
+        } catch (e) {
+          logStep("Failed to retrieve Stripe customer for email fallback", { customerId: maskId(session.customer as string, 'cus_') });
+        }
+      }
       if (!customerEmail) {
         throw new Error("No customer email found in session");
       }

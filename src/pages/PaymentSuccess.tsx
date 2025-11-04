@@ -9,14 +9,26 @@ import { supabase } from "@/integrations/supabase/client";
 const PaymentSuccess = () => {
   const [countdown, setCountdown] = useState(5);
   const [redirectTo, setRedirectTo] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const isFirstPurchase = searchParams.get('first_purchase') === 'true';
+  const sessionId = searchParams.get('session_id');
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Confirm subscription if session_id present
+  useEffect(() => {
+    if (!user || !sessionId) return;
+    setVerifying(true);
+    supabase.functions
+      .invoke('confirm-subscription', { body: { session_id: sessionId } })
+      .catch((e) => console.error('confirm-subscription error', e))
+      .finally(() => setVerifying(false));
+  }, [user, sessionId]);
 
   // Determine redirect destination
   useEffect(() => {
@@ -45,7 +57,7 @@ const PaymentSuccess = () => {
 
   // Automatic redirect countdown
   useEffect(() => {
-    if (!redirectTo) return;
+    if (!redirectTo || verifying) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -59,7 +71,7 @@ const PaymentSuccess = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [redirectTo, navigate]);
+  }, [redirectTo, navigate, verifying]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -100,7 +112,13 @@ const PaymentSuccess = () => {
               )}
             </div>
 
-            {redirectTo && countdown > 0 && (
+            {sessionId && verifying && (
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
+                <p className="text-sm text-center text-primary">Confirmando sua ativação...</p>
+              </div>
+            )}
+
+            {redirectTo && countdown > 0 && !verifying && (
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
                 <p className="text-sm text-center text-primary">
                   Redirecionando em <strong>{countdown}</strong> segundo{countdown !== 1 ? 's' : ''}...
