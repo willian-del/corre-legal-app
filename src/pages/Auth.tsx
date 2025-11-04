@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Shield, CheckCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -108,64 +108,83 @@ const Auth = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card" />
+        <div className="relative animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary/30 px-4">
-      <div className="w-full max-w-md">
-        <div className="flex justify-center mb-8">
-          <Logo size={72} />
+    <div className="min-h-screen flex items-center justify-center relative px-4 py-12">
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card" />
+      
+      <div className="w-full max-w-md relative z-10">
+        <div className="flex justify-center mb-8 animate-in fade-in duration-500">
+          <Logo size={80} />
         </div>
 
-        <div className="text-center mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-primary">
+        <div className="text-center mb-8 space-y-2 animate-in fade-in duration-500 delay-100">
+          <h1 className="text-3xl md:text-4xl font-bold text-primary">
             Bem-vindo ao Corre Legal
           </h1>
-        </div>
-
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
-          <p className="text-sm text-amber-800 dark:text-amber-200 mb-3">
-            <strong>Ainda não contratou um plano?</strong><br />
-            Para acessar a área de cliente, você precisa primeiro contratar um dos nossos planos.
-            Após o pagamento, você receberá suas credenciais de acesso por email.
+          <p className="text-muted-foreground">
+            Seu parceiro legal para o corre de todo dia
           </p>
-          <Button
-            onClick={() => navigate('/#pricing')}
-            variant="outline"
-            className="w-full border-amber-300 dark:border-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
-          >
-            Ver Planos e Contratar
-          </Button>
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{showPasswordReset ? 'Recuperar Senha' : 'Fazer Login'}</CardTitle>
-            <CardDescription>
+        <Card className="bg-card border-primary/30 rounded-2xl shadow-elevated mb-6 animate-in fade-in duration-700 delay-200">
+          <CardContent className="p-6 md:p-8">
+            <div className="flex items-start gap-3 mb-4">
+              <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-foreground">
+                  Ainda não contratou um plano?
+                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Para acessar a área de cliente, você precisa primeiro contratar um dos nossos planos.
+                  Após o pagamento, você receberá suas credenciais de acesso por email.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate('/#pricing')}
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground transition-all duration-300 hover:-translate-y-0.5"
+            >
+              Ver Planos e Contratar
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-card border border-border rounded-2xl shadow-elevated animate-in fade-in duration-700 delay-300">
+          <CardHeader className="p-6 md:p-8 pb-4">
+            <CardTitle className="text-2xl">{showPasswordReset ? 'Recuperar Senha' : 'Fazer Login'}</CardTitle>
+            <CardDescription className="text-base">
               {showPasswordReset 
                 ? 'Digite seu email para receber instruções de recuperação' 
                 : 'Entre com suas credenciais recebidas por email'
               }
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6 md:p-8 pt-0">
             {showPasswordReset ? (
               <>
                 {resetEmailSent ? (
-                  <div className="space-y-4">
-                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center">
-                      <p className="text-sm text-green-800 dark:text-green-200">
-                        ✅ Email enviado com sucesso!<br />
-                        Verifique sua caixa de entrada e siga as instruções.
-                      </p>
+                  <div className="space-y-6">
+                    <div className="bg-primary/10 border border-primary/30 rounded-xl p-6 text-center space-y-3 animate-in fade-in">
+                      <CheckCircle className="h-12 w-12 text-primary mx-auto" />
+                      <div>
+                        <p className="font-semibold text-foreground mb-1">
+                          Email enviado com sucesso!
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Verifique sua caixa de entrada e siga as instruções.
+                        </p>
+                      </div>
                     </div>
                     <Button 
                       variant="outline" 
-                      className="w-full" 
+                      className="w-full transition-all duration-300 hover:-translate-y-0.5" 
                       onClick={() => {
                         setShowPasswordReset(false);
                         setResetEmailSent(false);
@@ -176,7 +195,7 @@ const Auth = () => {
                     </Button>
                   </div>
                 ) : (
-                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <form onSubmit={handlePasswordReset} className="space-y-6">
                     <div className="space-y-2">
                       <Label htmlFor="reset-email">Email</Label>
                       <Input
@@ -185,18 +204,23 @@ const Auth = () => {
                         placeholder="seu@email.com"
                         value={resetEmail}
                         onChange={e => setResetEmail(e.target.value)}
+                        className="focus:border-primary transition-colors"
                         required
                       />
                     </div>
 
-                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    <Button 
+                      type="submit" 
+                      className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                      disabled={isSubmitting}
+                    >
                       {isSubmitting ? 'Enviando...' : 'Enviar Email de Recuperação'}
                     </Button>
 
                     <Button 
                       type="button"
                       variant="ghost" 
-                      className="w-full" 
+                      className="w-full transition-all duration-300" 
                       onClick={() => setShowPasswordReset(false)}
                     >
                       Voltar para o Login
@@ -205,7 +229,7 @@ const Auth = () => {
                 )}
               </>
             ) : (
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="login-email">Email</Label>
                   <Input
@@ -214,10 +238,11 @@ const Auth = () => {
                     placeholder="seu@email.com"
                     value={loginEmail}
                     onChange={e => setLoginEmail(e.target.value)}
+                    className="focus:border-primary transition-colors"
                     required
                   />
                   {loginErrors.email && (
-                    <p className="text-sm text-destructive">{loginErrors.email}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{loginErrors.email}</p>
                   )}
                 </div>
 
@@ -227,7 +252,7 @@ const Auth = () => {
                     <Button
                       type="button"
                       variant="link"
-                      className="text-xs h-auto p-0"
+                      className="text-xs h-auto p-0 text-primary hover:text-primary-glow"
                       onClick={() => setShowPasswordReset(true)}
                     >
                       Esqueci minha senha
@@ -239,14 +264,19 @@ const Auth = () => {
                     placeholder="••••••"
                     value={loginPassword}
                     onChange={e => setLoginPassword(e.target.value)}
+                    className="focus:border-primary transition-colors"
                     required
                   />
                   {loginErrors.password && (
-                    <p className="text-sm text-destructive">{loginErrors.password}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{loginErrors.password}</p>
                   )}
                 </div>
 
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? 'Entrando...' : 'Entrar'}
                 </Button>
               </form>
@@ -254,11 +284,11 @@ const Auth = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-6 text-center">
+        <div className="mt-8 text-center animate-in fade-in duration-700 delay-500">
           <Button
-            variant="link"
+            variant="ghost"
             onClick={() => navigate('/')}
-            className="text-muted-foreground hover:text-primary"
+            className="text-muted-foreground hover:text-primary transition-all duration-300 hover:-translate-y-0.5"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar para a página inicial
