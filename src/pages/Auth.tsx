@@ -287,7 +287,10 @@ const Auth = () => {
         <div className="mt-8 text-center animate-in fade-in duration-700 delay-500">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              navigate('/');
+              window.scrollTo(0, 0);
+            }}
             className="text-muted-foreground hover:text-primary transition-all duration-300 hover:-translate-y-0.5"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
