@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
@@ -167,7 +168,7 @@ const MeuCorre = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold mb-2 text-foreground">
               Meu <span className="text-primary">Corre</span>
@@ -177,101 +178,67 @@ const MeuCorre = () => {
             </p>
           </div>
 
-          {subscription ? (
-            <>
-              <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 border-2 border-primary/20">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-8 h-8 text-primary" />
-                    <div>
-                      <h2 className="text-2xl font-bold text-foreground">Plano Ativo</h2>
-                      <p className="text-muted-foreground">Você está protegido!</p>
-                    </div>
+          {!subscription && (
+            <div className="bg-card rounded-xl p-6 border-2 border-primary/20 text-center">
+              <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+              <h2 className="text-xl font-bold text-foreground mb-2">
+                Você ainda não possui um plano ativo
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Contrate um plano para ter acesso completo aos benefícios.
+              </p>
+              <Button onClick={handleSubscribe}>
+                Contratar Plano
+              </Button>
+            </div>
+          )}
+
+          <Tabs defaultValue="chamados" className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="chamados" className="gap-2">
+                <MessageSquare className="w-4 h-4" />
+                <span className="hidden sm:inline">Meus Chamados</span>
+                <span className="sm:hidden">Chamados</span>
+              </TabsTrigger>
+              <TabsTrigger value="cadastro" className="gap-2">
+                <UserCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Meu Cadastro</span>
+                <span className="sm:hidden">Cadastro</span>
+              </TabsTrigger>
+              {subscription && (
+                <TabsTrigger value="plano" className="gap-2">
+                  <Shield className="w-4 h-4" />
+                  <span className="hidden sm:inline">Meu Plano</span>
+                  <span className="sm:hidden">Plano</span>
+                </TabsTrigger>
+              )}
+            </TabsList>
+
+            {/* Aba Meus Chamados */}
+            <TabsContent value="chamados" className="mt-6">
+              <div className="bg-card rounded-2xl p-8 md:p-12 border border-border">
+                <div className="flex flex-col items-center justify-center space-y-6">
+                  <MessageSquare className="w-16 h-16 text-primary" />
+                  <div className="text-center space-y-2">
+                    <h3 className="text-2xl font-bold">Precisa de Ajuda?</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      Entre em contato com nossa equipe de atendimento jurídico através do WhatsApp
+                    </p>
                   </div>
-                  <Button
-                    onClick={handleRefresh}
-                    variant="outline"
-                    size="sm"
-                    disabled={loading}
+                  <Button 
+                    size="lg" 
+                    className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                    onClick={() => window.open('https://wa.me/551150395554', '_blank')}
                   >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                    Atualizar
+                    <MessageSquare className="w-5 h-5" />
+                    Iniciar Atendimento
                   </Button>
                 </div>
-
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-5 h-5 text-primary" />
-                      <span className="text-sm text-muted-foreground">Plano</span>
-                    </div>
-                    <p className="text-xl font-bold text-foreground capitalize">
-                      {PLAN_DETAILS[subscription.plan_type as keyof typeof PLAN_DETAILS]?.name || subscription.plan_type}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      R$ {subscription.amount_paid.toFixed(2)}
-                    </p>
-                  </div>
-
-                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-5 h-5 text-primary" />
-                      <span className="text-sm text-muted-foreground">Validade</span>
-                    </div>
-                    <p className="text-xl font-bold text-foreground">
-                      {new Date(subscription.expires_at).toLocaleDateString('pt-BR')}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {subscription.days_remaining} dias restantes
-                    </p>
-                  </div>
-
-                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="w-5 h-5 text-primary" />
-                      <span className="text-sm text-muted-foreground">Pagamento</span>
-                    </div>
-                    <p className="text-lg font-bold text-foreground capitalize">
-                      {subscription.payment_method === 'credit_card' ? 'Cartão' : subscription.payment_method}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Status: Ativo
-                    </p>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleSubscribe}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Renovar Plano
-                </Button>
               </div>
+            </TabsContent>
 
-              <div className="bg-card rounded-2xl p-8 border border-border">
-                <h3 className="text-xl font-bold text-foreground mb-4">
-                  Recursos em Desenvolvimento
-                </h3>
-                <div className="space-y-3">
-                  {[
-                    "Central de Atendimento Jurídico",
-                    "Histórico de Solicitações",
-                    "Documentos e Contratos",
-                    "Chat com Suporte",
-                  ].map((feature, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg"
-                    >
-                      <Clock className="w-5 h-5 text-primary" />
-                      <span className="text-muted-foreground">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Meus Dados */}
+            {/* Aba Meu Cadastro */}
+            <TabsContent value="cadastro" className="mt-6">
               <Card>
                 <CardHeader>
                   <div className="flex items-center gap-2">
@@ -284,6 +251,20 @@ const MeuCorre = () => {
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleUpdateProfile} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Nome Completo</Label>
+                      <Input 
+                        id="name" 
+                        type="text" 
+                        value={user?.user_metadata?.full_name || ''} 
+                        disabled 
+                        className="bg-muted"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        O nome não pode ser alterado
+                      </p>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="email">Email</Label>
                       <Input 
@@ -355,22 +336,98 @@ const MeuCorre = () => {
                   </form>
                 </CardContent>
               </Card>
-            </>
-          ) : (
-            <div className="bg-card rounded-2xl p-8 border-2 border-primary/20 text-center">
-              <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">
-                Você ainda não possui um plano ativo
-              </h2>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Para ter acesso completo à área do cliente e todos os benefícios do Corre Legal,
-                você precisa contratar um de nossos planos.
-              </p>
-              <Button onClick={handleSubscribe} size="lg">
-                Ver Planos Disponíveis
-              </Button>
-            </div>
-          )}
+            </TabsContent>
+
+            {/* Aba Meu Plano */}
+            {subscription && (
+              <TabsContent value="plano" className="mt-6">
+                <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 border-2 border-primary/20">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-8 h-8 text-primary" />
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground">Plano Ativo</h2>
+                        <p className="text-muted-foreground">Você está protegido!</p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={handleRefresh}
+                      variant="outline"
+                      size="sm"
+                      disabled={loading}
+                    >
+                      <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                      Atualizar
+                    </Button>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Shield className="w-5 h-5 text-primary" />
+                        <span className="text-sm text-muted-foreground">Plano</span>
+                      </div>
+                      <p className="text-xl font-bold text-foreground capitalize">
+                        {PLAN_DETAILS[subscription.plan_type as keyof typeof PLAN_DETAILS]?.name || subscription.plan_type}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        R$ {subscription.amount_paid.toFixed(2)}
+                      </p>
+                    </div>
+
+                    <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Calendar className="w-5 h-5 text-primary" />
+                        <span className="text-sm text-muted-foreground">Validade</span>
+                      </div>
+                      <p className="text-xl font-bold text-foreground">
+                        {new Date(subscription.expires_at).toLocaleDateString('pt-BR')}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {subscription.days_remaining} dias restantes
+                      </p>
+                    </div>
+
+                    <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CreditCard className="w-5 h-5 text-primary" />
+                        <span className="text-sm text-muted-foreground">Pagamento</span>
+                      </div>
+                      <p className="text-lg font-bold text-foreground capitalize">
+                        {subscription.payment_method === 'credit_card' ? 'Cartão' : subscription.payment_method}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Status: Ativo
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Button
+                      onClick={handleSubscribe}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Renovar Plano
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={() => {
+                        toast({
+                          title: "Cancelamento de Plano",
+                          description: "Entre em contato pelo WhatsApp para cancelar seu plano.",
+                        });
+                        window.open('https://wa.me/551150395554', '_blank');
+                      }}
+                    >
+                      Cancelar Plano
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       </main>
     </div>
