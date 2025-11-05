@@ -8,7 +8,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle } from 'lucide-react';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
@@ -138,6 +149,52 @@ const MeuCorre = () => {
     if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
     if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    try {
+      // 1. Deletar dados do perfil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      // 2. Deletar assinaturas do usuário
+      const { error: subscriptionError } = await supabase
+        .from('user_subscriptions')
+        .delete()
+        .eq('user_id', user.id);
+
+      if (subscriptionError) throw subscriptionError;
+
+      // 3. Deletar conta de autenticação (via edge function)
+      const { error: authError } = await supabase.functions.invoke('delete-user-account', {
+        body: { userId: user.id }
+      });
+
+      if (authError) throw authError;
+
+      // 4. Fazer logout e redirecionar
+      toast({
+        title: "Conta deletada",
+        description: "Sua conta e todos os dados foram removidos permanentemente.",
+      });
+
+      await signOut();
+      navigate('/');
+
+    } catch (error: any) {
+      console.error('Erro ao deletar conta:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao deletar conta",
+        description: error.message || "Não foi possível deletar sua conta. Tente novamente.",
+      });
+    }
   };
 
   if (loading) {
@@ -330,13 +387,59 @@ const MeuCorre = () => {
                       </Select>
                     </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Button type="submit" className="w-full" disabled={isEditingProfile}>
                       {isEditingProfile ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </TabsContent>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          type="button"
+                          variant="destructive" 
+                          className="w-full gap-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          Apagar Cadastro
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>⚠️ Tem certeza absoluta?</AlertDialogTitle>
+                          <AlertDialogDescription className="space-y-2">
+                            <p className="font-semibold text-destructive">
+                              Esta ação é irreversível e permanente!
+                            </p>
+                            <p>
+                              Ao confirmar, os seguintes dados serão apagados para sempre:
+                            </p>
+                            <ul className="list-disc list-inside space-y-1 text-sm">
+                              <li>Seus dados pessoais (nome, CPF, telefone, email)</li>
+                              <li>Histórico de assinaturas e pagamentos</li>
+                              <li>Acesso à plataforma</li>
+                              <li>Todos os registros associados à sua conta</li>
+                            </ul>
+                            <p className="font-semibold mt-4">
+                              Você realmente deseja continuar?
+                            </p>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={handleDeleteAccount}
+                            className="bg-destructive hover:bg-destructive/90"
+                          >
+                            Sim, apagar minha conta
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
             {/* Aba Meu Plano */}
             {subscription && (
