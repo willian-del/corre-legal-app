@@ -403,37 +403,57 @@ const MeuCorre = () => {
                           Apagar Cadastro
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>⚠️ Tem certeza absoluta?</AlertDialogTitle>
-                          <AlertDialogDescription className="space-y-2">
-                            <p className="font-semibold text-destructive">
-                              Esta ação é irreversível e permanente!
-                            </p>
-                            <p>
-                              Ao confirmar, os seguintes dados serão apagados para sempre:
-                            </p>
-                            <ul className="list-disc list-inside space-y-1 text-sm">
-                              <li>Seus dados pessoais (nome, CPF, telefone, email)</li>
-                              <li>Histórico de assinaturas e pagamentos</li>
-                              <li>Acesso à plataforma</li>
-                              <li>Todos os registros associados à sua conta</li>
-                            </ul>
-                            <p className="font-semibold mt-4">
-                              Você realmente deseja continuar?
-                            </p>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction 
-                            onClick={handleDeleteAccount}
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Sim, apagar minha conta
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>⚠️ Tem certeza absoluta?</AlertDialogTitle>
+                <AlertDialogDescription className="space-y-3">
+                  <p className="font-bold text-destructive text-base">
+                    Esta ação é IRREVERSÍVEL e PERMANENTE!
+                  </p>
+                  
+                  {/* Avisos Financeiros e Contratuais */}
+                  <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 space-y-2">
+                    {subscription && (
+                      <p className="font-semibold text-destructive flex items-start gap-2">
+                        <span>⚠️</span>
+                        <span>Seu plano será cancelado IMEDIATAMENTE após a exclusão</span>
+                      </p>
+                    )}
+                    <p className="font-semibold text-destructive flex items-start gap-2">
+                      <span>💰</span>
+                      <span>NÃO haverá reembolso de valores pagos</span>
+                    </p>
+                    <p className="font-semibold text-destructive flex items-start gap-2">
+                      <span>🚫</span>
+                      <span>Esta ação NÃO pode ser desfeita de forma alguma</span>
+                    </p>
+                  </div>
+
+                  <p className="text-sm">
+                    Ao confirmar, os seguintes dados serão apagados para sempre:
+                  </p>
+                  <ul className="list-disc list-inside space-y-1 text-sm">
+                    <li>Seus dados pessoais (nome, CPF, telefone, email)</li>
+                    <li>Histórico de assinaturas e pagamentos</li>
+                    <li>Acesso à plataforma</li>
+                    <li>Todos os registros associados à sua conta</li>
+                  </ul>
+                  
+                  <p className="font-bold mt-4 text-base">
+                    Você tem certeza que deseja prosseguir?
+                  </p>
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Não, manter minha conta</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteAccount}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Sim, apagar permanentemente
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
                     </AlertDialog>
                   </div>
                 </form>
