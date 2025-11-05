@@ -197,6 +197,38 @@ const MeuCorre = () => {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!user || !subscription) return;
+
+    try {
+      const { data, error } = await supabase.functions.invoke('cancel-subscription');
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Plano Cancelado",
+          description: "Seu plano foi cancelado. Você perdeu o acesso às funcionalidades premium.",
+        });
+
+        // Atualizar estado local
+        setSubscription(null);
+        
+        // Recarregar dados
+        await fetchSubscription();
+      } else {
+        throw new Error(data?.error || 'Erro ao cancelar plano');
+      }
+    } catch (error: any) {
+      console.error('Erro ao cancelar plano:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao cancelar",
+        description: error.message || "Não foi possível cancelar o plano.",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
@@ -276,20 +308,42 @@ const MeuCorre = () => {
               <div className="bg-card rounded-2xl p-8 md:p-12 border border-border">
                 <div className="flex flex-col items-center justify-center space-y-6">
                   <MessageSquare className="w-16 h-16 text-primary" />
-                  <div className="text-center space-y-2">
-                    <h3 className="text-2xl font-bold">Precisa de Ajuda?</h3>
-                    <p className="text-muted-foreground max-w-md">
-                      Entre em contato com nossa equipe de atendimento jurídico através do WhatsApp
-                    </p>
-                  </div>
-                  <Button 
-                    size="lg" 
-                    className="bg-green-600 hover:bg-green-700 text-white gap-2"
-                    onClick={() => window.open('https://wa.me/551150395554', '_blank')}
-                  >
-                    <MessageSquare className="w-5 h-5" />
-                    Iniciar Atendimento
-                  </Button>
+                  
+                  {subscription ? (
+                    // Usuário COM plano ativo - pode iniciar atendimento
+                    <>
+                      <div className="text-center space-y-2">
+                        <h3 className="text-2xl font-bold">Precisa de Ajuda?</h3>
+                        <p className="text-muted-foreground max-w-md">
+                          Entre em contato com nossa equipe de atendimento jurídico através do WhatsApp
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg" 
+                        className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                        onClick={() => window.open('https://wa.me/551150395554', '_blank')}
+                      >
+                        <MessageSquare className="w-5 h-5" />
+                        Iniciar Atendimento
+                      </Button>
+                    </>
+                  ) : (
+                    // Usuário SEM plano ativo - bloqueado
+                    <>
+                      <div className="text-center space-y-2">
+                        <h3 className="text-2xl font-bold text-muted-foreground">Plano Inativo</h3>
+                        <p className="text-muted-foreground max-w-md">
+                          Para iniciar um novo atendimento você deverá contratar um plano
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg" 
+                        onClick={handleSubscribe}
+                      >
+                        Contratar Plano
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -464,13 +518,27 @@ const MeuCorre = () => {
             {/* Aba Meu Plano */}
             {subscription && (
               <TabsContent value="plano" className="mt-6">
-                <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl p-8 border-2 border-primary/20">
+                <div className={`rounded-2xl p-8 border-2 ${
+                  subscription.status === 'cancelled' 
+                    ? 'bg-muted border-muted-foreground/20' 
+                    : 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
+                }`}>
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
-                      <Shield className="w-8 h-8 text-primary" />
+                      <Shield className={`w-8 h-8 ${
+                        subscription.status === 'cancelled' ? 'text-muted-foreground' : 'text-primary'
+                      }`} />
                       <div>
-                        <h2 className="text-2xl font-bold text-foreground">Plano Ativo</h2>
-                        <p className="text-muted-foreground">Você está protegido!</p>
+                        <h2 className={`text-2xl font-bold ${
+                          subscription.status === 'cancelled' ? 'text-muted-foreground' : 'text-foreground'
+                        }`}>
+                          {subscription.status === 'cancelled' ? 'Plano Inativo' : 'Plano Ativo'}
+                        </h2>
+                        <p className="text-muted-foreground">
+                          {subscription.status === 'cancelled' 
+                            ? 'Plano cancelado - Sem acesso às funcionalidades' 
+                            : 'Você está protegido!'}
+                        </p>
                       </div>
                     </div>
                     <Button
@@ -520,32 +588,86 @@ const MeuCorre = () => {
                         {subscription.payment_method === 'credit_card' ? 'Cartão' : subscription.payment_method}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Status: Ativo
+                        Status: {subscription.status === 'cancelled' ? 'Cancelado' : 'Ativo'}
                       </p>
                     </div>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
-                    <Button
-                      onClick={handleSubscribe}
-                      variant="outline"
-                      className="w-full"
-                    >
-                      Renovar Plano
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={() => {
-                        toast({
-                          title: "Cancelamento de Plano",
-                          description: "Entre em contato pelo WhatsApp para cancelar seu plano.",
-                        });
-                        window.open('https://wa.me/551150395554', '_blank');
-                      }}
-                    >
-                      Cancelar Plano
-                    </Button>
+                    {subscription.status === 'cancelled' ? (
+                      // Plano cancelado - só mostrar botão de contratar
+                      <Button
+                        onClick={handleSubscribe}
+                        className="w-full col-span-2"
+                      >
+                        Contratar Novo Plano
+                      </Button>
+                    ) : (
+                      // Plano ativo - mostrar renovar e cancelar
+                      <>
+                        <Button
+                          onClick={handleSubscribe}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Renovar Plano
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" className="w-full">
+                              Cancelar Plano
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>⚠️ Cancelar Plano Ativo?</AlertDialogTitle>
+                              <AlertDialogDescription className="space-y-3">
+                                <p className="font-bold text-destructive text-base">
+                                  Atenção! Esta ação terá efeito IMEDIATO!
+                                </p>
+                                
+                                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 space-y-2">
+                                  <p className="font-semibold text-destructive flex items-start gap-2">
+                                    <span>⚠️</span>
+                                    <span>Você perderá o acesso às funcionalidades premium IMEDIATAMENTE</span>
+                                  </p>
+                                  <p className="font-semibold text-destructive flex items-start gap-2">
+                                    <span>💰</span>
+                                    <span>NÃO haverá reembolso do valor pago (R$ {subscription.amount_paid.toFixed(2)})</span>
+                                  </p>
+                                  <p className="font-semibold text-destructive flex items-start gap-2">
+                                    <span>🚫</span>
+                                    <span>O plano será marcado como INATIVO permanentemente</span>
+                                  </p>
+                                </div>
+
+                                <p className="text-sm">
+                                  Ao cancelar, você não poderá mais:
+                                </p>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                  <li>Iniciar novos atendimentos jurídicos</li>
+                                  <li>Acessar suporte especializado</li>
+                                  <li>Utilizar os benefícios do plano {PLAN_DETAILS[subscription.plan_type as keyof typeof PLAN_DETAILS]?.name}</li>
+                                </ul>
+                                
+                                <p className="font-bold mt-4 text-base">
+                                  Tem certeza que deseja cancelar seu plano?
+                                </p>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Não, manter plano ativo</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={handleCancelSubscription}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Sim, cancelar plano
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
                   </div>
                 </div>
               </TabsContent>
