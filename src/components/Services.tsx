@@ -23,7 +23,7 @@ const Services = () => {
       ]
     },
     {
-      title: "Gestão de Multas e Problemas com a CNH",
+      title: "Gestão de Multas, Suspensão e Cassação da CNH",
       description: "Orientação para avaliar, contestar e recorrer multas — protegendo sua CNH e seu direito de trabalhar. Você recebe instruções claras sobre como agir, prazos, documentos e argumentos para aumentar as chances de sucesso.",
       coverage: [
         "Avaliação da multa e viabilidade de recurso",

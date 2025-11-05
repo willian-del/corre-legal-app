@@ -54,7 +54,7 @@ const Pricing = () => {
         "6 meses de cobertura",
         "Canal de Atendimento Jurídico Especializado",
         "Suporte no Bloqueio e Reativação de Conta",
-        "Gestão de Multas e Problemas com a CNH"
+        "Gestão de Multas, Suspensão e Cassação da CNH"
       ],
       buttonText: "Contratar Ouro",
       buttonVariant: "default" as const,
