@@ -11,6 +11,7 @@ import Logo from '@/components/Logo';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { updateProfile } from '@/lib/profile-utils';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -37,7 +38,7 @@ const signUpSchema = z.object({
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, signIn, signUp, loading, profileComplete } = useAuth();
+  const { user, signIn, signUp, loading, profileComplete, checkProfile } = useAuth();
 
   // Mode toggle
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -172,13 +173,36 @@ const Auth = () => {
 
     // Após cadastro, fazer login automático
     const { error: signInError } = await signIn(signUpEmail, signUpPassword);
-    setIsSubmitting(false);
 
     if (signInError) {
       toast.error('Cadastro realizado! Faça login para continuar.');
       setIsSignUpMode(false);
+      setIsSubmitting(false);
       return;
     }
+
+    // Aguardar sessão estar pronta e salvar o CPF
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (currentUser) {
+        await updateProfile(currentUser.id, {
+          cpf: cpf,
+          phone: phone,
+          service_type: serviceType
+        });
+
+        await checkProfile();
+        
+        toast.success('Cadastro completo! Bem-vindo ao Corre Legal.');
+      }
+    } catch (profileError) {
+      console.error('Erro ao completar perfil:', profileError);
+    }
+
+    setIsSubmitting(false);
 
     // O redirecionamento será feito pelo useEffect
   };
