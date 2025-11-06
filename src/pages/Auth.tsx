@@ -299,13 +299,13 @@ const Auth = () => {
               </div>
             )}
             <CardTitle className="text-2xl">
-              {showPasswordReset ? 'Recuperar Senha' : isSignUpMode ? 'Criar Conta' : 'Fazer Login'}
+              {showPasswordReset ? 'Recuperar Senha' : isSignUpMode ? 'Cadastre-se' : 'Fazer Login'}
             </CardTitle>
             <CardDescription className="text-base">
               {showPasswordReset 
                 ? 'Digite seu email para receber instruções de recuperação' 
                 : isSignUpMode
-                ? 'Crie sua conta gratuitamente'
+                ? 'Crie sua conta gratuitamente para contratar um plano Corre Legal'
                 : 'Entre com suas credenciais'
               }
             </CardDescription>
