@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { isProfileComplete } from '@/lib/profile-utils';
+import { getAuthErrorMessage } from '@/lib/auth-error-messages';
 
 interface AuthContextType {
   user: User | null;
@@ -125,10 +126,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
+        const friendlyMessage = getAuthErrorMessage(error);
         toast({
           variant: "destructive",
           title: "Erro no cadastro",
-          description: error.message
+          description: friendlyMessage
         });
         return { error };
       }
@@ -140,10 +142,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       return { error: null };
     } catch (error: any) {
+      const friendlyMessage = getAuthErrorMessage(error);
       toast({
         variant: "destructive",
         title: "Erro no cadastro",
-        description: error.message
+        description: friendlyMessage
       });
       return { error };
     }
@@ -157,10 +160,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
+        const friendlyMessage = getAuthErrorMessage(error);
         toast({
           variant: "destructive",
           title: "Erro no login",
-          description: error.message
+          description: friendlyMessage
         });
         return { error };
       }
@@ -172,10 +176,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return { error: null };
     } catch (error: any) {
+      const friendlyMessage = getAuthErrorMessage(error);
       toast({
         variant: "destructive",
         title: "Erro no login",
-        description: error.message
+        description: friendlyMessage
       });
       return { error };
     }
