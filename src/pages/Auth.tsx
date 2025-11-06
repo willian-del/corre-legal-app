@@ -11,7 +11,7 @@ import Logo from '@/components/Logo';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { updateProfile } from '@/lib/profile-utils';
+import { updateProfile, isProfileComplete } from '@/lib/profile-utils';
 import { SERVICE_TYPES } from '@/lib/service-type-utils';
 import { isValidCPF, formatCPF } from '@/lib/cpf-utils';
 
@@ -137,13 +137,34 @@ const Auth = () => {
 
     setIsSubmitting(true);
     const { error } = await signIn(loginEmail, loginPassword);
-    setIsSubmitting(false);
-
+    
     if (error) {
+      setIsSubmitting(false);
       return;
     }
 
-    // O redirecionamento será feito pelo useEffect acima
+    // Aguardar um pouco para garantir que o perfil foi verificado
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Verificar se o perfil está completo e redirecionar
+    await checkProfile();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (currentUser) {
+      const complete = await isProfileComplete(currentUser.id);
+      
+      const redirectParam = searchParams.get('redirect');
+      
+      if (redirectParam) {
+        navigate(redirectParam);
+      } else if (!complete) {
+        navigate('/onboarding');
+      } else {
+        navigate('/meu-corre');
+      }
+    }
+    
+    setIsSubmitting(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
