@@ -169,30 +169,14 @@ const MeuCorre = () => {
     setIsDeletingAccount(true);
     
     try {
-      // 1. Deletar dados do perfil
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', user.id);
-
-      if (profileError) throw profileError;
-
-      // 2. Deletar assinaturas do usuário
-      const { error: subscriptionError } = await supabase
-        .from('user_subscriptions')
-        .delete()
-        .eq('user_id', user.id);
-
-      if (subscriptionError) throw subscriptionError;
-
-      // 3. Deletar conta de autenticação (via edge function)
-      const { error: authError } = await supabase.functions.invoke('delete-user-account', {
+      // Call edge function to handle all deletions securely
+      const { error: deleteError } = await supabase.functions.invoke('delete-user-account', {
         body: { userId: user.id }
       });
 
-      if (authError) throw authError;
+      if (deleteError) throw deleteError;
 
-      // 4. Fazer logout e redirecionar
+      // Logout and redirect
       toast({
         title: "Conta deletada",
         description: "Sua conta e todos os dados foram removidos permanentemente.",

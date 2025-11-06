@@ -41,13 +41,39 @@ serve(async (req) => {
       );
     }
 
-    console.log('Deleting user account:', userId);
+    console.log('Starting account deletion for user:', userId);
 
-    // Deletar usuário do Auth
+    // 1. Deletar assinaturas do usuário
+    const { error: subscriptionError } = await supabaseAdmin
+      .from('user_subscriptions')
+      .delete()
+      .eq('user_id', userId);
+
+    if (subscriptionError) {
+      console.error('Error deleting subscriptions:', subscriptionError);
+      throw subscriptionError;
+    }
+
+    console.log('User subscriptions deleted successfully:', userId);
+
+    // 2. Deletar perfil do usuário
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', userId);
+
+    if (profileError) {
+      console.error('Error deleting profile:', profileError);
+      throw profileError;
+    }
+
+    console.log('User profile deleted successfully:', userId);
+
+    // 3. Deletar usuário do Auth
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
-      console.error('Error deleting user:', deleteError);
+      console.error('Error deleting auth user:', deleteError);
       throw deleteError;
     }
 

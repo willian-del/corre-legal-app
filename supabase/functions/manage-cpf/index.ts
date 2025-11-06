@@ -115,7 +115,13 @@ serve(async (req) => {
   }
 
   try {
-    // Verify authentication
+    // Create Supabase client
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Verify authentication using Supabase's built-in JWT verification
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('[MANAGE-CPF] Missing authorization header');
@@ -125,25 +131,18 @@ serve(async (req) => {
       );
     }
 
-    // Extract user id from JWT (function already enforces JWT verification)
-    let userId: string | null = null;
-    try {
-      const token = authHeader.replace('Bearer ', '').trim();
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userId = payload.sub as string;
-    } catch (e) {
-      console.error('[MANAGE-CPF] Failed to parse JWT', e);
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      console.error('[MANAGE-CPF] Authentication failed:', authError);
       return new Response(
         JSON.stringify({ error: 'Não autorizado' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    if (!userId) {
-      return new Response(
-        JSON.stringify({ error: 'Não autorizado' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+
+    const userId = user.id;
 
     // Parse and validate request body
     const body = await req.json();
@@ -186,13 +185,8 @@ serve(async (req) => {
 
       // Check if CPF already exists for another user
       const cpfHash = await hashCPF(cpf);
-      
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      );
 
-      const { data: existingProfile, error: checkError } = await supabaseAdmin
+      const { data: existingProfile, error: checkError } = await supabaseClient
         .from('profiles')
         .select('id')
         .eq('cpf_hash', cpfHash)
@@ -215,7 +209,7 @@ serve(async (req) => {
       const encryptedCPF = await encryptCPF(cpf);
 
       // Store in database
-      const { error: updateError } = await supabaseAdmin
+      const { error: updateError } = await supabaseClient
         .from('profiles')
         .update({
           cpf: encryptedCPF,
@@ -243,12 +237,7 @@ serve(async (req) => {
 
     } else if (validated.operation === 'get') {
       // Get masked CPF (never return decrypted version)
-      const supabaseAdmin = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      );
-
-      const { data, error } = await supabaseAdmin
+      const { data, error } = await supabaseClient
         .from('profiles')
         .select('cpf, cpf_hash')
         .eq('id', userId)
