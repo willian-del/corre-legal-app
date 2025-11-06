@@ -60,22 +60,15 @@ const Navbar = () => {
             >
               Contrate Agora
             </Button>
-            <div className="relative">
-              <Button
-                onClick={handleMeuCorre}
-                variant="outline"
-                size="default"
-                className="gap-2 h-10"
-              >
-                <User size={18} />
-                Meu Corre
-              </Button>
-              {user && hasActiveSubscription === false && (
-                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full animate-pulse">
-                  Sem plano
-                </span>
-              )}
-            </div>
+            <Button
+              onClick={handleMeuCorre}
+              variant="outline"
+              size="default"
+              className="gap-2 h-10"
+            >
+              <User size={18} />
+              Meu Corre
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,22 +90,15 @@ const Navbar = () => {
             >
               Contrate Agora
             </Button>
-            <div className="relative">
-              <Button
-                onClick={handleMeuCorre}
-                variant="outline"
-                size="default"
-                className="w-full gap-2 h-10"
-              >
-                <User size={18} />
-                Meu Corre
-              </Button>
-              {user && hasActiveSubscription === false && (
-                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full animate-pulse">
-                  Sem plano
-                </span>
-              )}
-            </div>
+            <Button
+              onClick={handleMeuCorre}
+              variant="outline"
+              size="default"
+              className="w-full gap-2 h-10"
+            >
+              <User size={18} />
+              Meu Corre
+            </Button>
           </div>
         )}
       </div>
