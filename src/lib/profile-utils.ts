@@ -6,14 +6,19 @@ export async function isProfileComplete(userId: string): Promise<boolean> {
       .from('profiles')
       .select('cpf_hash, phone, service_type')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
     
     if (error) {
       console.error('Error checking profile:', error);
       return false;
     }
     
-    return !!(data?.cpf_hash && data?.phone && data?.service_type);
+    // If no row exists yet, profile is incomplete
+    if (!data) {
+      return false;
+    }
+    
+    return !!(data.cpf_hash && data.phone && data.service_type);
   } catch (error) {
     console.error('Error checking profile:', error);
     return false;

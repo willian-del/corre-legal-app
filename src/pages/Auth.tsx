@@ -64,8 +64,12 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [resetEmailSent, setResetEmailSent] = useState(false);
 
+  // Sign-up flow state
+  const [completingSignUp, setCompletingSignUp] = useState(false);
+
   useEffect(() => {
-    if (!loading && user && profileComplete !== null) {
+    // Only redirect if not completing sign-up
+    if (!loading && user && profileComplete !== null && !completingSignUp) {
       const redirectParam = searchParams.get('redirect');
       
       // Se há um redirect explícito na URL, usar ele
@@ -81,7 +85,7 @@ const Auth = () => {
         navigate('/meu-corre');
       }
     }
-  }, [user, loading, profileComplete, navigate, searchParams]);
+  }, [user, loading, profileComplete, navigate, searchParams, completingSignUp]);
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, '');
@@ -157,32 +161,36 @@ const Auth = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await signUp(
-      signUpEmail,
-      signUpPassword,
-      fullName,
-      cpf,
-      phone,
-      serviceType
-    );
-
-    if (error) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Após cadastro, fazer login automático
-    const { error: signInError } = await signIn(signUpEmail, signUpPassword);
-
-    if (signInError) {
-      toast.error('Cadastro realizado! Faça login para continuar.');
-      setIsSignUpMode(false);
-      setIsSubmitting(false);
-      return;
-    }
-
-    // Aguardar sessão estar pronta e salvar o CPF
+    setCompletingSignUp(true);
+    
     try {
+      const { error } = await signUp(
+        signUpEmail,
+        signUpPassword,
+        fullName,
+        cpf,
+        phone,
+        serviceType
+      );
+
+      if (error) {
+        setIsSubmitting(false);
+        setCompletingSignUp(false);
+        return;
+      }
+
+      // Após cadastro, fazer login automático
+      const { error: signInError } = await signIn(signUpEmail, signUpPassword);
+
+      if (signInError) {
+        toast.error('Cadastro realizado! Faça login para continuar.');
+        setIsSignUpMode(false);
+        setIsSubmitting(false);
+        setCompletingSignUp(false);
+        return;
+      }
+
+      // Aguardar sessão estar pronta e salvar o CPF
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -197,14 +205,17 @@ const Auth = () => {
         await checkProfile();
         
         toast.success('Cadastro completo! Bem-vindo ao Corre Legal.');
+        
+        // Navigate directly to meu-corre after successful profile update
+        navigate('/meu-corre');
       }
     } catch (profileError) {
       console.error('Erro ao completar perfil:', profileError);
+      toast.error('Erro ao completar cadastro. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
+      setCompletingSignUp(false);
     }
-
-    setIsSubmitting(false);
-
-    // O redirecionamento será feito pelo useEffect
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
