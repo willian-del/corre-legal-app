@@ -267,21 +267,6 @@ const MeuCorre = () => {
             </p>
           </div>
 
-          {!subscription && (
-            <div className="bg-card rounded-xl p-6 border-2 border-primary/20 text-center">
-              <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <h2 className="text-xl font-bold text-foreground mb-2">
-                Você ainda não possui um plano ativo
-              </h2>
-              <p className="text-muted-foreground mb-4">
-                Contrate um plano para ter acesso completo aos benefícios.
-              </p>
-              <Button onClick={handleSubscribe}>
-                Contratar Plano
-              </Button>
-            </div>
-          )}
-
           <Tabs defaultValue="chamados" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="chamados" className="gap-2">
@@ -294,13 +279,11 @@ const MeuCorre = () => {
                 <span className="hidden sm:inline">Meu Cadastro</span>
                 <span className="sm:hidden">Cadastro</span>
               </TabsTrigger>
-              {subscription && (
-                <TabsTrigger value="plano" className="gap-2">
-                  <Shield className="w-4 h-4" />
-                  <span className="hidden sm:inline">Meu Plano</span>
-                  <span className="sm:hidden">Plano</span>
-                </TabsTrigger>
-              )}
+              <TabsTrigger value="plano" className="gap-2">
+                <Shield className="w-4 h-4" />
+                <span className="hidden sm:inline">Meu Plano</span>
+                <span className="sm:hidden">Plano</span>
+              </TabsTrigger>
             </TabsList>
 
             {/* Aba Meus Chamados */}
@@ -517,12 +500,13 @@ const MeuCorre = () => {
 
             {/* Aba Meu Plano */}
             {subscription && (
-              <TabsContent value="plano" className="mt-6">
-                <div className={`rounded-2xl p-8 border-2 ${
-                  subscription.status === 'cancelled' 
-                    ? 'bg-muted border-muted-foreground/20' 
-                    : 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
-                }`}>
+          <TabsContent value="plano" className="mt-6">
+            {subscription ? (
+              <div className={`rounded-2xl p-8 border-2 ${
+                subscription.status === 'cancelled' 
+                  ? 'bg-muted border-muted-foreground/20' 
+                  : 'bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20'
+              }`}>
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <Shield className={`w-8 h-8 ${
@@ -666,11 +650,47 @@ const MeuCorre = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
-                      </>
-                    )}
+                  </>
+                )}
+              </div>
+            </div>
+            ) : (
+              // CARD SEM PLANO - INATIVO
+              <div className="rounded-2xl p-8 border-2 bg-muted border-muted-foreground/20">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <Shield className="w-8 h-8 text-muted-foreground" />
+                    <div>
+                      <h2 className="text-2xl font-bold text-muted-foreground">
+                        Plano Inativo
+                      </h2>
+                      <p className="text-destructive font-semibold">
+                        ⚠️ Você não está protegido!
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </TabsContent>
+
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 mb-6">
+                  <p className="text-foreground font-bold text-lg mb-2">
+                    Evite o perrengue e contrate agora! 🚗💨
+                  </p>
+                  <p className="text-muted-foreground">
+                    Escolha um dos nossos planos e tenha suporte jurídico especializado por 6 meses.
+                    Proteção para o seu corre do dia a dia.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleSubscribe}
+                  size="lg"
+                  className="w-full"
+                >
+                  Ver Planos e Contratar
+                </Button>
+              </div>
+            )}
+          </TabsContent>
             )}
           </Tabs>
         </div>

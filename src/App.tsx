@@ -36,11 +36,11 @@ const App = () => (
               }
             />
             
-            {/* Meu Corre - requer perfil completo + assinatura */}
+            {/* Meu Corre - requer perfil completo (assinatura opcional) */}
             <Route
               path="/meu-corre"
               element={
-                <ProtectedRoute requireCompleteProfile={true} requireSubscription={true}>
+                <ProtectedRoute requireCompleteProfile={true} requireSubscription={false}>
                   <MeuCorre />
                 </ProtectedRoute>
               }

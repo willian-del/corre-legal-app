@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Shield, CheckCircle } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
@@ -20,16 +21,42 @@ const loginSchema = z.object({
   })
 });
 
+const signUpSchema = z.object({
+  email: z.string().email({ message: "Email inválido" }),
+  password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
+  passwordConfirm: z.string(),
+  fullName: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres" }),
+  cpf: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, { message: "CPF inválido (formato: 000.000.000-00)" }),
+  phone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, { message: "Telefone inválido (formato: (00) 00000-0000)" }),
+  serviceType: z.string().min(1, { message: "Selecione o tipo de serviço" })
+}).refine(data => data.password === data.passwordConfirm, {
+  message: "As senhas não conferem",
+  path: ["passwordConfirm"]
+});
+
 const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { user, signIn, loading, profileComplete } = useAuth();
+  const { user, signIn, signUp, loading, profileComplete } = useAuth();
+
+  // Mode toggle
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginErrors, setLoginErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Sign up form
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [signUpPasswordConfirm, setSignUpPasswordConfirm] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [phone, setPhone] = useState('');
+  const [serviceType, setServiceType] = useState('');
+  const [signUpErrors, setSignUpErrors] = useState<any>({});
   
   // Password reset
   const [showPasswordReset, setShowPasswordReset] = useState(false);
@@ -54,6 +81,27 @@ const Auth = () => {
       }
     }
   }, [user, loading, profileComplete, navigate, searchParams]);
+
+  const formatCPF = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    }
+    return value;
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, '');
+    if (numbers.length <= 11) {
+      return numbers
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    return value;
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +130,57 @@ const Auth = () => {
     }
 
     // O redirecionamento será feito pelo useEffect acima
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignUpErrors({});
+
+    const result = signUpSchema.safeParse({
+      email: signUpEmail,
+      password: signUpPassword,
+      passwordConfirm: signUpPasswordConfirm,
+      fullName,
+      cpf,
+      phone,
+      serviceType
+    });
+
+    if (!result.success) {
+      const errors: any = {};
+      result.error.errors.forEach(err => {
+        errors[err.path[0]] = err.message;
+      });
+      setSignUpErrors(errors);
+      return;
+    }
+
+    setIsSubmitting(true);
+    const { error } = await signUp(
+      signUpEmail,
+      signUpPassword,
+      fullName,
+      cpf,
+      phone,
+      serviceType
+    );
+
+    if (error) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Após cadastro, fazer login automático
+    const { error: signInError } = await signIn(signUpEmail, signUpPassword);
+    setIsSubmitting(false);
+
+    if (signInError) {
+      toast.error('Cadastro realizado! Faça login para continuar.');
+      setIsSignUpMode(false);
+      return;
+    }
+
+    // O redirecionamento será feito pelo useEffect
   };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
@@ -133,36 +232,37 @@ const Auth = () => {
           </p>
         </div>
 
-        <Card className="bg-card border-primary/30 rounded-2xl shadow-elevated mb-6 animate-in fade-in duration-700 delay-200">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex items-start gap-3 mb-4">
-              <Shield className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-              <div className="space-y-2">
-                <p className="text-sm font-semibold text-foreground">
-                  Ainda não contratou um plano?
-                </p>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Para acessar a área de cliente, você precisa primeiro contratar um dos nossos planos.
-                  Após o pagamento, você receberá suas credenciais de acesso por email.
-                </p>
-              </div>
-            </div>
-            <Button
-              onClick={() => navigate('/#pricing')}
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground transition-all duration-300 hover:-translate-y-0.5"
-            >
-              Ver Planos e Contratar
-            </Button>
-          </CardContent>
-        </Card>
-
         <Card className="bg-card border border-border rounded-2xl shadow-elevated animate-in fade-in duration-700 delay-300">
           <CardHeader className="p-6 md:p-8 pb-4">
-            <CardTitle className="text-2xl">{showPasswordReset ? 'Recuperar Senha' : 'Fazer Login'}</CardTitle>
+            {!showPasswordReset && (
+              <div className="flex justify-center gap-2 mb-4">
+                <Button
+                  type="button"
+                  variant={!isSignUpMode ? "default" : "outline"}
+                  onClick={() => setIsSignUpMode(false)}
+                  className="flex-1"
+                >
+                  Login
+                </Button>
+                <Button
+                  type="button"
+                  variant={isSignUpMode ? "default" : "outline"}
+                  onClick={() => setIsSignUpMode(true)}
+                  className="flex-1"
+                >
+                  Cadastre-se
+                </Button>
+              </div>
+            )}
+            <CardTitle className="text-2xl">
+              {showPasswordReset ? 'Recuperar Senha' : isSignUpMode ? 'Criar Conta' : 'Fazer Login'}
+            </CardTitle>
             <CardDescription className="text-base">
               {showPasswordReset 
                 ? 'Digite seu email para receber instruções de recuperação' 
-                : 'Entre com suas credenciais recebidas por email'
+                : isSignUpMode
+                ? 'Crie sua conta gratuitamente'
+                : 'Entre com suas credenciais'
               }
             </CardDescription>
           </CardHeader>
@@ -228,6 +328,134 @@ const Auth = () => {
                   </form>
                 )}
               </>
+            ) : isSignUpMode ? (
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Nome Completo</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="João Silva"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {signUpErrors.fullName && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.fullName}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={signUpEmail}
+                    onChange={e => setSignUpEmail(e.target.value)}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {signUpErrors.email && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.email}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-cpf">CPF</Label>
+                  <Input
+                    id="signup-cpf"
+                    type="text"
+                    placeholder="000.000.000-00"
+                    value={cpf}
+                    onChange={e => setCpf(formatCPF(e.target.value))}
+                    maxLength={14}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {signUpErrors.cpf && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.cpf}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-phone">Telefone</Label>
+                  <Input
+                    id="signup-phone"
+                    type="text"
+                    placeholder="(00) 00000-0000"
+                    value={phone}
+                    onChange={e => setPhone(formatPhone(e.target.value))}
+                    maxLength={15}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {signUpErrors.phone && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.phone}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-service">Tipo de Serviço</Label>
+                  <Select value={serviceType} onValueChange={setServiceType} required>
+                    <SelectTrigger className="focus:border-primary transition-colors">
+                      <SelectValue placeholder="Selecione..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="motoboy">Motoboy</SelectItem>
+                      <SelectItem value="motorista_uber">Motorista Uber</SelectItem>
+                      <SelectItem value="motorista_99">Motorista 99</SelectItem>
+                      <SelectItem value="entregador_ifood">Entregador iFood</SelectItem>
+                      <SelectItem value="entregador_rappi">Entregador Rappi</SelectItem>
+                      <SelectItem value="outro">Outro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {signUpErrors.serviceType && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.serviceType}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Senha</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={signUpPassword}
+                    onChange={e => setSignUpPassword(e.target.value)}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {signUpErrors.password && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.password}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password-confirm">Confirmar Senha</Label>
+                  <Input
+                    id="signup-password-confirm"
+                    type="password"
+                    placeholder="Digite a senha novamente"
+                    value={signUpPasswordConfirm}
+                    onChange={e => setSignUpPasswordConfirm(e.target.value)}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {signUpErrors.passwordConfirm && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.passwordConfirm}</p>
+                  )}
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Criando conta...' : 'Criar Conta Grátis'}
+                </Button>
+              </form>
             ) : (
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
@@ -279,6 +507,19 @@ const Auth = () => {
                 >
                   {isSubmitting ? 'Entrando...' : 'Entrar'}
                 </Button>
+
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm">
+                    Novo usuário?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUpMode(true)}
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Cadastre-se agora
+                    </button>
+                  </p>
+                </div>
               </form>
             )}
           </CardContent>
