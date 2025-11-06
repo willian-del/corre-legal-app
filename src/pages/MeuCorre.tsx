@@ -242,7 +242,7 @@ const MeuCorre = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary/30">
+    <div className="min-h-screen bg-secondary/30 animate-fade-in">
       {/* Header */}
       <header className="bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="container mx-auto px-4 py-4">

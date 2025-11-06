@@ -116,7 +116,7 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-secondary/30 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-secondary/30 px-4 animate-fade-in">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <Logo size={72} />

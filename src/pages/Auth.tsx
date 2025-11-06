@@ -67,6 +67,7 @@ const Auth = () => {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginErrors, setLoginErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   // Sign up form
   const [signUpEmail, setSignUpEmail] = useState('');
@@ -143,7 +144,10 @@ const Auth = () => {
       return;
     }
 
-    // Aguardar um pouco para garantir que o perfil foi verificado
+    // Iniciar animação de fade-out
+    setIsTransitioning(true);
+    
+    // Aguardar animação completar
     await new Promise(resolve => setTimeout(resolve, 300));
     
     // Verificar se o perfil está completo e redirecionar
@@ -280,7 +284,7 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative px-4 py-12">
+    <div className={`min-h-screen flex items-center justify-center relative px-4 py-12 transition-opacity duration-300 ${isTransitioning ? 'animate-fade-out' : ''}`}>
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card" />
       
       <div className="w-full max-w-md relative z-10">
