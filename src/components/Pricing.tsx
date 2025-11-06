@@ -70,15 +70,15 @@ const Pricing = () => {
     // Check if user is logged in
     if (!user) {
       toast({
-        title: "Login necessário",
-        description: "Por favor, faça login para contratar um plano.",
+        title: "Cadastro necessário",
+        description: "Por favor, cadastre-se para contratar um plano.",
         action: (
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => navigate('/auth?redirect=' + encodeURIComponent('/#pricing'))}
+            onClick={() => navigate('/auth?signup=true&redirect=' + encodeURIComponent('/#pricing'))}
           >
-            Fazer Login
+            Cadastre-se
           </Button>
         ),
       });

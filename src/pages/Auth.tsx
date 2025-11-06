@@ -49,6 +49,14 @@ const Auth = () => {
   // Mode toggle
   const [isSignUpMode, setIsSignUpMode] = useState(false);
 
+  // Detect signup parameter in URL
+  useEffect(() => {
+    const signupParam = searchParams.get('signup');
+    if (signupParam === 'true') {
+      setIsSignUpMode(true);
+    }
+  }, [searchParams]);
+
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
