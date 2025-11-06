@@ -33,11 +33,21 @@ export async function updateProfile(userId: string, data: {
       return { error: { message: 'Sessão expirada. Por favor, faça login novamente.' } };
     }
 
-    // Update phone and service type directly
+    // Use upsert to create or update profile fields (phone and service_type)
     const updates: any = {
+      id: userId,
       phone: data.phone,
       service_type: data.service_type,
     };
+
+    const { error: upsertError } = await supabase
+      .from('profiles')
+      .upsert(updates, { onConflict: 'id' });
+
+    if (upsertError) {
+      console.error('Error upserting profile:', upsertError);
+      return { error: upsertError };
+    }
 
     // If CPF is provided, use secure edge function to encrypt and store it
     if (data.cpf) {
@@ -56,17 +66,10 @@ export async function updateProfile(userId: string, data: {
       if (cpfResult?.error) {
         return { error: { message: cpfResult.error } };
       }
-
-      // Don't update CPF directly - edge function handles it
     }
 
-    // Update other profile fields
-    const { error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId);
-
-    return { error };
+    console.log('Profile updated successfully for user:', userId);
+    return { error: null };
   } catch (error: any) {
     console.error('Error updating profile:', error);
     return { error };
