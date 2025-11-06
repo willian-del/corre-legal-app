@@ -511,7 +511,6 @@ const MeuCorre = () => {
           </TabsContent>
 
             {/* Aba Meu Plano */}
-            {subscription && (
           <TabsContent value="plano" className="mt-6">
             {subscription ? (
               <div className={`rounded-2xl p-8 border-2 ${
@@ -675,43 +674,26 @@ const MeuCorre = () => {
               </div>
             </div>
             ) : (
-              // CARD SEM PLANO - INATIVO
-              <div className="rounded-2xl p-8 border-2 bg-muted border-muted-foreground/20">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <Shield className="w-8 h-8 text-muted-foreground" />
-                    <div>
-                      <h2 className="text-2xl font-bold text-muted-foreground">
-                        Plano Inativo
-                      </h2>
-                      <p className="text-destructive font-semibold">
-                        ⚠️ Você não está protegido!
-                      </p>
-                    </div>
+              // Usuário SEM plano ativo - bloqueado
+              <div className="bg-card rounded-2xl p-8 md:p-12 border border-border">
+                <div className="flex flex-col items-center justify-center space-y-6">
+                  <MessageSquare className="w-16 h-16 text-primary" />
+                  <div className="text-center space-y-2">
+                    <h3 className="text-2xl font-bold text-muted-foreground">Plano Inativo</h3>
+                    <p className="text-muted-foreground max-w-md">
+                      Para iniciar um novo atendimento você deverá contratar um plano
+                    </p>
                   </div>
+                  <Button 
+                    size="lg" 
+                    onClick={handleSubscribe}
+                  >
+                    Contratar Plano
+                  </Button>
                 </div>
-
-                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 mb-6">
-                  <p className="text-foreground font-bold text-lg mb-2">
-                    Evite o perrengue e contrate agora! 🚗💨
-                  </p>
-                  <p className="text-muted-foreground">
-                    Escolha um dos nossos planos e tenha suporte jurídico especializado por 6 meses.
-                    Proteção para o seu corre do dia a dia.
-                  </p>
-                </div>
-
-                <Button
-                  onClick={handleSubscribe}
-                  size="lg"
-                  className="w-full"
-                >
-                  Ver Planos e Contratar
-                </Button>
               </div>
             )}
           </TabsContent>
-            )}
           </Tabs>
         </div>
       </main>
