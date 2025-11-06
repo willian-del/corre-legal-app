@@ -19,7 +19,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { LogOut, Clock, CreditCard, Calendar, Shield, ShieldX, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2 } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
@@ -685,83 +685,38 @@ const MeuCorre = () => {
               </div>
             </div>
             ) : (
-              // CARD SEM PLANO - INATIVO (Layout consistente com ativo)
-              <div className="rounded-2xl p-8 border-2 bg-muted/50 border-destructive/30">
+              // CARD SEM PLANO - INATIVO
+              <div className="rounded-2xl p-8 border-2 bg-muted border-muted-foreground/20">
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
-                    <ShieldX className="w-8 h-8 text-destructive" />
+                    <Shield className="w-8 h-8 text-muted-foreground" />
                     <div>
-                      <h2 className="text-2xl font-bold text-destructive">
+                      <h2 className="text-2xl font-bold text-muted-foreground">
                         Plano Inativo
                       </h2>
-                      <p className="text-muted-foreground">
-                        Você não está protegido
+                      <p className="text-destructive font-semibold">
+                        ⚠️ Você não está protegido!
                       </p>
                     </div>
                   </div>
-                  <Button
-                    onClick={handleRefresh}
-                    variant="outline"
-                    size="sm"
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-                    Atualizar
-                  </Button>
                 </div>
 
-                {/* Três cards com valores "-" */}
-                <div className="grid md:grid-cols-3 gap-4 mb-6">
-                  {/* Card Plano */}
-                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border opacity-60">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Shield className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Plano</span>
-                    </div>
-                    <p className="text-xl font-bold text-muted-foreground">
-                      -
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      -
-                    </p>
-                  </div>
-
-                  {/* Card Validade */}
-                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border opacity-60">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Validade</span>
-                    </div>
-                    <p className="text-xl font-bold text-muted-foreground">
-                      -
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      -
-                    </p>
-                  </div>
-
-                  {/* Card Pagamento */}
-                  <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-border opacity-60">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="w-5 h-5 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">Pagamento</span>
-                    </div>
-                    <p className="text-lg font-bold text-muted-foreground">
-                      -
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      -
-                    </p>
-                  </div>
+                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-6 mb-6">
+                  <p className="text-foreground font-bold text-lg mb-2">
+                    Evite o perrengue e contrate agora! 🚗💨
+                  </p>
+                  <p className="text-muted-foreground">
+                    Escolha um dos nossos planos e tenha suporte jurídico especializado por 6 meses.
+                    Proteção para o seu corre do dia a dia.
+                  </p>
                 </div>
 
-                {/* Botão único de contratar */}
                 <Button
                   onClick={handleSubscribe}
                   size="lg"
                   className="w-full"
                 >
-                  Contratar um Plano
+                  Ver Planos e Contratar
                 </Button>
               </div>
             )}
