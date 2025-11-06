@@ -111,7 +111,13 @@ const MeuCorre = () => {
   };
 
   const handleSubscribe = () => {
-    navigate('/#pricing');
+    navigate('/');
+    setTimeout(() => {
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   const handleRefresh = () => {
