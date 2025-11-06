@@ -69,19 +69,7 @@ const Pricing = () => {
   const handleSubscribe = async (planType: PlanType) => {
     // Check if user is logged in
     if (!user) {
-      toast({
-        title: "Cadastro necessário",
-        description: "Por favor, cadastre-se para contratar um plano.",
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/auth?signup=true&redirect=' + encodeURIComponent('/#pricing'))}
-          >
-            Cadastre-se
-          </Button>
-        ),
-      });
+      navigate('/auth?signup=true&redirect=' + encodeURIComponent('/#pricing'));
       return;
     }
 
