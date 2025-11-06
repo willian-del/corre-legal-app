@@ -12,32 +12,8 @@ import Logo from '@/components/Logo';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { SERVICE_TYPES } from '@/lib/service-type-utils';
+import { isValidCPF, formatCPF } from '@/lib/cpf-utils';
 
-// Função para validar CPF
-const isValidCPF = (cpf: string): boolean => {
-  const numbers = cpf.replace(/\D/g, '');
-  
-  if (numbers.length !== 11) return false;
-  if (/^(\d)\1+$/.test(numbers)) return false;
-  
-  let sum = 0;
-  for (let i = 0; i < 9; i++) {
-    sum += parseInt(numbers.charAt(i)) * (10 - i);
-  }
-  let digit1 = 11 - (sum % 11);
-  if (digit1 >= 10) digit1 = 0;
-  
-  if (digit1 !== parseInt(numbers.charAt(9))) return false;
-  
-  sum = 0;
-  for (let i = 0; i < 10; i++) {
-    sum += parseInt(numbers.charAt(i)) * (11 - i);
-  }
-  let digit2 = 11 - (sum % 11);
-  if (digit2 >= 10) digit2 = 0;
-  
-  return digit2 === parseInt(numbers.charAt(10));
-};
 
 const onboardingSchema = z.object({
   cpf: z.string()
@@ -71,13 +47,6 @@ const Onboarding = () => {
   const [errors, setErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const formatCpf = (value: string) => {
-    const numbers = value.replace(/\D/g, '').slice(0, 11);
-    if (numbers.length <= 3) return numbers;
-    if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
-    if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
-    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
-  };
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '').slice(0, 11);
@@ -190,7 +159,7 @@ const Onboarding = () => {
                   type="text" 
                   placeholder="000.000.000-00" 
                   value={cpf} 
-                  onChange={e => setCpf(formatCpf(e.target.value))} 
+                  onChange={e => setCpf(formatCPF(e.target.value))}
                   required 
                 />
                 {errors.cpf && <p className="text-sm text-destructive">{errors.cpf}</p>}

@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateProfile } from '@/lib/profile-utils';
 import { SERVICE_TYPES } from '@/lib/service-type-utils';
+import { isValidCPF, formatCPF } from '@/lib/cpf-utils';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -28,7 +29,11 @@ const signUpSchema = z.object({
   password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
   passwordConfirm: z.string(),
   fullName: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres" }),
-  cpf: z.string().regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, { message: "CPF inválido (formato: 000.000.000-00)" }),
+  cpf: z.string()
+    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, { message: "CPF inválido (formato: 000.000.000-00)" })
+    .refine((val) => isValidCPF(val), { 
+      message: "CPF inválido - verifique os dígitos verificadores" 
+    }),
   phone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, { message: "Telefone inválido (formato: (00) 00000-0000)" }),
   serviceType: z.string().min(1, { message: "Selecione o tipo de serviço" })
 }).refine(data => data.password === data.passwordConfirm, {
@@ -88,16 +93,6 @@ const Auth = () => {
     }
   }, [user, loading, profileComplete, navigate, searchParams, completingSignUp]);
 
-  const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
-    if (numbers.length <= 11) {
-      return numbers
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d)/, '$1.$2')
-        .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-    }
-    return value;
-  };
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '');
