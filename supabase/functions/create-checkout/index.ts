@@ -20,13 +20,19 @@ const maskId = (id: string, prefix: string = ''): string => {
   return `${prefix}***${id.slice(-4)}`;
 };
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[CREATE-CHECKOUT] ${step}${detailsStr}`);
-};
-
 serve(async (req) => {
+  // Generate unique request ID and start timer
+  const requestId = crypto.randomUUID().slice(0, 8);
+  const startTime = Date.now();
+
+  const logStep = (step: string, details?: any) => {
+    const elapsed = Date.now() - startTime;
+    const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
+    console.log(`[CREATE-CHECKOUT][${requestId}][${elapsed}ms] ${step}${detailsStr}`);
+  };
+
   if (req.method === "OPTIONS") {
+    console.log(`[CREATE-CHECKOUT][CORS] Preflight request from ${req.headers.get("origin")}`);
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -37,6 +43,15 @@ serve(async (req) => {
 
   try {
     logStep("Function started");
+
+    // Log request context
+    logStep("Request context", {
+      method: req.method,
+      origin: req.headers.get("origin"),
+      referer: req.headers.get("referer"),
+      userAgent: req.headers.get("user-agent")?.slice(0, 50),
+      hasAuth: !!req.headers.get("Authorization")
+    });
 
     // Authentication check
     const authHeader = req.headers.get("Authorization");
@@ -53,7 +68,34 @@ serve(async (req) => {
       throw new Error("Invalid authentication");
     }
     
-    logStep("User authenticated", { userId: user.id });
+    logStep("User authenticated", { 
+      userId: user.id,
+      email: maskEmail(user.email || 'no-email'),
+      hasEmailVerified: user.email_confirmed_at !== null,
+      accountCreated: user.created_at
+    });
+
+    // Validate critical environment variables
+    const criticalEnvs = {
+      supabaseUrl: !!Deno.env.get("SUPABASE_URL"),
+      supabaseKey: !!Deno.env.get("SUPABASE_ANON_KEY"),
+      stripeKey: !!Deno.env.get("STRIPE_SECRET_KEY"),
+      bronzePrice: !!Deno.env.get("STRIPE_PRICE_BRONZE"),
+      prataPrice: !!Deno.env.get("STRIPE_PRICE_PRATA"),
+      ouroPrice: !!Deno.env.get("STRIPE_PRICE_OURO"),
+      allowedOrigin: !!Deno.env.get("ALLOWED_ORIGIN")
+    };
+
+    logStep("Environment variables check", criticalEnvs);
+
+    const missingEnvs = Object.entries(criticalEnvs)
+      .filter(([_, exists]) => !exists)
+      .map(([key]) => key);
+
+    if (missingEnvs.length > 0) {
+      logStep("ERROR: Missing critical environment variables", { missing: missingEnvs });
+      throw new Error(`Missing environment variables: ${missingEnvs.join(', ')}`);
+    }
 
     // Input validation
     const VALID_PLANS = ['bronze', 'prata', 'ouro'] as const;
@@ -124,31 +166,93 @@ serve(async (req) => {
     const base = origin.replace(/\/$/, "");
     logStep("Using redirect origin", { origin: base, source: originSource, plan_type });
 
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price: price_id,
-          quantity: 1,
-        },
-      ],
+    logStep("Creating Stripe checkout session", {
+      plan_type,
+      price_id: maskPriceId(price_id),
       mode: "payment",
-      success_url: `${base}/payment-success?session_id={CHECKOUT_SESSION_ID}&first_purchase=true`,
-      cancel_url: `${base}/#pricing`,
-      customer_creation: 'always',
+      customer_creation: "always"
     });
 
-    logStep("Checkout session created", { sessionId: maskId(session.id, 'cs_'), url: '[REDACTED]' });
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price: price_id,
+            quantity: 1,
+          },
+        ],
+        mode: "payment",
+        success_url: `${base}/payment-success?session_id={CHECKOUT_SESSION_ID}&first_purchase=true`,
+        cancel_url: `${base}/#pricing`,
+        customer_creation: 'always',
+      });
+
+      logStep("Stripe session created successfully", { 
+        sessionId: maskId(session.id, 'cs_'),
+        status: session.status,
+        paymentStatus: session.payment_status,
+        url: '[REDACTED]'
+      });
+    } catch (stripeError: any) {
+      logStep("ERROR: Stripe API call failed", {
+        errorType: stripeError.constructor?.name || 'Unknown',
+        errorMessage: stripeError.message,
+        errorCode: stripeError.code,
+        statusCode: stripeError.statusCode
+      });
+      throw stripeError;
+    }
+
+    const totalTime = Date.now() - startTime;
+    logStep("Checkout completed successfully", {
+      totalDuration: `${totalTime}ms`,
+      plan: plan_type,
+      userId: user.id
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
+  } catch (error: any) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    
+    // Categorize error type
+    let errorType = "UNKNOWN";
+    let statusCode = 500;
+    
+    if (errorMessage.includes("Authentication") || errorMessage.includes("Invalid authentication")) {
+      errorType = "AUTH_ERROR";
+      statusCode = 401;
+    } else if (errorMessage.includes("Invalid plan type")) {
+      errorType = "VALIDATION_ERROR";
+      statusCode = 400;
+    } else if (errorMessage.includes("Price ID") || errorMessage.includes("environment variables")) {
+      errorType = "CONFIG_ERROR";
+      statusCode = 500;
+    } else if (errorMessage.includes("origin")) {
+      errorType = "ORIGIN_ERROR";
+      statusCode = 400;
+    } else if (error.constructor?.name?.includes("Stripe") || error.type === "StripeError") {
+      errorType = "STRIPE_API_ERROR";
+      statusCode = 502;
+    }
+    
+    logStep(`ERROR: ${errorType}`, { 
+      message: errorMessage,
+      errorType: error.constructor?.name || 'Unknown',
+      errorCode: error.code,
+      stack: error instanceof Error ? error.stack?.split('\n').slice(0, 3) : undefined
+    });
+    
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      type: errorType,
+      requestId
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
+      status: statusCode,
     });
   }
 });
