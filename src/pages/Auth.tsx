@@ -490,6 +490,19 @@ const Auth = () => {
                 >
                   {isSubmitting ? 'Criando conta...' : 'Criar Conta Grátis'}
                 </Button>
+
+                <div className="text-center">
+                  <p className="text-muted-foreground text-sm">
+                    Já fez o seu cadastro?{' '}
+                    <button
+                      type="button"
+                      onClick={() => setIsSignUpMode(false)}
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Faça seu login
+                    </button>
+                  </p>
+                </div>
               </form>
             ) : (
               <form onSubmit={handleLogin} className="space-y-4">
