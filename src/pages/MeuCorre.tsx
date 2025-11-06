@@ -19,7 +19,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2 } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
@@ -48,6 +48,10 @@ const MeuCorre = () => {
   const [serviceType, setServiceType] = useState('');
   const [maskedCpf, setMaskedCpf] = useState('***.***.***-**');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
+  // Loading states for async operations
+  const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -156,6 +160,8 @@ const MeuCorre = () => {
   const handleDeleteAccount = async () => {
     if (!user) return;
 
+    setIsDeletingAccount(true);
+    
     try {
       // 1. Deletar dados do perfil
       const { error: profileError } = await supabase
@@ -196,12 +202,16 @@ const MeuCorre = () => {
         title: "Erro ao deletar conta",
         description: error.message || "Não foi possível deletar sua conta. Tente novamente.",
       });
+    } finally {
+      setIsDeletingAccount(false);
     }
   };
 
   const handleCancelSubscription = async () => {
     if (!user || !subscription) return;
 
+    setIsCancellingSubscription(true);
+    
     try {
       const { data, error } = await supabase.functions.invoke('cancel-subscription');
 
@@ -228,6 +238,8 @@ const MeuCorre = () => {
         title: "Erro ao cancelar",
         description: error.message || "Não foi possível cancelar o plano.",
       });
+    } finally {
+      setIsCancellingSubscription(false);
     }
   };
 
@@ -419,7 +431,14 @@ const MeuCorre = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Button type="submit" className="w-full" disabled={isEditingProfile}>
-                      {isEditingProfile ? 'Salvando...' : 'Salvar Alterações'}
+                      {isEditingProfile ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Salvando...
+                        </>
+                      ) : (
+                        'Salvar Alterações'
+                      )}
                     </Button>
 
                     <AlertDialog>
@@ -428,9 +447,19 @@ const MeuCorre = () => {
                           type="button"
                           variant="destructive" 
                           className="w-full gap-2"
+                          disabled={isDeletingAccount}
                         >
-                          <Trash2 className="w-4 h-4" />
-                          Apagar Cadastro
+                          {isDeletingAccount ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Apagando...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="w-4 h-4" />
+                              Apagar Cadastro
+                            </>
+                          )}
                         </Button>
                       </AlertDialogTrigger>
             <AlertDialogContent>
@@ -637,8 +666,16 @@ const MeuCorre = () => {
                               <AlertDialogAction 
                                 onClick={handleCancelSubscription}
                                 className="bg-destructive hover:bg-destructive/90"
+                                disabled={isCancellingSubscription}
                               >
-                                Sim, cancelar plano
+                                {isCancellingSubscription ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Cancelando...
+                                  </>
+                                ) : (
+                                  'Sim, cancelar plano'
+                                )}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

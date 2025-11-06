@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Shield, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Shield, CheckCircle, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
@@ -488,7 +488,14 @@ const Auth = () => {
                   className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Criando conta...' : 'Criar Conta Grátis'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Criando conta...
+                    </>
+                  ) : (
+                    'Criar Conta Grátis'
+                  )}
                 </Button>
 
                 <div className="text-center">
@@ -553,7 +560,14 @@ const Auth = () => {
                   className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Entrando...' : 'Entrar'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Entrando...
+                    </>
+                  ) : (
+                    'Entrar'
+                  )}
                 </Button>
 
                 <div className="text-center">

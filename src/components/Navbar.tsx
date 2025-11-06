@@ -1,14 +1,29 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { checkActiveSubscription } from "@/lib/subscription-utils";
 import Logo from "./Logo";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (user) {
+        const isActive = await checkActiveSubscription(user.id);
+        setHasActiveSubscription(isActive);
+      } else {
+        setHasActiveSubscription(null);
+      }
+    };
+
+    checkSubscription();
+  }, [user]);
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -45,15 +60,22 @@ const Navbar = () => {
             >
               Contrate Agora
             </Button>
-            <Button
-              onClick={handleMeuCorre}
-              variant="outline"
-              size="default"
-              className="gap-2 h-10"
-            >
-              <User size={18} />
-              Meu Corre
-            </Button>
+            <div className="relative">
+              <Button
+                onClick={handleMeuCorre}
+                variant="outline"
+                size="default"
+                className="gap-2 h-10"
+              >
+                <User size={18} />
+                Meu Corre
+              </Button>
+              {user && hasActiveSubscription === false && (
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full animate-pulse">
+                  Sem plano
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Mobile Menu Button */}
@@ -75,15 +97,22 @@ const Navbar = () => {
             >
               Contrate Agora
             </Button>
-            <Button
-              onClick={handleMeuCorre}
-              variant="outline"
-              size="default"
-              className="w-full gap-2 h-10"
-            >
-              <User size={18} />
-              Meu Corre
-            </Button>
+            <div className="relative">
+              <Button
+                onClick={handleMeuCorre}
+                variant="outline"
+                size="default"
+                className="w-full gap-2 h-10"
+              >
+                <User size={18} />
+                Meu Corre
+              </Button>
+              {user && hasActiveSubscription === false && (
+                <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs px-2 py-0.5 rounded-full animate-pulse">
+                  Sem plano
+                </span>
+              )}
+            </div>
           </div>
         )}
       </div>
