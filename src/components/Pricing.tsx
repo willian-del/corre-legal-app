@@ -231,7 +231,7 @@ const Pricing = () => {
                   {loadingPlan === plan.name.toLowerCase() 
                     ? "Processando..." 
                     : !user 
-                      ? "Fazer Login para Contratar"
+                      ? "Cadastre-se para Contratar"
                       : plan.buttonText}
                 </Button>
               </div>
