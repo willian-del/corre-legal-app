@@ -24,6 +24,7 @@ import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
 import { useToast } from '@/hooks/use-toast';
+import { normalizeServiceType, SERVICE_TYPES } from '@/lib/service-type-utils';
 
 interface UserSubscription {
   id: string;
@@ -62,7 +63,8 @@ const MeuCorre = () => {
       const profile = await getProfile(user.id);
       if (profile) {
         setPhone(profile.phone || '');
-        setServiceType(profile.service_type || '');
+        // Normalizar valores legados para valores padronizados
+        setServiceType(normalizeServiceType(profile.service_type));
         
         // Get masked CPF from secure edge function (only if session is valid)
         const maskedCpf = await getMaskedCPF(user.id);
@@ -406,20 +408,11 @@ const MeuCorre = () => {
                           <SelectValue placeholder="Selecione seu serviço" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="uber">Uber</SelectItem>
-                          <SelectItem value="99">99</SelectItem>
-                          <SelectItem value="indrive">inDrive</SelectItem>
-                          <SelectItem value="ifood">iFood</SelectItem>
-                          <SelectItem value="rappi">Rappi</SelectItem>
-                          <SelectItem value="loggi">Loggi</SelectItem>
-                          <SelectItem value="lalamove">Lalamove</SelectItem>
-                          <SelectItem value="delivery-much">Delivery Much</SelectItem>
-                          <SelectItem value="aiqfome">Aiqfome</SelectItem>
-                          <SelectItem value="borzo">Borzo</SelectItem>
-                          <SelectItem value="total-express">Total Express</SelectItem>
-                          <SelectItem value="mercado-livre">Mercado Livre / Mercado Envios</SelectItem>
-                          <SelectItem value="uello">Uello</SelectItem>
-                          <SelectItem value="outros">Outros</SelectItem>
+                          {SERVICE_TYPES.map(type => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>

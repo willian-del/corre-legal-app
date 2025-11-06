@@ -11,6 +11,7 @@ import { Shield } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { z } from 'zod';
 import { useToast } from '@/hooks/use-toast';
+import { SERVICE_TYPES } from '@/lib/service-type-utils';
 
 // Função para validar CPF
 const isValidCPF = (cpf: string): boolean => {
@@ -218,20 +219,11 @@ const Onboarding = () => {
                     <SelectValue placeholder="Selecione seu serviço" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="uber">Uber</SelectItem>
-                    <SelectItem value="99">99</SelectItem>
-                    <SelectItem value="indrive">inDrive</SelectItem>
-                    <SelectItem value="ifood">iFood</SelectItem>
-                    <SelectItem value="rappi">Rappi</SelectItem>
-                    <SelectItem value="loggi">Loggi</SelectItem>
-                    <SelectItem value="lalamove">Lalamove</SelectItem>
-                    <SelectItem value="delivery-much">Delivery Much</SelectItem>
-                    <SelectItem value="aiqfome">Aiqfome</SelectItem>
-                    <SelectItem value="borzo">Borzo</SelectItem>
-                    <SelectItem value="total-express">Total Express</SelectItem>
-                    <SelectItem value="mercado-livre">Mercado Livre / Mercado Envios</SelectItem>
-                    <SelectItem value="uello">Uello</SelectItem>
-                    <SelectItem value="outros">Outros</SelectItem>
+                    {SERVICE_TYPES.map(type => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {errors.serviceType && <p className="text-sm text-destructive">{errors.serviceType}</p>}

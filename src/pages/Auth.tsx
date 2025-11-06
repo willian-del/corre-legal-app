@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { updateProfile } from '@/lib/profile-utils';
+import { SERVICE_TYPES } from '@/lib/service-type-utils';
 
 const loginSchema = z.object({
   email: z.string().email({
@@ -438,12 +439,11 @@ const Auth = () => {
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="motoboy">Motoboy</SelectItem>
-                      <SelectItem value="motorista_uber">Motorista Uber</SelectItem>
-                      <SelectItem value="motorista_99">Motorista 99</SelectItem>
-                      <SelectItem value="entregador_ifood">Entregador iFood</SelectItem>
-                      <SelectItem value="entregador_rappi">Entregador Rappi</SelectItem>
-                      <SelectItem value="outro">Outro</SelectItem>
+                      {SERVICE_TYPES.map(type => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   {signUpErrors.serviceType && (
