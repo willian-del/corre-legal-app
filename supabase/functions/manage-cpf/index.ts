@@ -69,13 +69,16 @@ async function hashCPF(cpf: string): Promise<string> {
   return hashHex;
 }
 
-// Mask CPF for display (only show last 2 digits)
+// Mask CPF for display (show first 3 and last 2 digits)
 function maskCPF(cpf: string): string {
   const cleaned = cpf.replace(/\D/g, '');
   if (cleaned.length !== 11) {
     return '***.***.***-**';
   }
-  return `***.***.***-${cleaned.slice(-2)}`;
+  // Show first 3 digits and last 2 digits: 123.***.***-10
+  const first3 = cleaned.slice(0, 3);
+  const last2 = cleaned.slice(-2);
+  return `${first3}.***.***-${last2}`;
 }
 
 // Validate CPF using official algorithm
