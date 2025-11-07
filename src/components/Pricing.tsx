@@ -133,14 +133,17 @@ const Pricing = () => {
             <p className="text-base text-muted-foreground">
               à vista ou em até 10x no cartão
             </p>
-            <p className="text-lg font-semibold text-primary mt-2">
-              6 meses de cobertura completa
-            </p>
           </div>
 
           {/* Lista de benefícios */}
           <div className="mb-8 max-w-2xl mx-auto">
             <ul className="space-y-5">
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
+                <span className="text-base leading-relaxed text-foreground/90">
+                  <strong className="text-foreground">6 Meses de Cobertura</strong> Completa
+                </span>
+              </li>
               <li className="flex items-start gap-4">
                 <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
                 <span className="text-base leading-relaxed text-foreground/90">
