@@ -19,12 +19,13 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2 } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ShieldCheck } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeServiceType, SERVICE_TYPES } from '@/lib/service-type-utils';
+import { useAdmin } from '@/hooks/use-admin';
 
 interface UserSubscription {
   id: string;
@@ -40,6 +41,7 @@ const MeuCorre = () => {
   const { user, signOut, checkProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useAdmin();
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -316,10 +318,18 @@ const MeuCorre = () => {
               <Logo size={48} />
               <span className="text-xl font-bold text-foreground">Corre Legal</span>
             </div>
-            <Button variant="ghost" onClick={handleSignOut} className="gap-2">
-              <LogOut size={18} />
-              Sair
-            </Button>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button variant="outline" onClick={() => navigate('/admin')} className="gap-2">
+                  <ShieldCheck size={18} />
+                  <span className="hidden sm:inline">Área Admin</span>
+                </Button>
+              )}
+              <Button variant="ghost" onClick={handleSignOut} className="gap-2">
+                <LogOut size={18} />
+                Sair
+              </Button>
+            </div>
           </div>
         </div>
       </header>

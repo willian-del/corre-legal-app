@@ -11,6 +11,8 @@ import Onboarding from "./pages/Onboarding";
 import MeuCorre from "./pages/MeuCorre";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
+import AdminRoute from "./components/AdminRoute";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,16 @@ const App = () => (
                 <ProtectedRoute requireCompleteProfile={true} requireSubscription={false}>
                   <MeuCorre />
                 </ProtectedRoute>
+              }
+            />
+            
+            {/* Admin - requer autenticação + role admin */}
+            <Route
+              path="/admin"
+              element={
+                <AdminRoute>
+                  <Admin />
+                </AdminRoute>
               }
             />
             
