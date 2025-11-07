@@ -243,6 +243,10 @@ export type Database = {
       }
       has_active_subscription: { Args: { _user_id: string }; Returns: boolean }
       hash_cpf: { Args: { cpf_plain: string }; Returns: string }
+      verify_cpf_unchanged: {
+        Args: { _new_cpf: string; _new_cpf_hash: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
