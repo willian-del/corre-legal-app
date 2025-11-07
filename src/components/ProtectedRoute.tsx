@@ -29,31 +29,15 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
       }
 
       if (user) {
-        // Check profile completeness first
-        if (requireCompleteProfile && profileComplete === false) {
-          // Só redireciona se NÃO estiver em /onboarding (evita loop)
-          if (location.pathname !== '/onboarding') {
-            // Revalidação imediata no banco de dados
-            const { isProfileComplete } = await import('@/lib/profile-utils');
-            const complete = await isProfileComplete(user.id);
-            
-            if (complete) {
-              // Perfil está completo, permitir acesso
-              setChecking(false);
-              return;
-            }
-            
-            // Perfil ainda incompleto, aguardar mais um momento e verificar novamente
-            setTimeout(async () => {
-              const stillIncomplete = !(await isProfileComplete(user.id));
-              if (stillIncomplete) {
-                navigate('/onboarding');
-              } else {
-                setChecking(false);
-              }
-            }, 1500);
+        // Always validate profile completeness server-side - never trust client state
+        if (requireCompleteProfile && location.pathname !== '/onboarding') {
+          const { isProfileComplete } = await import('@/lib/profile-utils');
+          const complete = await isProfileComplete(user.id);
+          
+          if (!complete) {
+            navigate('/onboarding');
+            return;
           }
-          return;
         }
 
         // Then check subscription if required

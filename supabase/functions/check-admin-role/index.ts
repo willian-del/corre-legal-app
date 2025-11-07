@@ -50,7 +50,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('[CHECK-ADMIN-ROLE] Error:', error);
     return new Response(
-      JSON.stringify({ isAdmin: false, error: error.message }),
+      JSON.stringify({ isAdmin: false, error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
