@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { updateProfile } from '@/lib/profile-utils';
+import { updateProfile, getProfile } from '@/lib/profile-utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,7 +37,7 @@ const onboardingSchema = z.object({
 });
 
 const Onboarding = () => {
-  const { user, profileComplete } = useAuth();
+  const { user, profileComplete, checkProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -47,12 +47,23 @@ const Onboarding = () => {
   const [errors, setErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirecionar se o perfil já estiver completo
+  // Pré-preencher formulário com dados existentes e redirecionar se completo
   useEffect(() => {
     if (profileComplete === true) {
       navigate('/meu-corre');
+      return;
     }
-  }, [profileComplete, navigate]);
+
+    // Buscar perfil existente para pré-preencher
+    if (user) {
+      getProfile(user.id).then(profile => {
+        if (profile) {
+          if (profile.phone) setPhone(formatPhone(profile.phone));
+          if (profile.service_type) setServiceType(profile.service_type);
+        }
+      });
+    }
+  }, [profileComplete, navigate, user]);
 
 
   const formatPhone = (value: string) => {
@@ -119,6 +130,8 @@ const Onboarding = () => {
       description: "Seus dados foram salvos com sucesso."
     });
 
+    // Atualizar estado do perfil antes de navegar
+    await checkProfile();
     navigate('/meu-corre');
   };
 
