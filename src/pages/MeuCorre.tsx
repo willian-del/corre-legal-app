@@ -367,7 +367,7 @@ const MeuCorre = () => {
 
             {/* Aba Meus Chamados */}
             <TabsContent value="chamados" className="mt-6">
-              <div className="bg-card rounded-2xl p-8 md:p-12 border border-border">
+              <div className="rounded-2xl p-8 md:p-12 border-2 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
                 <div className="flex flex-col items-center justify-center space-y-6">
                   <MessageSquare className="w-16 h-16 text-primary" />
                   
@@ -421,17 +421,17 @@ const MeuCorre = () => {
 
             {/* Aba Meu Cadastro */}
             <TabsContent value="cadastro" className="mt-6">
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
+              <div className="rounded-2xl p-8 border-2 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
+                <div className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
                     <User className="w-5 h-5 text-primary" />
-                    <CardTitle>Meus Dados</CardTitle>
+                    <h3 className="text-2xl font-semibold">Meus Dados</h3>
                   </div>
-                  <CardDescription>
+                  <p className="text-sm text-muted-foreground">
                     Edite suas informações pessoais
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+                  </p>
+                </div>
+                <div>
                   <form onSubmit={handleUpdateProfile} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Nome Completo</Label>
@@ -598,9 +598,9 @@ const MeuCorre = () => {
                     </AlertDialog>
                   </div>
                 </form>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </div>
+              </div>
+            </TabsContent>
 
             {/* Aba Meu Plano */}
           <TabsContent value="plano" className="mt-6">
