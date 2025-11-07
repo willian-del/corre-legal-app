@@ -21,7 +21,9 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
   useEffect(() => {
     async function checkAccess() {
       if (!loading && !user) {
-        console.log('No authenticated user, redirecting to auth');
+        if (import.meta.env.DEV) {
+          console.log('No authenticated user, redirecting to auth');
+        }
         navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
         return;
       }

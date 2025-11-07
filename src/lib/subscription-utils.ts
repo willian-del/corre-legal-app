@@ -7,13 +7,17 @@ export async function checkActiveSubscription(userId: string): Promise<boolean> 
     });
 
     if (error) {
-      console.error('Error checking subscription:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error checking subscription:', error);
+      }
       return false;
     }
 
     return data === true;
   } catch (error) {
-    console.error('Error checking subscription:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error checking subscription:', error);
+    }
     return false;
   }
 }
@@ -25,13 +29,17 @@ export async function getActiveSubscription(userId: string) {
     });
 
     if (error) {
-      console.error('Error fetching subscription:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching subscription:', error);
+      }
       return null;
     }
 
     return data && data.length > 0 ? data[0] : null;
   } catch (error) {
-    console.error('Error fetching subscription:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching subscription:', error);
+    }
     return null;
   }
 }

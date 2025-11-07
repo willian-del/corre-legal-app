@@ -76,7 +76,9 @@ const MeuCorre = () => {
         setMaskedCpf(maskedCpf || 'Não informado');
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error loading profile:', error);
+      }
       // Don't show error toast - CPF might just not be set yet
     }
   };
@@ -245,7 +247,9 @@ const MeuCorre = () => {
       navigate('/');
 
     } catch (error: any) {
-      console.error('Erro ao deletar conta:', error);
+      if (import.meta.env.DEV) {
+        console.error('Erro ao deletar conta:', error);
+      }
       toast({
         variant: "destructive",
         title: "Erro ao deletar conta",
@@ -281,7 +285,9 @@ const MeuCorre = () => {
         throw new Error(data?.error || 'Erro ao cancelar plano');
       }
     } catch (error: any) {
-      console.error('Erro ao cancelar plano:', error);
+      if (import.meta.env.DEV) {
+        console.error('Erro ao cancelar plano:', error);
+      }
       toast({
         variant: "destructive",
         title: "Erro ao cancelar",

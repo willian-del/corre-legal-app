@@ -42,7 +42,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Detect events that indicate invalid session
         if (event === 'TOKEN_REFRESHED' && !session) {
           // Token refresh failed - clear everything
-          console.log('Token refresh failed, clearing session');
+          if (import.meta.env.DEV) {
+            console.log('Token refresh failed, clearing session');
+          }
           setSession(null);
           setUser(null);
           setProfileComplete(null);
@@ -51,7 +53,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (event === 'SIGNED_OUT') {
-          console.log('User signed out');
+          if (import.meta.env.DEV) {
+            console.log('User signed out');
+          }
           setSession(null);
           setUser(null);
           setProfileComplete(null);
@@ -80,7 +84,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        console.error('Session error:', error);
+        if (import.meta.env.DEV) {
+          console.error('Session error:', error);
+        }
         // Clear localStorage if there's an error
         supabase.auth.signOut();
         setSession(null);

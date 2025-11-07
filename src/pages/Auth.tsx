@@ -244,7 +244,9 @@ const Auth = () => {
         navigate('/meu-corre');
       }
     } catch (profileError) {
-      console.error('Erro ao completar perfil:', profileError);
+      if (import.meta.env.DEV) {
+        console.error('Erro ao completar perfil:', profileError);
+      }
       toast.error('Erro ao completar cadastro. Tente novamente.');
     } finally {
       setIsSubmitting(false);

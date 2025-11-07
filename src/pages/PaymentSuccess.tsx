@@ -26,7 +26,11 @@ const PaymentSuccess = () => {
     setVerifying(true);
     supabase.functions
       .invoke('confirm-subscription', { body: { session_id: sessionId } })
-      .catch((e) => console.error('confirm-subscription error', e))
+      .catch((e) => {
+        if (import.meta.env.DEV) {
+          console.error('confirm-subscription error', e);
+        }
+      })
       .finally(() => setVerifying(false));
   }, [user, sessionId]);
 
