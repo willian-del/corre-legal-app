@@ -139,20 +139,25 @@ const Pricing = () => {
           </div>
 
           {/* Lista de benefícios */}
-          <div className="bg-card/50 rounded-2xl p-4 mb-6 max-w-2xl mx-auto">
-            <h3 className="font-bold text-base mb-3 text-center">O que está incluído:</h3>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-3">
-                <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-sm">Canal de Atendimento Jurídico Especializado</span>
+          <div className="mb-8 max-w-2xl mx-auto">
+            <ul className="space-y-5">
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
+                <span className="text-base leading-relaxed text-foreground/90">
+                  <strong className="text-foreground">Canal de Atendimento Jurídico</strong> Especializado
+                </span>
               </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-sm">Suporte no Bloqueio e Reativação de Conta</span>
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
+                <span className="text-base leading-relaxed text-foreground/90">
+                  <strong className="text-foreground">Suporte no Bloqueio</strong> e Reativação de Conta
+                </span>
               </li>
-              <li className="flex items-start gap-3">
-                <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                <span className="text-sm">Gestão de Multas, Suspensão e Cassação da CNH</span>
+              <li className="flex items-start gap-4">
+                <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
+                <span className="text-base leading-relaxed text-foreground/90">
+                  <strong className="text-foreground">Gestão de Multas</strong>, Suspensão e Cassação da CNH
+                </span>
               </li>
             </ul>
           </div>
