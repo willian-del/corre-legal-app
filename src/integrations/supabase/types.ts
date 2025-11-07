@@ -83,6 +83,81 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          ai_confidence_score: number | null
+          ai_processed: boolean | null
+          ai_processed_at: string | null
+          ai_sentiment: string | null
+          ai_suggested_category: string | null
+          ai_summary: string | null
+          category: string | null
+          closed_at: string | null
+          created_at: string | null
+          description: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          email_template_id: string | null
+          id: string
+          priority: string
+          resolved_at: string | null
+          status: string
+          subject: string
+          synced_with_zendesk: boolean | null
+          updated_at: string | null
+          user_id: string
+          zendesk_ticket_id: string | null
+        }
+        Insert: {
+          ai_confidence_score?: number | null
+          ai_processed?: boolean | null
+          ai_processed_at?: string | null
+          ai_sentiment?: string | null
+          ai_suggested_category?: string | null
+          ai_summary?: string | null
+          category?: string | null
+          closed_at?: string | null
+          created_at?: string | null
+          description: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          email_template_id?: string | null
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          synced_with_zendesk?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          zendesk_ticket_id?: string | null
+        }
+        Update: {
+          ai_confidence_score?: number | null
+          ai_processed?: boolean | null
+          ai_processed_at?: string | null
+          ai_sentiment?: string | null
+          ai_suggested_category?: string | null
+          ai_summary?: string | null
+          category?: string | null
+          closed_at?: string | null
+          created_at?: string | null
+          description?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          email_template_id?: string | null
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          synced_with_zendesk?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          zendesk_ticket_id?: string | null
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           alert_15_days_sent: boolean | null

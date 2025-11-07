@@ -31,15 +31,17 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
       if (user) {
         // Check profile completeness first
         if (requireCompleteProfile && profileComplete === false) {
-          // Re-verificar no banco de dados antes de redirecionar
-          // Isso evita redirecionamentos prematuros baseados em estado local
-          const { isProfileComplete } = await import('@/lib/profile-utils');
-          setTimeout(async () => {
-            const complete = await isProfileComplete(user.id);
-            if (!complete) {
-              navigate('/onboarding');
-            }
-          }, 1000);
+          // Só redireciona se NÃO estiver em /onboarding (evita loop)
+          if (location.pathname !== '/onboarding') {
+            // Re-verificar no banco de dados antes de redirecionar
+            const { isProfileComplete } = await import('@/lib/profile-utils');
+            setTimeout(async () => {
+              const complete = await isProfileComplete(user.id);
+              if (!complete) {
+                navigate('/onboarding');
+              }
+            }, 1000);
+          }
           return;
         }
 
