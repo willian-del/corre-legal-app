@@ -24,7 +24,8 @@ import {
   DollarSign,
   AlertCircle,
   Plus,
-  RefreshCw
+  RefreshCw,
+  Trash2
 } from 'lucide-react';
 import { 
   ChartContainer, 
@@ -188,6 +189,36 @@ export default function Admin() {
     } catch (error) {
       console.error('Error removing admin:', error);
       toast.error('Erro ao remover privilégios');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    const confirmed = window.confirm(
+      `⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\n` +
+      `Você está prestes a deletar permanentemente o usuário:\n` +
+      `${userName}\n\n` +
+      `Isso irá remover:\n` +
+      `• Perfil e dados pessoais\n` +
+      `• Assinaturas\n` +
+      `• Roles e permissões\n` +
+      `• Logs de auditoria\n\n` +
+      `Deseja continuar?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const { error } = await supabase.functions.invoke('admin-delete-user', {
+        body: { userId }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Usuário ${userName} deletado com sucesso`);
+      loadData();
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(error.message || 'Erro ao deletar usuário');
     }
   };
 
@@ -598,17 +629,29 @@ export default function Admin() {
                             <Badge variant="outline">Usuário</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right">
+                      <TableCell className="text-right">
+                        <div className="flex gap-2 justify-end">
                           {u.id !== user?.id && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => u.is_admin ? handleRemoveAdmin(u.id) : handleMakeAdmin(u.id)}
-                            >
-                              {u.is_admin ? 'Remover Admin' : 'Tornar Admin'}
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => u.is_admin ? handleRemoveAdmin(u.id) : handleMakeAdmin(u.id)}
+                              >
+                                {u.is_admin ? 'Remover Admin' : 'Tornar Admin'}
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteUser(u.id, u.full_name)}
+                                title="Deletar usuário"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
                           )}
-                        </TableCell>
+                        </div>
+                      </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
