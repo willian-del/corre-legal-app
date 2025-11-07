@@ -226,6 +226,15 @@ const MeuCorre = () => {
     return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
   };
 
+  const getPaymentMethodLabel = (method: string | undefined): string => {
+    const methodMap: Record<string, string> = {
+      'card': 'Cartão de Crédito',
+      'pix': 'PIX',
+      'boleto': 'Boleto'
+    };
+    return methodMap[method || ''] || 'Não informado';
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
 
@@ -659,9 +668,9 @@ const MeuCorre = () => {
                         <CreditCard className="w-5 h-5 text-primary" />
                         <span className="text-sm text-muted-foreground">Pagamento</span>
                       </div>
-                      <p className="text-lg font-bold text-foreground capitalize">
-                        {subscription.payment_method === 'credit_card' ? 'Cartão' : subscription.payment_method}
-                      </p>
+                <p className="text-lg font-bold text-foreground">
+                  {getPaymentMethodLabel(subscription.payment_method)}
+                </p>
                       <p className="text-sm text-muted-foreground mt-1">
                         Status: {subscription.status === 'cancelled' ? 'Cancelado' : 'Ativo'}
                       </p>
