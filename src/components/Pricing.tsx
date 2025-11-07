@@ -6,12 +6,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { type PlanType } from "@/lib/stripe-config";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useInView } from "@/hooks/use-in-view";
 
 const Pricing = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const { ref: cardRef, isInView } = useInView({ 
+    threshold: 0.2, 
+    triggerOnce: true,
+    rootMargin: "-50px"
+  });
 
 
   const handleSubscribe = async (planType: PlanType) => {
@@ -112,7 +118,18 @@ const Pricing = () => {
         </div>
 
         {/* Card CTA Grande */}
-        <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl p-6 md:p-8 border-2 border-primary/50 shadow-2xl">
+        <div 
+          ref={cardRef}
+          className={`
+            bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl p-6 md:p-8 
+            border-2 border-primary/50 shadow-2xl
+            transition-all duration-700 ease-out
+            ${isInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+          `}
+        >
           
           {/* Ícone e Badge */}
           <div className="flex flex-col items-center mb-4">
