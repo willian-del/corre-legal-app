@@ -118,7 +118,7 @@ const Pricing = () => {
         <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl p-6 md:p-8 border-2 border-primary/50 shadow-2xl">
           
           {/* Ícone e Badge */}
-          <div className="flex flex-col items-center mb-6">
+          <div className="flex flex-col items-center mb-4">
             <Medal className="w-16 h-16 text-yellow-500 mb-3" />
             <span className="bg-primary text-primary-foreground px-4 py-1.5 rounded-full font-bold text-sm">
               PLANO OURO
@@ -126,7 +126,7 @@ const Pricing = () => {
           </div>
 
           {/* Preço destacado */}
-          <div className="text-center mb-6">
+          <div className="text-center mb-10">
             <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">
               R$ 180,00
             </div>
@@ -136,7 +136,7 @@ const Pricing = () => {
           </div>
 
           {/* Lista de benefícios */}
-          <div className="mb-8 max-w-2xl mx-auto">
+          <div className="mb-10 max-w-2xl mx-auto">
             <ul className="space-y-5">
               <li className="flex items-start gap-4">
                 <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
@@ -185,7 +185,7 @@ const Pricing = () => {
             </Button>
 
             {/* Footer text */}
-            <p className="text-center text-sm text-muted-foreground mt-4">
+            <p className="text-center text-sm text-muted-foreground mt-3">
               ✅ Pagamento 100% seguro via Stripe
             </p>
           </div>
