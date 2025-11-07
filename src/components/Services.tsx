@@ -1,17 +1,6 @@
 import { useInView } from "@/hooks/use-in-view";
 
-const Services = () => {
-  const { ref: headerRef, isInView: headerInView } = useInView({ 
-    threshold: 0.2, 
-    triggerOnce: true 
-  });
-
-  const { ref: cardsRef, isInView: cardsInView } = useInView({ 
-    threshold: 0.1, 
-    triggerOnce: true 
-  });
-
-  const services = [
+const SERVICES_DATA = [
     {
       title: "Canal de Atendimento Jurídico Especializado",
       description: "Orientação jurídica especializada para as principais situações do seu dia a dia — dentro e fora dos apps, para você e sua família. Sempre que surgir um problema ou dúvida, você recebe orientação clara sobre seus direitos e próximos passos.",
@@ -46,6 +35,18 @@ const Services = () => {
       ]
     }
   ];
+
+const Services = () => {
+  const { ref: headerRef, isInView: headerInView } = useInView({ 
+    threshold: 0.2, 
+    triggerOnce: true 
+  });
+
+  const { ref: cardsRef, isInView: cardsInView } = useInView({ 
+    threshold: 0.1, 
+    triggerOnce: true 
+  });
+
   return <section id="services" className="py-16 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div 
@@ -69,7 +70,7 @@ const Services = () => {
           ref={cardsRef}
           className="grid md:grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto items-stretch"
         >
-          {services.map((service, index) => (
+          {SERVICES_DATA.map((service, index) => (
             <div 
               key={index} 
               className={`
@@ -82,7 +83,8 @@ const Services = () => {
               `}
               style={{ 
                 transitionDelay: `${index * 100}ms`,
-                transitionProperty: 'opacity, transform'
+                transitionProperty: 'opacity, transform',
+                willChange: cardsInView ? 'auto' : 'opacity, transform'
               }}
             >
               {/* CAIXA SUPERIOR - Informações principais */}

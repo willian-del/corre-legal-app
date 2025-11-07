@@ -129,6 +129,9 @@ const Pricing = () => {
               : 'opacity-0 translate-y-12'
             }
           `}
+          style={{ 
+            willChange: isInView ? 'auto' : 'opacity, transform'
+          }}
         >
           
           {/* Ícone e Badge */}

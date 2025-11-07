@@ -12,18 +12,7 @@ import carlosImg from "@/assets/testimonials/carlos.jpg";
 import fernandaImg from "@/assets/testimonials/fernanda.jpg";
 import marcaoImg from "@/assets/testimonials/marcao.jpg";
 
-const Testimonials = () => {
-  const { ref: headerRef, isInView: headerInView } = useInView({ 
-    threshold: 0.2, 
-    triggerOnce: true 
-  });
-
-  const { ref: carouselRef, isInView: carouselInView } = useInView({ 
-    threshold: 0.1, 
-    triggerOnce: true 
-  });
-
-  const testimonials = [
+const TESTIMONIALS_DATA = [
     {
       name: "Carlos",
       role: "Motorista há 3 anos",
@@ -49,6 +38,17 @@ const Testimonials = () => {
       image: marcaoImg,
     },
   ];
+
+const Testimonials = () => {
+  const { ref: headerRef, isInView: headerInView } = useInView({ 
+    threshold: 0.2, 
+    triggerOnce: true 
+  });
+
+  const { ref: carouselRef, isInView: carouselInView } = useInView({ 
+    threshold: 0.1, 
+    triggerOnce: true 
+  });
 
   return (
     <section id="testimonials" className="py-16 md:py-24 bg-background">
@@ -82,6 +82,9 @@ const Testimonials = () => {
               : 'opacity-0 translate-y-12'
             }
           `}
+          style={{ 
+            willChange: carouselInView ? 'auto' : 'opacity, transform'
+          }}
         >
           <Carousel
             opts={{
@@ -91,7 +94,7 @@ const Testimonials = () => {
             className="w-full"
           >
             <CarouselContent>
-              {testimonials.map((testimonial, index) => (
+              {TESTIMONIALS_DATA.map((testimonial, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="bg-card rounded-2xl p-6 md:p-8 border border-border h-full">
                     <div className="flex items-start justify-between mb-4 md:mb-6">
