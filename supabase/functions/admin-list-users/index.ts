@@ -69,15 +69,19 @@ serve(async (req) => {
     // Get user IDs from profiles
     const userIds = profiles?.map(p => p.id) || [];
 
-    // Fetch subscriptions separately
-    const { data: subscriptions, error: subscriptionsError } = await supabaseClient
-      .from('user_subscriptions')
-      .select('*')
-      .in('user_id', userIds)
-      .eq('status', 'active')
-      .order('expires_at', { ascending: false });
+    // Fetch subscriptions separately (guard empty array)
+    let subscriptions: any[] = [];
+    if (userIds.length > 0) {
+      const { data: subs, error: subscriptionsError } = await supabaseClient
+        .from('user_subscriptions')
+        .select('*')
+        .in('user_id', userIds)
+        .eq('status', 'active')
+        .order('expires_at', { ascending: false });
 
-    if (subscriptionsError) throw subscriptionsError;
+      if (subscriptionsError) throw subscriptionsError;
+      subscriptions = subs || [];
+    }
 
     // Create a map of user_id to subscription
     const subscriptionsMap = new Map();
@@ -159,8 +163,9 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('[ADMIN-LIST-USERS] Error:', error);
+    const errMessage = (error as any)?.message ?? (typeof error === 'string' ? error : JSON.stringify(error));
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: errMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
