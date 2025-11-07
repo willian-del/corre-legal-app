@@ -27,6 +27,7 @@ import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeServiceType, SERVICE_TYPES } from '@/lib/service-type-utils';
 import ZendeskWidget, { openZendeskWidget } from '@/components/ZendeskWidget';
+import { CreateTicketDialog } from '@/components/CreateTicketDialog';
 
 interface UserSubscription {
   id: string;
@@ -66,6 +67,7 @@ const MeuCorre = () => {
   // Tickets
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loadingTickets, setLoadingTickets] = useState(false);
+  const [showCreateTicket, setShowCreateTicket] = useState(false);
   
   // Loading states for async operations
   const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
@@ -85,15 +87,21 @@ const MeuCorre = () => {
     
     setLoadingTickets(true);
     try {
-      const { data, error } = await supabase.functions.invoke('get-zendesk-tickets');
+      // Buscar tickets do Zendesk e internos em paralelo
+      const [zendeskResponse, internalResponse] = await Promise.all([
+        supabase.functions.invoke('get-zendesk-tickets'),
+        supabase.functions.invoke('get-internal-tickets')
+      ]);
       
-      if (error) {
-        console.error('Error fetching tickets:', error);
-        setTickets([]);
-        return;
-      }
+      const zendeskTickets = zendeskResponse.data?.tickets || [];
+      const internalTickets = internalResponse.data?.tickets || [];
       
-      setTickets(data?.tickets || []);
+      // Unificar e ordenar por data de criação (mais recente primeiro)
+      const allTickets = [...zendeskTickets, ...internalTickets].sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      
+      setTickets(allTickets);
     } catch (error) {
       console.error('Error fetching tickets:', error);
       setTickets([]);
@@ -415,11 +423,19 @@ const MeuCorre = () => {
                   {subscription ? (
                     <>
                       <Button 
+                        onClick={() => setShowCreateTicket(true)}
+                        variant="outline"
+                        className="flex-1 gap-2"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        Abrir Novo Chamado
+                      </Button>
+                      <Button 
                         onClick={() => openZendeskWidget()}
                         className="flex-1 gap-2"
                       >
                         <MessageSquare className="w-4 h-4" />
-                        Abrir Chat de Atendimento
+                        Chat de Atendimento
                       </Button>
                       <Button 
                         variant="outline"
@@ -483,30 +499,42 @@ const MeuCorre = () => {
                         >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <h4 className="font-semibold text-foreground">
                                   {ticket.subject || 'Sem título'}
                                 </h4>
+                                
+                                {/* Badge de origem */}
+                                <Badge 
+                                  variant="outline" 
+                                  className={ticket.type === 'zendesk' 
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
+                                    : 'bg-purple-50 text-purple-700 border-purple-200'
+                                  }
+                                >
+                                  {ticket.type === 'zendesk' ? 'Zendesk' : 'Sistema'}
+                                </Badge>
+                                
+                                {/* Badge de status */}
                                 <Badge variant={
                                   ticket.status === 'new' ? 'default' :
                                   ticket.status === 'open' ? 'secondary' :
                                   ticket.status === 'pending' ? 'outline' :
-                                  ticket.status === 'solved' ? 'default' :
+                                  ticket.status === 'solved' || ticket.status === 'resolved' ? 'default' :
                                   'secondary'
                                 } className={
-                                  ticket.status === 'solved' ? 'bg-green-100 text-green-800' : ''
+                                  ticket.status === 'solved' || ticket.status === 'resolved' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : ''
                                 }>
                                   {ticket.status === 'new' && 'Novo'}
                                   {ticket.status === 'open' && 'Aberto'}
                                   {ticket.status === 'pending' && 'Pendente'}
-                                  {ticket.status === 'solved' && 'Resolvido'}
-                                  {!['new', 'open', 'pending', 'solved'].includes(ticket.status) && ticket.status}
+                                  {ticket.status === 'in_progress' && 'Em Andamento'}
+                                  {(ticket.status === 'solved' || ticket.status === 'resolved') && 'Resolvido'}
+                                  {ticket.status === 'closed' && 'Fechado'}
+                                  {!['new', 'open', 'pending', 'in_progress', 'solved', 'resolved', 'closed'].includes(ticket.status) && ticket.status}
                                 </Badge>
-                                {ticket.type === 'zendesk' && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Zendesk
-                                  </Badge>
-                                )}
                               </div>
                               
                               {ticket.description && (
@@ -952,6 +980,13 @@ const MeuCorre = () => {
         </div>
       </main>
       
+      {/* Modal de Criação de Ticket */}
+      <CreateTicketDialog
+        open={showCreateTicket}
+        onOpenChange={setShowCreateTicket}
+        onTicketCreated={fetchTickets}
+      />
+
       {/* Zendesk Widget - Carregado apenas para usuários autenticados */}
       <ZendeskWidget 
         showOnlyWithSubscription={false}
