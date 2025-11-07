@@ -56,7 +56,7 @@ serve(async (req) => {
       .from('profiles')
       .select(`
         *,
-        user_subscriptions!user_subscriptions_user_id_fkey(
+        user_subscriptions(
           id,
           plan_type,
           status,
