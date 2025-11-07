@@ -524,7 +524,7 @@ const Auth = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Criando conta...
+                      <span className="button-loading-pulse">Criando conta...</span>
                     </>
                   ) : (
                     'Criar Conta Grátis'
@@ -596,7 +596,7 @@ const Auth = () => {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Entrando...
+                      <span className="button-loading-pulse">Entrando...</span>
                     </>
                   ) : (
                     'Entrar'

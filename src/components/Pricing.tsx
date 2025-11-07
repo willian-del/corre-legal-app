@@ -187,12 +187,12 @@ const Pricing = () => {
             onClick={() => handleSubscribe('ouro')}
             size="lg"
             disabled={loadingPlan !== null}
-            className="w-full text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            className="w-full text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-xl transition-all duration-300 transform hover:scale-105 button-glow-pulse"
           >
               {loadingPlan ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Processando...
+                  <span className="button-loading-pulse">Processando...</span>
                 </>
               ) : !user ? (
                 "Cadastre-se e Contrate Agora"

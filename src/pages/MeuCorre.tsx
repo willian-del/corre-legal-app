@@ -386,11 +386,12 @@ const MeuCorre = () => {
                         size="lg" 
                         onClick={handleSubscribe}
                         disabled={loadingPlan !== null}
+                        className="button-glow-pulse"
                       >
                         {loadingPlan ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processando...
+                            <span className="button-loading-pulse">Processando...</span>
                           </>
                         ) : (
                           'Contratar Plano'
@@ -564,9 +565,17 @@ const MeuCorre = () => {
                 <AlertDialogCancel>Não, manter minha conta</AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={handleDeleteAccount}
-                  className="bg-destructive hover:bg-destructive/90"
+                  className="bg-destructive hover:bg-destructive/90 button-destructive-hover"
+                  disabled={isDeletingAccount}
                 >
-                  Sim, apagar permanentemente
+                  {isDeletingAccount ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span className="button-loading-pulse">Deletando...</span>
+                    </>
+                  ) : (
+                    'Sim, apagar permanentemente'
+                  )}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -660,13 +669,13 @@ const MeuCorre = () => {
                       // Plano cancelado - só mostrar botão de contratar
                       <Button
                         onClick={handleSubscribe}
-                        className="w-full col-span-2"
+                        className="w-full col-span-2 button-glow-pulse"
                         disabled={loadingPlan !== null}
                       >
                         {loadingPlan ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Processando...
+                            <span className="button-loading-pulse">Processando...</span>
                           </>
                         ) : (
                           'Contratar Novo Plano'
@@ -684,7 +693,7 @@ const MeuCorre = () => {
                           {loadingPlan ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Processando...
+                              <span className="button-loading-pulse">Processando...</span>
                             </>
                           ) : (
                             'Renovar Plano'
@@ -737,13 +746,13 @@ const MeuCorre = () => {
                               <AlertDialogCancel>Não, manter plano ativo</AlertDialogCancel>
                               <AlertDialogAction 
                                 onClick={handleCancelSubscription}
-                                className="bg-destructive hover:bg-destructive/90"
+                                className="bg-destructive hover:bg-destructive/90 button-destructive-hover"
                                 disabled={isCancellingSubscription}
                               >
                                 {isCancellingSubscription ? (
                                   <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Cancelando...
+                                    <span className="button-loading-pulse">Cancelando...</span>
                                   </>
                                 ) : (
                                   'Sim, cancelar plano'
@@ -771,11 +780,12 @@ const MeuCorre = () => {
                     size="lg" 
                     onClick={handleSubscribe}
                     disabled={loadingPlan !== null}
+                    className="button-glow-pulse"
                   >
                     {loadingPlan ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processando...
+                        <span className="button-loading-pulse">Processando...</span>
                       </>
                     ) : (
                       'Contratar Plano'

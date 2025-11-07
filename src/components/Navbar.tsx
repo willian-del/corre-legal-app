@@ -56,7 +56,7 @@ const Navbar = () => {
             <Button
               onClick={() => scrollToSection("pricing")}
               size="default"
-              className="bg-primary text-primary-foreground hover:bg-primary-glow h-10"
+              className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
             >
               Contrate Agora
             </Button>
@@ -86,7 +86,7 @@ const Navbar = () => {
             <Button
               onClick={() => scrollToSection("pricing")}
               size="default"
-              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
             >
               Contrate Agora
             </Button>
