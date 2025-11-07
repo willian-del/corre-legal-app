@@ -98,25 +98,11 @@ Deno.serve(async (req) => {
     const analytics = Array.from(dataMap.values())
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    // Calculate cumulative values
+    // Calculate cumulative revenue
     let cumulativeRevenue = 0;
-    let cumulativeRegistrations = 0;
-    let cumulativeSubscriptions = 0;
-
     analytics.forEach(entry => {
-      // Accumulate registrations
-      cumulativeRegistrations += entry.registrations;
-      entry.cumulativeRegistrations = cumulativeRegistrations;
-      
-      // Accumulate subscriptions
-      cumulativeSubscriptions += entry.subscriptions;
-      entry.cumulativeSubscriptions = cumulativeSubscriptions;
-      
-      // Accumulate revenue
       cumulativeRevenue += entry.revenue;
       entry.cumulativeRevenue = cumulativeRevenue;
-      
-      // Format revenue
       entry.revenue = Number(entry.revenue.toFixed(2));
       entry.cumulativeRevenue = Number(cumulativeRevenue.toFixed(2));
     });
