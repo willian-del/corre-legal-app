@@ -152,7 +152,7 @@ const Pricing = () => {
               <li className="flex items-start gap-4">
                 <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
                 <span className="text-base leading-relaxed text-foreground/90">
-                  <strong className="text-foreground">Suporte no Bloqueio</strong> e Reativação de Conta
+                  <strong className="text-foreground">Suporte para Reativação de Conta</strong> em caso de Bloqueio pelo Aplicativo
                 </span>
               </li>
               <li className="flex items-start gap-4">
