@@ -26,6 +26,21 @@ import {
   Plus,
   RefreshCw
 } from 'lucide-react';
+import { 
+  ChartContainer, 
+  ChartTooltip, 
+  ChartTooltipContent 
+} from '@/components/ui/chart';
+import { 
+  LineChart, 
+  Line, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Legend 
+} from 'recharts';
 
 interface User {
   id: string;
@@ -75,9 +90,19 @@ export default function Admin() {
   const [manualSubPlan, setManualSubPlan] = useState('bronze');
   const [manualSubUser, setManualSubUser] = useState('');
 
+  // Analytics states
+  const [analyticsData, setAnalyticsData] = useState<any[]>([]);
+  const [analyticsPeriod, setAnalyticsPeriod] = useState('30d');
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
+
   useEffect(() => {
     loadData();
+    loadAnalytics();
   }, []);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [analyticsPeriod]);
 
   const loadData = async () => {
     try {
@@ -234,6 +259,23 @@ export default function Admin() {
     }
   };
 
+  const loadAnalytics = async () => {
+    setLoadingAnalytics(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-analytics', {
+        body: { period: analyticsPeriod }
+      });
+      
+      if (error) throw error;
+      setAnalyticsData(data.analytics || []);
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+      toast.error('Erro ao carregar analytics');
+    } finally {
+      setLoadingAnalytics(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -310,6 +352,148 @@ export default function Admin() {
                 <CardContent>
                   <div className="text-2xl font-bold text-destructive">{stats.expiringCount}</div>
                   <p className="text-xs text-muted-foreground">Assinaturas próximas do vencimento</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Analytics Charts */}
+            <div className="grid gap-6">
+              {/* Chart 1: Registrations vs Subscriptions */}
+              <Card className="col-span-full">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Cadastros x Assinaturas</CardTitle>
+                      <CardDescription>
+                        Comparação entre novos cadastros e novas assinaturas
+                      </CardDescription>
+                    </div>
+                    <Select value={analyticsPeriod} onValueChange={setAnalyticsPeriod}>
+                      <SelectTrigger className="w-[180px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7d">Últimos 7 dias</SelectItem>
+                        <SelectItem value="30d">Últimos 30 dias</SelectItem>
+                        <SelectItem value="90d">Últimos 90 dias</SelectItem>
+                        <SelectItem value="1y">Último ano</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingAnalytics ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={{
+                        registrations: {
+                          label: "Cadastros",
+                          color: "hsl(var(--chart-1))"
+                        },
+                        subscriptions: {
+                          label: "Assinaturas",
+                          color: "hsl(var(--chart-2))"
+                        }
+                      }}
+                      className="h-[300px]"
+                    >
+                      <LineChart data={analyticsData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="date" 
+                          tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                        />
+                        <YAxis />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Line 
+                          type="monotone" 
+                          dataKey="registrations" 
+                          stroke="var(--color-registrations)" 
+                          name="Cadastros"
+                          strokeWidth={2}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="subscriptions" 
+                          stroke="var(--color-subscriptions)" 
+                          name="Assinaturas"
+                          strokeWidth={2}
+                        />
+                      </LineChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Chart 2: Revenue Evolution */}
+              <Card className="col-span-full">
+                <CardHeader>
+                  <CardTitle>Evolução da Receita</CardTitle>
+                  <CardDescription>
+                    Valor total contratado em assinaturas ao longo do tempo
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingAnalytics ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={{
+                        revenue: {
+                          label: "Receita do Período",
+                          color: "hsl(var(--chart-3))"
+                        },
+                        cumulativeRevenue: {
+                          label: "Receita Acumulada",
+                          color: "hsl(var(--chart-4))"
+                        }
+                      }}
+                      className="h-[300px]"
+                    >
+                      <AreaChart data={analyticsData}>
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="var(--color-revenue)" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="var(--color-revenue)" stopOpacity={0}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                          dataKey="date" 
+                          tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                        />
+                        <YAxis />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent 
+                            formatter={(value) => `R$ ${Number(value).toFixed(2)}`}
+                          />} 
+                        />
+                        <Legend />
+                        <Area 
+                          type="monotone" 
+                          dataKey="revenue" 
+                          stroke="var(--color-revenue)" 
+                          fillOpacity={1} 
+                          fill="url(#colorRevenue)"
+                          name="Receita do Período"
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="cumulativeRevenue" 
+                          stroke="var(--color-cumulativeRevenue)" 
+                          name="Receita Acumulada"
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                      </AreaChart>
+                    </ChartContainer>
+                  )}
                 </CardContent>
               </Card>
             </div>
