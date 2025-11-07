@@ -15,6 +15,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
     
     // Initialize Supabase client for admin operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
@@ -24,26 +25,32 @@ serve(async (req) => {
       }
     });
 
-    // Get the authorization header
-    const authHeader = req.headers.get('authorization');
+    // Get and validate authorization header
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       console.error('[ADMIN-DELETE-USER] Missing authorization header');
       throw new Error('Autorização necessária');
     }
 
     // Initialize client with user's JWT for authentication
-    const supabase = createClient(
-      supabaseUrl,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { authorization: authHeader } } }
-    );
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader }
+      },
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
 
     // Verify the user is authenticated
     const { data: { user: adminUser }, error: authError } = await supabase.auth.getUser();
     if (authError || !adminUser) {
-      console.error('[ADMIN-DELETE-USER] Authentication failed:', authError);
+      console.error('[ADMIN-DELETE-USER] Authentication failed:', authError?.message || 'No user found');
       throw new Error('Usuário não autenticado');
     }
+
+    console.log(`[ADMIN-DELETE-USER] Authenticated user: ${adminUser.id}`);
 
     // Verify the user is an admin
     const { data: isAdmin, error: adminError } = await supabaseAdmin.rpc('is_admin', {
