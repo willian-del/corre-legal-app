@@ -259,6 +259,34 @@ export default function Admin() {
     }
   };
 
+  const normalizeAnalytics = (rows: any[]) => {
+    if (!rows || rows.length === 0) return [];
+    
+    const sorted = [...rows].sort((a, b) => a.date.localeCompare(b.date));
+    
+    let cumReg = 0, cumSub = 0, cumRev = 0;
+    
+    return sorted.map(entry => {
+      const reg = Number(entry.registrations) || 0;
+      const sub = Number(entry.subscriptions) || 0;
+      const rev = Number(entry.revenue) || 0;
+      
+      cumReg += reg;
+      cumSub += sub;
+      cumRev += rev;
+      
+      return {
+        date: entry.date,
+        registrations: reg,
+        subscriptions: sub,
+        revenue: rev,
+        cumulativeRegistrations: Number(entry.cumulativeRegistrations) || cumReg,
+        cumulativeSubscriptions: Number(entry.cumulativeSubscriptions) || cumSub,
+        cumulativeRevenue: Number(entry.cumulativeRevenue) || cumRev
+      };
+    });
+  };
+
   const loadAnalytics = async () => {
     setLoadingAnalytics(true);
     try {
@@ -267,7 +295,9 @@ export default function Admin() {
       });
       
       if (error) throw error;
-      setAnalyticsData(data.analytics || []);
+      const normalized = normalizeAnalytics(data.analytics || []);
+      setAnalyticsData(normalized);
+      console.log('[ADMIN] Analytics loaded:', normalized.length, 'points', normalized[0]);
     } catch (error) {
       console.error('Error loading analytics:', error);
       toast.error('Erro ao carregar analytics');
@@ -387,46 +417,54 @@ export default function Admin() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                   ) : (
-                    <ChartContainer
-                      config={{
-                        cumulativeRegistrations: {
-                          label: "Total de Cadastros",
-                          color: "hsl(var(--chart-1))"
-                        },
-                        cumulativeSubscriptions: {
-                          label: "Total de Assinaturas",
-                          color: "hsl(var(--chart-2))"
-                        }
-                      }}
-                      className="h-[350px]"
-                    >
-                      <LineChart data={analyticsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="date" 
-                          tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                        />
-                        <YAxis />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="cumulativeRegistrations" 
-                          stroke="var(--color-cumulativeRegistrations)" 
-                          name="Total de Cadastros"
-                          strokeWidth={3}
-                          dot={false}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="cumulativeSubscriptions" 
-                          stroke="var(--color-cumulativeSubscriptions)" 
-                          name="Total de Assinaturas"
-                          strokeWidth={3}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ChartContainer>
+              <ChartContainer
+                config={{
+                  cumulativeRegistrations: {
+                    label: "Total de Cadastros",
+                    color: "hsl(var(--chart-1))"
+                  },
+                  cumulativeSubscriptions: {
+                    label: "Total de Assinaturas",
+                    color: "hsl(var(--chart-2))"
+                  }
+                }}
+                className="aspect-auto h-[350px]"
+              >
+                {analyticsData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Sem dados para o período selecionado
+                  </div>
+                ) : (
+                  <LineChart data={analyticsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                    />
+                    <YAxis domain={[0, 'auto']} allowDecimals={false} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="cumulativeRegistrations" 
+                      stroke="var(--color-cumulativeRegistrations)" 
+                      name="Total de Cadastros"
+                      strokeWidth={3}
+                      dot={false}
+                      connectNulls
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="cumulativeSubscriptions" 
+                      stroke="var(--color-cumulativeSubscriptions)" 
+                      name="Total de Assinaturas"
+                      strokeWidth={3}
+                      dot={false}
+                      connectNulls
+                    />
+                  </LineChart>
+                )}
+              </ChartContainer>
                   )}
                 </CardContent>
               </Card>
@@ -445,38 +483,45 @@ export default function Admin() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                   ) : (
-                    <ChartContainer
-                      config={{
-                        cumulativeRevenue: {
-                          label: "Receita Acumulada",
-                          color: "hsl(var(--chart-3))"
-                        }
-                      }}
-                      className="h-[350px]"
-                    >
-                      <LineChart data={analyticsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="date" 
-                          tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                        />
-                        <YAxis />
-                        <ChartTooltip 
-                          content={<ChartTooltipContent 
-                            formatter={(value) => `R$ ${Number(value).toFixed(2)}`}
-                          />} 
-                        />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="cumulativeRevenue" 
-                          stroke="var(--color-cumulativeRevenue)" 
-                          name="Receita Acumulada"
-                          strokeWidth={3}
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ChartContainer>
+              <ChartContainer
+                config={{
+                  cumulativeRevenue: {
+                    label: "Receita Acumulada",
+                    color: "hsl(var(--chart-3))"
+                  }
+                }}
+                className="aspect-auto h-[350px]"
+              >
+                {analyticsData.length === 0 ? (
+                  <div className="flex items-center justify-center h-full text-muted-foreground">
+                    Sem dados para o período selecionado
+                  </div>
+                ) : (
+                  <LineChart data={analyticsData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="date" 
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                    />
+                    <YAxis domain={[0, 'auto']} allowDecimals={false} />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent 
+                        formatter={(value) => `R$ ${Number(value).toFixed(2)}`}
+                      />} 
+                    />
+                    <Legend />
+                    <Line 
+                      type="monotone" 
+                      dataKey="cumulativeRevenue" 
+                      stroke="var(--color-cumulativeRevenue)" 
+                      name="Receita Acumulada"
+                      strokeWidth={3}
+                      dot={false}
+                      connectNulls
+                    />
+                  </LineChart>
+                )}
+              </ChartContainer>
                   )}
                 </CardContent>
               </Card>
