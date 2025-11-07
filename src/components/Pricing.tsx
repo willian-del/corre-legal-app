@@ -157,7 +157,7 @@ const Pricing = () => {
               </li>
               <li className="flex items-start gap-4">
                 <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
-                <span className="text-base leading-relaxed text-foreground/90">Apoio com Multas, Suspensão e Cassação da CNH<strong className="text-foreground">Gestão de Multas</strong>, Suspensão e Cassação da CNH
+                <span className="text-base leading-relaxed text-foreground/90">Apoio com Multas, Suspensão e Cassação da  CNH<strong className="text-foreground">Gestão de Multas</strong>, Suspensão e Cassação da CNH
                 </span>
               </li>
             </ul>
