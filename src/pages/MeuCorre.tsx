@@ -19,7 +19,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ShieldCheck } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ShieldCheck, Info, Edit } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
@@ -431,76 +431,64 @@ const MeuCorre = () => {
                     Edite suas informações pessoais
                   </p>
                 </div>
-                <div>
+                <div className="space-y-6">
+                  {/* Seção: Dados Cadastrais (Não Editáveis) */}
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Info className="w-4 h-4" />
+                      <span>Dados cadastrais (não podem ser alterados)</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">Nome Completo</p>
+                        <p className="text-sm font-semibold truncate">{user?.user_metadata?.full_name || 'Não informado'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">Email</p>
+                        <p className="text-sm font-semibold truncate">{user?.email || 'Não informado'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground">CPF</p>
+                        <p className="text-sm font-semibold">{maskedCpf || 'Carregando...'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Seção: Dados Editáveis */}
                   <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nome Completo</Label>
-                      <Input 
-                        id="name" 
-                        type="text" 
-                        value={user?.user_metadata?.full_name || ''} 
-                        disabled 
-                        className="bg-muted"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        O nome não pode ser alterado
-                      </p>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Edit className="w-4 h-4 text-primary" />
+                      <h4 className="font-semibold">Dados Editáveis</h4>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input 
-                        id="email" 
-                        type="email" 
-                        value={user?.email || ''} 
-                        disabled 
-                        className="bg-muted"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        O email não pode ser alterado
-                      </p>
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Telefone</Label>
+                        <Input 
+                          id="phone" 
+                          type="text" 
+                          placeholder="(00) 00000-0000" 
+                          value={phone} 
+                          onChange={e => setPhone(formatPhone(e.target.value))} 
+                          required 
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="cpf">CPF</Label>
-                      <Input 
-                        id="cpf" 
-                        type="text" 
-                        value={maskedCpf} 
-                        disabled 
-                        className="bg-muted"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        ⚠️ O CPF não pode ser alterado por segurança
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Telefone</Label>
-                      <Input 
-                        id="phone" 
-                        type="text" 
-                        placeholder="(00) 00000-0000" 
-                        value={phone} 
-                        onChange={e => setPhone(formatPhone(e.target.value))} 
-                        required 
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="service-type">Tipo de Serviço</Label>
-                      <Select value={serviceType} onValueChange={setServiceType}>
-                        <SelectTrigger id="service-type">
-                          <SelectValue placeholder="Selecione seu serviço" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SERVICE_TYPES.map(type => (
-                            <SelectItem key={type.value} value={type.value}>
-                              {type.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Label htmlFor="service-type">Tipo de Serviço</Label>
+                        <Select value={serviceType} onValueChange={setServiceType}>
+                          <SelectTrigger id="service-type">
+                            <SelectValue placeholder="Selecione seu serviço" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {SERVICE_TYPES.map(type => (
+                              <SelectItem key={type.value} value={type.value}>
+                                {type.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
