@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { 
   AlertDialog, 
   AlertDialogAction, 
@@ -20,14 +19,12 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ExternalLink } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2 } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/stripe-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeServiceType, SERVICE_TYPES } from '@/lib/service-type-utils';
-import ZendeskWidget, { openZendeskWidget } from '@/components/ZendeskWidget';
-import { CreateTicketDialog } from '@/components/CreateTicketDialog';
 
 interface UserSubscription {
   id: string;
@@ -37,18 +34,6 @@ interface UserSubscription {
   days_remaining: number;
   payment_method: string;
   amount_paid: number;
-}
-
-interface Ticket {
-  id: string | number;
-  subject: string;
-  description?: string;
-  status: string;
-  priority?: string;
-  created_at: string;
-  updated_at: string;
-  type: 'zendesk' | 'internal';
-  url?: string;
 }
 
 const MeuCorre = () => {
@@ -64,11 +49,6 @@ const MeuCorre = () => {
   const [maskedCpf, setMaskedCpf] = useState('***.***.***-**');
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   
-  // Tickets
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loadingTickets, setLoadingTickets] = useState(false);
-  const [showCreateTicket, setShowCreateTicket] = useState(false);
-  
   // Loading states for async operations
   const [isCancellingSubscription, setIsCancellingSubscription] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
@@ -78,37 +58,8 @@ const MeuCorre = () => {
     if (user) {
       fetchSubscription();
       fetchProfile();
-      fetchTickets();
     }
   }, [user]);
-
-  const fetchTickets = async () => {
-    if (!user) return;
-    
-    setLoadingTickets(true);
-    try {
-      // Buscar tickets do Zendesk e internos em paralelo
-      const [zendeskResponse, internalResponse] = await Promise.all([
-        supabase.functions.invoke('get-zendesk-tickets'),
-        supabase.functions.invoke('get-internal-tickets')
-      ]);
-      
-      const zendeskTickets = zendeskResponse.data?.tickets || [];
-      const internalTickets = internalResponse.data?.tickets || [];
-      
-      // Unificar e ordenar por data de criação (mais recente primeiro)
-      const allTickets = [...zendeskTickets, ...internalTickets].sort((a, b) => 
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      );
-      
-      setTickets(allTickets);
-    } catch (error) {
-      console.error('Error fetching tickets:', error);
-      setTickets([]);
-    } finally {
-      setLoadingTickets(false);
-    }
-  };
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -405,183 +356,57 @@ const MeuCorre = () => {
             </TabsList>
 
             {/* Aba Meus Chamados */}
-            <TabsContent value="chamados" className="mt-6 space-y-6">
-              {/* Ações rápidas */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MessageSquare className="w-5 h-5 text-primary" />
-                    Atendimento
-                  </CardTitle>
-                  <CardDescription>
-                    {subscription 
-                      ? "Inicie uma conversa com nossa equipe através do chat" 
-                      : "Contrate um plano para ter acesso ao atendimento"}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col sm:flex-row gap-3">
+            <TabsContent value="chamados" className="mt-6">
+              <div className="bg-card rounded-2xl p-8 md:p-12 border border-border">
+                <div className="flex flex-col items-center justify-center space-y-6">
+                  <MessageSquare className="w-16 h-16 text-primary" />
+                  
                   {subscription ? (
+                    // Usuário COM plano ativo - pode iniciar atendimento
                     <>
+                      <div className="text-center space-y-2">
+                        <h3 className="text-2xl font-bold">Precisa de Ajuda?</h3>
+                        <p className="text-muted-foreground max-w-md">
+                          Entre em contato com nossa equipe de atendimento jurídico através do WhatsApp
+                        </p>
+                      </div>
                       <Button 
-                        onClick={() => setShowCreateTicket(true)}
-                        variant="outline"
-                        className="flex-1 gap-2"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        Abrir Novo Chamado
-                      </Button>
-                      <Button 
-                        onClick={() => openZendeskWidget()}
-                        className="flex-1 gap-2"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        Chat de Atendimento
-                      </Button>
-                      <Button 
-                        variant="outline"
+                        size="lg" 
+                        className="bg-green-600 hover:bg-green-700 text-white gap-2"
                         onClick={() => window.open('https://wa.me/551150395554', '_blank')}
-                        className="flex-1 gap-2 bg-green-50 hover:bg-green-100 text-green-700 border-green-200"
                       >
-                        <MessageSquare className="w-4 h-4" />
-                        WhatsApp
+                        <MessageSquare className="w-5 h-5" />
+                        Iniciar Atendimento
                       </Button>
                     </>
                   ) : (
-                    <Button 
-                      onClick={handleSubscribe}
-                      disabled={loadingPlan !== null}
-                      className="w-full button-glow-pulse"
-                    >
-                      {loadingPlan ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          <span className="button-loading-pulse">Processando...</span>
-                        </>
-                      ) : (
-                        'Contratar Plano'
-                      )}
-                    </Button>
+                    // Usuário SEM plano ativo - bloqueado
+                    <>
+                      <div className="text-center space-y-2">
+                        <h3 className="text-2xl font-bold text-muted-foreground">Plano Inativo</h3>
+                        <p className="text-muted-foreground max-w-md">
+                          Para iniciar um novo atendimento você deverá contratar um plano
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg" 
+                        onClick={handleSubscribe}
+                        disabled={loadingPlan !== null}
+                        className="button-glow-pulse"
+                      >
+                        {loadingPlan ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <span className="button-loading-pulse">Processando...</span>
+                          </>
+                        ) : (
+                          'Contratar Plano'
+                        )}
+                      </Button>
+                    </>
                   )}
-                </CardContent>
-              </Card>
-
-              {/* Histórico de Tickets */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Histórico de Chamados</CardTitle>
-                      <CardDescription>
-                        Acompanhe todos os seus atendimentos
-                      </CardDescription>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={fetchTickets}
-                      disabled={loadingTickets}
-                    >
-                      <RefreshCw className={`w-4 h-4 ${loadingTickets ? 'animate-spin' : ''}`} />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {loadingTickets ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                  ) : tickets.length > 0 ? (
-                    <div className="space-y-4">
-                      {tickets.map((ticket) => (
-                        <div 
-                          key={`${ticket.type}-${ticket.id}`}
-                          className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
-                        >
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-semibold text-foreground">
-                                  {ticket.subject || 'Sem título'}
-                                </h4>
-                                
-                                {/* Badge de origem */}
-                                <Badge 
-                                  variant="outline" 
-                                  className={ticket.type === 'zendesk' 
-                                    ? 'bg-blue-50 text-blue-700 border-blue-200' 
-                                    : 'bg-purple-50 text-purple-700 border-purple-200'
-                                  }
-                                >
-                                  {ticket.type === 'zendesk' ? 'Zendesk' : 'Sistema'}
-                                </Badge>
-                                
-                                {/* Badge de status */}
-                                <Badge variant={
-                                  ticket.status === 'new' ? 'default' :
-                                  ticket.status === 'open' ? 'secondary' :
-                                  ticket.status === 'pending' ? 'outline' :
-                                  ticket.status === 'solved' || ticket.status === 'resolved' ? 'default' :
-                                  'secondary'
-                                } className={
-                                  ticket.status === 'solved' || ticket.status === 'resolved' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : ''
-                                }>
-                                  {ticket.status === 'new' && 'Novo'}
-                                  {ticket.status === 'open' && 'Aberto'}
-                                  {ticket.status === 'pending' && 'Pendente'}
-                                  {ticket.status === 'in_progress' && 'Em Andamento'}
-                                  {(ticket.status === 'solved' || ticket.status === 'resolved') && 'Resolvido'}
-                                  {ticket.status === 'closed' && 'Fechado'}
-                                  {!['new', 'open', 'pending', 'in_progress', 'solved', 'resolved', 'closed'].includes(ticket.status) && ticket.status}
-                                </Badge>
-                              </div>
-                              
-                              {ticket.description && (
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                  {ticket.description}
-                                </p>
-                              )}
-                              
-                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                <span>
-                                  Criado em {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
-                                </span>
-                                <span>•</span>
-                                <span>
-                                  Atualizado em {new Date(ticket.updated_at).toLocaleDateString('pt-BR')}
-                                </span>
-                              </div>
-                            </div>
-                            
-                            {ticket.url && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => window.open(ticket.url, '_blank')}
-                                className="gap-2"
-                              >
-                                Ver
-                                <ExternalLink className="w-4 h-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <MessageSquare className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                      <p>Nenhum chamado encontrado</p>
-                      <p className="text-sm mt-1">
-                        {subscription 
-                          ? "Inicie uma conversa usando o botão acima" 
-                          : "Contrate um plano para começar"}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </TabsContent>
 
             {/* Aba Meu Cadastro */}
@@ -979,19 +804,6 @@ const MeuCorre = () => {
           </Tabs>
         </div>
       </main>
-      
-      {/* Modal de Criação de Ticket */}
-      <CreateTicketDialog
-        open={showCreateTicket}
-        onOpenChange={setShowCreateTicket}
-        onTicketCreated={fetchTickets}
-      />
-
-      {/* Zendesk Widget - Carregado apenas para usuários autenticados */}
-      <ZendeskWidget 
-        showOnlyWithSubscription={false}
-        hasActiveSubscription={!!subscription}
-      />
     </div>
   );
 };

@@ -5,9 +5,3 @@ verify_jwt = false
 
 [functions.check-expiring-subscriptions]
 verify_jwt = false
-
-[functions.get-zendesk-tickets]
-verify_jwt = true
-
-[functions.get-internal-tickets]
-verify_jwt = true
