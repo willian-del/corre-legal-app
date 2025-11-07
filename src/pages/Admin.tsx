@@ -35,7 +35,9 @@ import {
   LineChart, 
   Line, 
   AreaChart, 
-  Area, 
+  Area,
+  ComposedChart,
+  Bar,
   XAxis, 
   YAxis, 
   CartesianGrid, 
@@ -362,12 +364,12 @@ export default function Admin() {
               <Card className="col-span-full">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle>Cadastros x Assinaturas</CardTitle>
-                      <CardDescription>
-                        Comparação entre novos cadastros e novas assinaturas
-                      </CardDescription>
-                    </div>
+              <div>
+                <CardTitle>Cadastros x Assinaturas</CardTitle>
+                <CardDescription>
+                  Barras: novos por dia | Linhas: total acumulado
+                </CardDescription>
+              </div>
                     <Select value={analyticsPeriod} onValueChange={setAnalyticsPeriod}>
                       <SelectTrigger className="w-[180px]">
                         <SelectValue />
@@ -387,44 +389,75 @@ export default function Admin() {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>
                   ) : (
-                    <ChartContainer
-                      config={{
-                        registrations: {
-                          label: "Cadastros",
-                          color: "hsl(var(--chart-1))"
-                        },
-                        subscriptions: {
-                          label: "Assinaturas",
-                          color: "hsl(var(--chart-2))"
-                        }
-                      }}
-                      className="h-[300px]"
-                    >
-                      <LineChart data={analyticsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis 
-                          dataKey="date" 
-                          tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                        />
-                        <YAxis />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Legend />
-                        <Line 
-                          type="monotone" 
-                          dataKey="registrations" 
-                          stroke="var(--color-registrations)" 
-                          name="Cadastros"
-                          strokeWidth={2}
-                        />
-                        <Line 
-                          type="monotone" 
-                          dataKey="subscriptions" 
-                          stroke="var(--color-subscriptions)" 
-                          name="Assinaturas"
-                          strokeWidth={2}
-                        />
-                      </LineChart>
-                    </ChartContainer>
+            <ChartContainer
+              config={{
+                registrations: {
+                  label: "Novos Cadastros",
+                  color: "hsl(var(--chart-1))"
+                },
+                subscriptions: {
+                  label: "Novas Assinaturas",
+                  color: "hsl(var(--chart-2))"
+                },
+                cumulativeRegistrations: {
+                  label: "Total de Cadastros",
+                  color: "hsl(var(--chart-3))"
+                },
+                cumulativeSubscriptions: {
+                  label: "Total de Assinaturas",
+                  color: "hsl(var(--chart-4))"
+                }
+              }}
+              className="h-[400px]"
+            >
+              <ComposedChart data={analyticsData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Legend />
+                
+                {/* Barras - Valores diários */}
+                <Bar 
+                  yAxisId="left"
+                  dataKey="registrations" 
+                  fill="var(--color-registrations)" 
+                  name="Novos Cadastros"
+                  radius={[4, 4, 0, 0]}
+                />
+                <Bar 
+                  yAxisId="left"
+                  dataKey="subscriptions" 
+                  fill="var(--color-subscriptions)" 
+                  name="Novas Assinaturas"
+                  radius={[4, 4, 0, 0]}
+                />
+                
+                {/* Linhas - Valores acumulados */}
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="cumulativeRegistrations" 
+                  stroke="var(--color-cumulativeRegistrations)" 
+                  name="Total de Cadastros"
+                  strokeWidth={2}
+                  dot={false}
+                />
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="cumulativeSubscriptions" 
+                  stroke="var(--color-cumulativeSubscriptions)" 
+                  name="Total de Assinaturas"
+                  strokeWidth={2}
+                  dot={false}
+                />
+              </ComposedChart>
+            </ChartContainer>
                   )}
                 </CardContent>
               </Card>
