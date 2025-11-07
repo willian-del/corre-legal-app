@@ -7,19 +7,23 @@ import { type PlanType } from "@/lib/stripe-config";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useInView } from "@/hooks/use-in-view";
-
 const Pricing = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { toast } = useToast();
+  const {
+    user
+  } = useAuth();
+  const {
+    toast
+  } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const { ref: cardRef, isInView } = useInView({ 
-    threshold: 0.2, 
+  const {
+    ref: cardRef,
+    isInView
+  } = useInView({
+    threshold: 0.2,
     triggerOnce: true,
     rootMargin: "-50px"
   });
-
-
   const handleSubscribe = async (planType: PlanType) => {
     // Check if user is logged in
     if (!user) {
@@ -30,10 +34,14 @@ const Pricing = () => {
     // Usuário já está logado - abrir checkout do Stripe
     setLoadingPlan(planType);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan_type: planType }
+      const {
+        data,
+        error
+      } = await supabase.functions.invoke('create-checkout', {
+        body: {
+          plan_type: planType
+        }
       });
-
       if (error) {
         // Detectar erro de configuração de Price ID
         if (error.message?.includes('INVALID_PRICE_ID')) {
@@ -41,32 +49,24 @@ const Pricing = () => {
         }
         throw error;
       }
-
       if (data?.url) {
         const newWindow = window.open(data.url, '_blank');
-        
+
         // Detectar se o pop-up foi bloqueado
         if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
           toast({
             title: "Pop-up bloqueado",
             description: "Por favor, permita pop-ups para este site e tente novamente.",
             variant: "destructive",
-            action: (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open(data.url, '_blank')}
-              >
+            action: <Button variant="outline" size="sm" onClick={() => window.open(data.url, '_blank')}>
                 Tentar novamente
               </Button>
-            ),
           });
           return;
         }
-        
         toast({
           title: "Redirecionando para pagamento",
-          description: "Você será direcionado para o Stripe para finalizar o pagamento.",
+          description: "Você será direcionado para o Stripe para finalizar o pagamento."
         });
       } else {
         throw new Error("No checkout URL received");
@@ -75,38 +75,27 @@ const Pricing = () => {
       if (import.meta.env.DEV) {
         console.error("Error creating checkout:", error);
       }
-      
       let title = "Erro ao processar pagamento";
       let description = "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente.";
-      
       if (error.message === 'CONFIG_ERROR') {
         title = "Erro de configuração";
         description = "Há um problema na configuração dos planos. Por favor, entre em contato com o suporte (Código: CONFIG_PRICE_ID_INVALID).";
       } else if (error.message?.includes('Network')) {
         description = "Problema de conexão. Verifique sua internet e tente novamente.";
       }
-      
       toast({
         title,
         description,
         variant: "destructive",
-        action: (
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => handleSubscribe(planType)}
-          >
+        action: <Button variant="outline" size="sm" onClick={() => handleSubscribe(planType)}>
             Tentar novamente
           </Button>
-        ),
       });
     } finally {
       setLoadingPlan(null);
     }
   };
-
-  return (
-    <section id="pricing" className="py-16 md:py-20 bg-secondary/30">
+  return <section id="pricing" className="py-16 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto">
         
@@ -118,21 +107,14 @@ const Pricing = () => {
         </div>
 
         {/* Card CTA Grande */}
-        <div 
-          ref={cardRef}
-          className={`
+        <div ref={cardRef} className={`
             bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl p-6 md:p-8 
             border-2 border-primary/50 shadow-2xl
             transition-all duration-700 ease-out
-            ${isInView 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 translate-y-12'
-            }
-          `}
-          style={{ 
-            willChange: isInView ? 'auto' : 'opacity, transform'
-          }}
-        >
+            ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}
+          `} style={{
+          willChange: isInView ? 'auto' : 'opacity, transform'
+        }}>
           
           {/* Ícone e Badge */}
           <div className="flex flex-col items-center mb-4">
@@ -175,30 +157,18 @@ const Pricing = () => {
               </li>
               <li className="flex items-start gap-4">
                 <Check className="w-6 h-6 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
-                <span className="text-base leading-relaxed text-foreground/90">
-                  <strong className="text-foreground">Gestão de Multas</strong>, Suspensão e Cassação da CNH
+                <span className="text-base leading-relaxed text-foreground/90">Apoio com Multas, Suspensão e Cassação da CNH<strong className="text-foreground">Gestão de Multas</strong>, Suspensão e Cassação da CNH
                 </span>
               </li>
             </ul>
           </div>
 
           {/* Botão CTA */}
-          <Button
-            onClick={() => handleSubscribe('ouro')}
-            size="lg"
-            disabled={loadingPlan !== null}
-            className="w-full text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-xl transition-all duration-300 transform hover:scale-105 button-glow-pulse"
-          >
-              {loadingPlan ? (
-                <>
+          <Button onClick={() => handleSubscribe('ouro')} size="lg" disabled={loadingPlan !== null} className="w-full text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-xl transition-all duration-300 transform hover:scale-105 button-glow-pulse">
+              {loadingPlan ? <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   <span className="button-loading-pulse">Processando...</span>
-                </>
-              ) : !user ? (
-                "Cadastre-se e Contrate Agora"
-              ) : (
-                "Contratar Plano Ouro"
-              )}
+                </> : !user ? "Cadastre-se e Contrate Agora" : "Contratar Plano Ouro"}
             </Button>
 
             {/* Footer text */}
@@ -209,8 +179,6 @@ const Pricing = () => {
 
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Pricing;
