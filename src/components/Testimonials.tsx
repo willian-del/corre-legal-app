@@ -1,4 +1,5 @@
 import { Quote } from "lucide-react";
+import { useInView } from "@/hooks/use-in-view";
 import {
   Carousel,
   CarouselContent,
@@ -12,6 +13,16 @@ import fernandaImg from "@/assets/testimonials/fernanda.jpg";
 import marcaoImg from "@/assets/testimonials/marcao.jpg";
 
 const Testimonials = () => {
+  const { ref: headerRef, isInView: headerInView } = useInView({ 
+    threshold: 0.2, 
+    triggerOnce: true 
+  });
+
+  const { ref: carouselRef, isInView: carouselInView } = useInView({ 
+    threshold: 0.1, 
+    triggerOnce: true 
+  });
+
   const testimonials = [
     {
       name: "Carlos",
@@ -42,7 +53,17 @@ const Testimonials = () => {
   return (
     <section id="testimonials" className="py-16 md:py-24 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16">
+        <div 
+          ref={headerRef}
+          className={`
+            max-w-3xl mx-auto text-center mb-12 md:mb-16
+            transition-all duration-700 ease-out
+            ${headerInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-8'
+            }
+          `}
+        >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 text-foreground">
             Quem já roda com a <span className="text-primary">gente</span>
           </h2>
@@ -51,7 +72,17 @@ const Testimonials = () => {
           </p>
         </div>
 
-        <div className="max-w-5xl mx-auto">
+        <div 
+          ref={carouselRef}
+          className={`
+            max-w-5xl mx-auto
+            transition-all duration-700 ease-out
+            ${carouselInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+          `}
+        >
           <Carousel
             opts={{
               align: "start",

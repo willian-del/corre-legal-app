@@ -1,30 +1,79 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { useInView } from "@/hooks/use-in-view";
+
 const About = () => {
+  const { ref: headerRef, isInView: headerInView } = useInView({ 
+    threshold: 0.2, 
+    triggerOnce: true 
+  });
+
+  const { ref: cardsRef, isInView: cardsInView } = useInView({ 
+    threshold: 0.15, 
+    triggerOnce: true 
+  });
+
   return <section id="about" className="py-24 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-16">
+        <div 
+          ref={headerRef}
+          className={`
+            max-w-3xl mx-auto text-center mb-16
+            transition-all duration-700 ease-out
+            ${headerInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-8'
+            }
+          `}
+        >
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
             Sobre o <span className="text-primary">Corre Legal</span>
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">Trabalhar na rua é viver na correria. A cada corrida ou entrega, imprevisto é o que não falta. A gente sabe como é — O Corre Legal nasceu pra isso: ser o parceiro para resolver os perrengues do corre com agilidade, preço justo e gente que entende sua rotina.</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-elevated">
+        <div 
+          ref={cardsRef}
+          className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+        >
+          <div className={`
+            bg-card rounded-2xl p-6 border border-border hover:border-primary/50 
+            transition-all duration-700 ease-out hover:shadow-elevated
+            ${cardsInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+            [transition-delay:0ms]
+          `}>
             <h3 className="text-xl font-bold mb-3 text-foreground">Suporte Jurídico</h3>
             <p className="text-muted-foreground leading-relaxed">
               Defendemos seus direitos com expertise jurídica especializada para profissionais de aplicativos.
             </p>
           </div>
 
-          <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-elevated">
+          <div className={`
+            bg-card rounded-2xl p-6 border border-border hover:border-primary/50 
+            transition-all duration-700 ease-out hover:shadow-elevated
+            ${cardsInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+            [transition-delay:100ms]
+          `}>
             <h3 className="text-xl font-bold mb-3 text-foreground">Atendimento Humano</h3>
             <p className="text-muted-foreground leading-relaxed">
               Advogados especialistas te ajudam a resolver o problema com quem entende sua rotina.
             </p>
           </div>
 
-          <div className="bg-card rounded-2xl p-6 border border-border hover:border-primary/50 transition-all duration-300 hover:shadow-elevated">
+          <div className={`
+            bg-card rounded-2xl p-6 border border-border hover:border-primary/50 
+            transition-all duration-700 ease-out hover:shadow-elevated
+            ${cardsInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+            [transition-delay:200ms]
+          `}>
             <h3 className="text-xl font-bold mb-3 text-foreground">Resposta Rápida</h3>
             <p className="text-muted-foreground leading-relaxed">
               Atendimento ágil via WhatsApp, porque entendemos que seu tempo é precioso.
