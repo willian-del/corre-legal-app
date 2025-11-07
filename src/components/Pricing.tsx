@@ -1,4 +1,4 @@
-import { Check, Medal } from "lucide-react";
+import { Check, Medal, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,66 +13,15 @@ const Pricing = () => {
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
-  const plans = [
-    {
-      name: "Bronze",
-      price: "60,00",
-      description: "Ideal pra quem quer suporte básico",
-      features: [
-        "6 meses de cobertura",
-        "Canal de Atendimento Jurídico Especializado"
-      ],
-      buttonText: "Contratar Bronze",
-      buttonVariant: "default" as const,
-      checkColor: "text-primary",
-      icon: Medal,
-      iconColor: "text-amber-700",
-      isPopular: false
-    },
-    {
-      name: "Prata",
-      price: "120,00",
-      description: "Ideal pra quem quer mais segurança",
-      features: [
-        "6 meses de cobertura",
-        "Canal de Atendimento Jurídico Especializado",
-        "Suporte no Bloqueio e Reativação de Conta"
-      ],
-      buttonText: "Contratar Prata",
-      buttonVariant: "default" as const,
-      checkColor: "text-accent",
-      icon: Medal,
-      iconColor: "text-gray-400",
-      isPopular: true,
-      highlighted: true
-    },
-    {
-      name: "Ouro",
-      price: "180,00",
-      description: "Ideal pra quem quer rodar tranquilo e protegido",
-      features: [
-        "6 meses de cobertura",
-        "Canal de Atendimento Jurídico Especializado",
-        "Suporte no Bloqueio e Reativação de Conta",
-        "Gestão de Multas, Suspensão e Cassação da CNH"
-      ],
-      buttonText: "Contratar Ouro",
-      buttonVariant: "default" as const,
-      checkColor: "text-primary",
-      icon: Medal,
-      iconColor: "text-yellow-500",
-      isPopular: false,
-      highlighted: false
-    }
-  ];
 
   const handleSubscribe = async (planType: PlanType) => {
     // Check if user is logged in
     if (!user) {
-      navigate('/auth?signup=true&redirect=' + encodeURIComponent('/#pricing'));
+      navigate('/auth?signup=true&redirect=/meu-corre');
       return;
     }
 
+    // Usuário já está logado - abrir checkout do Stripe
     setLoadingPlan(planType);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -151,80 +100,88 @@ const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-16 bg-secondary/30">
+    <section id="pricing" className="py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-10">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
-            Nossos <span className="text-primary">Planos</span>
-          </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            Escolha o plano ideal e garanta 6 meses de cobertura jurídica
-          </p>
-        </div>
+        <div className="max-w-4xl mx-auto">
+          
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Proteção Completa para o Seu <span className="text-primary">Corre</span>
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              6 meses de cobertura jurídica especializada
+            </p>
+          </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {plans.map((plan, index) => {
-            const Icon = plan.icon;
-            return (
-              <div
-                key={index}
-                className={`bg-card rounded-2xl p-5 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1 relative flex flex-col ${
-                  plan.highlighted
-                    ? "border-2 border-primary lg:scale-105 shadow-elevated"
-                    : "border border-border hover:border-primary/50"
-                }`}
-              >
-                {plan.isPopular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-6 py-2 rounded-full text-sm font-bold shadow-elevated">
-                    Mais Popular
-                  </div>
-                )}
+          {/* Card CTA Grande */}
+          <div className="bg-gradient-to-br from-primary/10 to-accent/10 rounded-3xl p-8 md:p-12 border-2 border-primary/50 shadow-2xl">
+            
+            {/* Ícone e Badge */}
+            <div className="flex flex-col items-center mb-8">
+              <Medal className="w-20 h-20 text-yellow-500 mb-4" />
+              <span className="bg-primary text-primary-foreground px-6 py-2 rounded-full font-bold text-sm">
+                PLANO OURO
+              </span>
+            </div>
 
-                <div className="text-center mb-3">
-                  {Icon && (
-                    <div className="flex justify-center mb-2">
-                      <Icon className={`w-8 h-8 ${plan.iconColor}`} />
-                    </div>
-                  )}
-                  <h3 className="text-xl font-bold text-foreground mb-1">
-                    {plan.name}
-                  </h3>
-                  <div className="mb-2">
-                    <span className="text-2xl font-bold text-foreground">R$ {plan.price}</span>
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    {plan.description}
-                  </p>
-                </div>
-
-                <ul className="space-y-2 mb-5 flex-grow">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-3">
-                      <Check className={`w-4 h-4 ${plan.checkColor} flex-shrink-0 mt-0.5`} />
-                      <span className="text-muted-foreground text-xs leading-relaxed">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Button
-                  onClick={() => handleSubscribe(plan.name.toLowerCase() as PlanType)}
-                  variant={plan.highlighted ? "default" : "default"}
-                  disabled={loadingPlan !== null}
-                  className={`w-full text-sm py-4 ${
-                    plan.highlighted
-                      ? "bg-accent hover:bg-accent/90 text-accent-foreground"
-                      : "bg-primary hover:bg-primary/90 text-primary-foreground"
-                  }`}
-                >
-                  {loadingPlan === plan.name.toLowerCase() 
-                    ? "Processando..." 
-                    : !user 
-                      ? "Cadastre-se para Contratar"
-                      : plan.buttonText}
-                </Button>
+            {/* Preço destacado */}
+            <div className="text-center mb-8">
+              <div className="text-5xl md:text-6xl font-bold text-foreground mb-2">
+                R$ 180,00
               </div>
-            );
-          })}
+              <p className="text-lg text-muted-foreground">
+                à vista ou em até 10x no cartão
+              </p>
+              <p className="text-xl font-semibold text-primary mt-2">
+                6 meses de cobertura completa
+              </p>
+            </div>
+
+            {/* Lista de benefícios */}
+            <div className="bg-card/50 rounded-2xl p-6 mb-8 max-w-2xl mx-auto">
+              <h3 className="font-bold text-lg mb-4 text-center">O que está incluído:</h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Canal de Atendimento Jurídico Especializado</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Suporte no Bloqueio e Reativação de Conta</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span>Gestão de Multas, Suspensão e Cassação da CNH</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Botão CTA */}
+            <Button
+              onClick={() => handleSubscribe('ouro')}
+              size="lg"
+              disabled={loadingPlan !== null}
+              className="w-full text-xl py-8 bg-primary hover:bg-primary/90 text-primary-foreground shadow-glow hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              {loadingPlan ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Processando...
+                </>
+              ) : !user ? (
+                "Cadastre-se e Contrate Agora"
+              ) : (
+                "Contratar Plano Ouro"
+              )}
+            </Button>
+
+            {/* Footer text */}
+            <p className="text-center text-sm text-muted-foreground mt-4">
+              ✅ Pagamento 100% seguro via Stripe
+            </p>
+          </div>
+
         </div>
       </div>
     </section>
