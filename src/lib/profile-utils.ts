@@ -35,11 +35,11 @@ export async function updateProfile(userId: string, data: {
   service_type: string;
 }) {
   try {
-    // Verify we have a valid session before making any updates
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Verify we have a valid authenticated user before making any updates
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       if (import.meta.env.DEV) {
-        console.error('No active session when trying to update profile');
+        console.error('No authenticated user when trying to update profile:', authError);
       }
       return { error: { message: 'Sessão expirada. Por favor, faça login novamente.' } };
     }
@@ -98,11 +98,11 @@ export async function updateProfile(userId: string, data: {
 // Get masked CPF from secure edge function
 export async function getMaskedCPF(userId: string): Promise<string | null> {
   try {
-    // Verify we have a valid session before calling the edge function
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // Verify we have a valid authenticated user before calling the edge function
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
       if (import.meta.env.DEV) {
-        console.error('No active session when trying to get masked CPF');
+        console.error('No authenticated user when trying to get masked CPF:', authError);
       }
       return null;
     }
