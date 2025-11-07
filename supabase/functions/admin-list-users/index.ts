@@ -51,20 +51,10 @@ serve(async (req) => {
 
     const offset = (page - 1) * limit;
 
-    // Build query for profiles with subscriptions
+    // Build query for profiles
     let profilesQuery = supabaseClient
       .from('profiles')
-      .select(`
-        *,
-        user_subscriptions(
-          id,
-          plan_type,
-          status,
-          expires_at,
-          amount_paid,
-          stripe_subscription_id
-        )
-      `, { count: 'exact' });
+      .select('*', { count: 'exact' });
 
     // Apply search filter
     if (search) {
@@ -75,6 +65,27 @@ serve(async (req) => {
       .range(offset, offset + limit - 1);
 
     if (profilesError) throw profilesError;
+
+    // Get user IDs from profiles
+    const userIds = profiles?.map(p => p.id) || [];
+
+    // Fetch subscriptions separately
+    const { data: subscriptions, error: subscriptionsError } = await supabaseClient
+      .from('user_subscriptions')
+      .select('*')
+      .in('user_id', userIds)
+      .eq('status', 'active')
+      .order('expires_at', { ascending: false });
+
+    if (subscriptionsError) throw subscriptionsError;
+
+    // Create a map of user_id to subscription
+    const subscriptionsMap = new Map();
+    subscriptions?.forEach(sub => {
+      if (!subscriptionsMap.has(sub.user_id)) {
+        subscriptionsMap.set(sub.user_id, sub);
+      }
+    });
 
     // Get user roles
     const { data: roles, error: rolesError } = await supabaseClient
@@ -91,7 +102,6 @@ serve(async (req) => {
     });
 
     // Get auth users for email
-    const userIds = profiles?.map(p => p.id) || [];
     const { data: { users: authUsers }, error: authUsersError } = await supabaseClient.auth.admin.listUsers();
     
     if (authUsersError) throw authUsersError;
@@ -102,7 +112,7 @@ serve(async (req) => {
     let users = profiles?.map(profile => {
       const authUser = authUsersMap.get(profile.id);
       const userRoles = rolesMap.get(profile.id) || [];
-      const subscription = profile.user_subscriptions?.[0] || null;
+      const subscription = subscriptionsMap.get(profile.id) || null;
 
       return {
         id: profile.id,
