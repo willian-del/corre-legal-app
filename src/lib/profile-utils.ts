@@ -9,7 +9,9 @@ export async function isProfileComplete(userId: string): Promise<boolean> {
       .maybeSingle();
     
     if (error) {
-      console.error('Error checking profile:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error checking profile:', error);
+      }
       return false;
     }
     
@@ -20,7 +22,9 @@ export async function isProfileComplete(userId: string): Promise<boolean> {
     
     return !!(data.cpf_hash && data.phone && data.service_type);
   } catch (error) {
-    console.error('Error checking profile:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error checking profile:', error);
+    }
     return false;
   }
 }
@@ -34,7 +38,9 @@ export async function updateProfile(userId: string, data: {
     // Verify we have a valid session before making any updates
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      console.error('No active session when trying to update profile');
+      if (import.meta.env.DEV) {
+        console.error('No active session when trying to update profile');
+      }
       return { error: { message: 'Sessão expirada. Por favor, faça login novamente.' } };
     }
 
@@ -50,7 +56,9 @@ export async function updateProfile(userId: string, data: {
       .upsert(updates, { onConflict: 'id' });
 
     if (upsertError) {
-      console.error('Error upserting profile:', upsertError);
+      if (import.meta.env.DEV) {
+        console.error('Error upserting profile:', upsertError);
+      }
       return { error: upsertError };
     }
 
@@ -64,7 +72,9 @@ export async function updateProfile(userId: string, data: {
       });
 
       if (cpfError) {
-        console.error('Error saving CPF via edge function:', cpfError);
+        if (import.meta.env.DEV) {
+          console.error('Error saving CPF via edge function:', cpfError);
+        }
         return { error: cpfError };
       }
 
@@ -73,10 +83,14 @@ export async function updateProfile(userId: string, data: {
       }
     }
 
-    console.log('Profile updated successfully for user:', userId);
+    if (import.meta.env.DEV) {
+      console.log('Profile updated successfully for user:', userId);
+    }
     return { error: null };
   } catch (error: any) {
-    console.error('Error updating profile:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error updating profile:', error);
+    }
     return { error };
   }
 }
@@ -87,7 +101,9 @@ export async function getMaskedCPF(userId: string): Promise<string | null> {
     // Verify we have a valid session before calling the edge function
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
-      console.error('No active session when trying to get masked CPF');
+      if (import.meta.env.DEV) {
+        console.error('No active session when trying to get masked CPF');
+      }
       return null;
     }
 
@@ -98,13 +114,17 @@ export async function getMaskedCPF(userId: string): Promise<string | null> {
     });
 
     if (error) {
-      console.error('Error fetching masked CPF:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching masked CPF:', error);
+      }
       return null;
     }
 
     return data?.maskedCPF || null;
   } catch (error) {
-    console.error('Error fetching masked CPF:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching masked CPF:', error);
+    }
     return null;
   }
 }
@@ -118,13 +138,17 @@ export async function getProfile(userId: string) {
       .single();
 
     if (error) {
-      console.error('Error fetching profile:', error);
+      if (import.meta.env.DEV) {
+        console.error('Error fetching profile:', error);
+      }
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Error fetching profile:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error fetching profile:', error);
+    }
     return null;
   }
 }
