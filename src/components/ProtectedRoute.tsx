@@ -31,10 +31,12 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
       if (user) {
         // Check profile completeness first
         if (requireCompleteProfile && profileComplete === false) {
-          // Apenas redirecionar se realmente faltar dados
-          // Dar tempo para o perfil ser atualizado após signup
-          setTimeout(() => {
-            if (profileComplete === false) {
+          // Re-verificar no banco de dados antes de redirecionar
+          // Isso evita redirecionamentos prematuros baseados em estado local
+          const { isProfileComplete } = await import('@/lib/profile-utils');
+          setTimeout(async () => {
+            const complete = await isProfileComplete(user.id);
+            if (!complete) {
               navigate('/onboarding');
             }
           }, 1000);

@@ -248,6 +248,28 @@ const Auth = () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (currentUser) {
+        // Verificar se o perfil foi criado pela trigger
+        const { data: profileData, error: profileCheckError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', currentUser.id)
+          .single();
+
+        // Se não existir perfil, criar manualmente (fallback caso trigger falhe)
+        if (profileCheckError || !profileData) {
+          if (import.meta.env.DEV) {
+            console.log('Trigger não criou perfil, criando manualmente');
+          }
+          
+          await supabase.from('profiles').insert({
+            id: currentUser.id,
+            full_name: fullName,
+            phone: phone,
+            service_type: serviceType
+          });
+        }
+
+        // Atualizar perfil com CPF
         await updateProfile(currentUser.id, {
           cpf: cpf,
           phone: phone,

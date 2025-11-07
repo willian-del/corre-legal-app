@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateProfile } from '@/lib/profile-utils';
@@ -37,7 +37,7 @@ const onboardingSchema = z.object({
 });
 
 const Onboarding = () => {
-  const { user } = useAuth();
+  const { user, profileComplete } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -46,6 +46,13 @@ const Onboarding = () => {
   const [serviceType, setServiceType] = useState('');
   const [errors, setErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Redirecionar se o perfil já estiver completo
+  useEffect(() => {
+    if (profileComplete === true) {
+      navigate('/meu-corre');
+    }
+  }, [profileComplete, navigate]);
 
 
   const formatPhone = (value: string) => {

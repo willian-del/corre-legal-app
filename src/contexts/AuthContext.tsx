@@ -32,6 +32,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     
     const complete = await isProfileComplete(user.id);
+    
+    if (import.meta.env.DEV) {
+      console.log('Profile check for user', user.id, ':', complete);
+    }
+    
     setProfileComplete(complete);
   };
 
