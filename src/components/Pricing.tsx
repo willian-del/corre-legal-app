@@ -100,18 +100,15 @@ const Pricing = () => {
   };
 
   return (
-    <section id="pricing" className="py-20 bg-secondary/30">
+    <section id="pricing" className="py-16 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto">
         
         {/* Header */}
-        <div className="text-center mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-8">
             Proteção Completa para o Seu <span className="text-primary">Corre</span>
           </h2>
-          <p className="text-lg text-muted-foreground">
-            6 meses de cobertura jurídica especializada
-          </p>
         </div>
 
         {/* Card CTA Grande */}
