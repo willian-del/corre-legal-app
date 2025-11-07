@@ -90,15 +90,23 @@ const Auth = () => {
   useEffect(() => {
     // Only redirect if not completing sign-up
     if (!loading && user && profileComplete !== null && !completingSignUp) {
-      const redirectParam = searchParams.get('redirect');
+      // Prioridade 1: Se veio do checkout, voltar para página inicial com flag
+      const checkoutParam = searchParams.get('checkout');
+      const planParam = searchParams.get('plan');
       
-      // Se há um redirect explícito na URL, usar ele
+      if (checkoutParam === 'true' && planParam) {
+        navigate(`/?checkout=true&plan=${planParam}`);
+        return;
+      }
+      
+      // Prioridade 2: Redirect explícito
+      const redirectParam = searchParams.get('redirect');
       if (redirectParam) {
         navigate(redirectParam);
         return;
       }
       
-      // Redirecionamento inteligente baseado no perfil
+      // Prioridade 3: Redirecionamento baseado em perfil
       if (!profileComplete) {
         navigate('/onboarding');
       } else {
@@ -157,6 +165,16 @@ const Auth = () => {
     if (currentUser) {
       const complete = await isProfileComplete(currentUser.id);
       
+      // Prioridade 1: Checkout flow
+      const checkoutParam = searchParams.get('checkout');
+      const planParam = searchParams.get('plan');
+      
+      if (checkoutParam === 'true' && planParam) {
+        navigate(`/?checkout=true&plan=${planParam}`);
+        return;
+      }
+      
+      // Prioridade 2: Redirect explícito
       const redirectParam = searchParams.get('redirect');
       
       if (redirectParam) {
@@ -240,8 +258,15 @@ const Auth = () => {
         
         toast.success('Cadastro completo! Bem-vindo ao Corre Legal.');
         
-        // Navigate directly to meu-corre after successful profile update
-        navigate('/meu-corre');
+        // Check if came from checkout flow
+        const checkoutParam = searchParams.get('checkout');
+        const planParam = searchParams.get('plan');
+        
+        if (checkoutParam === 'true' && planParam) {
+          navigate(`/?checkout=true&plan=${planParam}`);
+        } else {
+          navigate('/meu-corre');
+        }
       }
     } catch (profileError) {
       if (import.meta.env.DEV) {

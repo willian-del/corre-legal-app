@@ -31,7 +31,13 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
       if (user) {
         // Check profile completeness first
         if (requireCompleteProfile && profileComplete === false) {
-          navigate('/onboarding');
+          // Apenas redirecionar se realmente faltar dados
+          // Dar tempo para o perfil ser atualizado após signup
+          setTimeout(() => {
+            if (profileComplete === false) {
+              navigate('/onboarding');
+            }
+          }, 1000);
           return;
         }
 

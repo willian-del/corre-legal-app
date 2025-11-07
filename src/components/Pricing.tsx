@@ -23,7 +23,7 @@ const Pricing = () => {
   const handleSubscribe = async (planType: PlanType) => {
     // Check if user is logged in
     if (!user) {
-      navigate('/auth?signup=true&redirect=/meu-corre');
+      navigate(`/auth?signup=true&checkout=true&plan=${planType}`);
       return;
     }
 
