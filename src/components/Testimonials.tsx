@@ -8,9 +8,9 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import carlosImg from "@/assets/testimonials/carlos.jpg";
-import fernandaImg from "@/assets/testimonials/fernanda.jpg";
-import marcaoImg from "@/assets/testimonials/marcao.jpg";
+import carlosImg from "@/assets/testimonials/carlos.webp";
+import fernandaImg from "@/assets/testimonials/fernanda.webp";
+import marcaoImg from "@/assets/testimonials/marcao.webp";
 
 const TESTIMONIALS_DATA = [
     {
@@ -97,14 +97,18 @@ const Testimonials = () => {
               {TESTIMONIALS_DATA.map((testimonial, index) => (
                 <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
                   <div className="bg-card rounded-2xl p-6 md:p-8 border border-border h-full">
-                    <div className="flex items-start justify-between mb-4 md:mb-6">
-                      <div className="flex items-center gap-3 md:gap-4">
-                        <Avatar className="h-12 w-12 md:h-14 md:w-14">
-                          <AvatarImage src={testimonial.image} alt={testimonial.name} />
-                          <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                            {testimonial.initials}
-                          </AvatarFallback>
-                        </Avatar>
+                      <div className="flex items-start justify-between mb-4 md:mb-6">
+                        <div className="flex items-center gap-3 md:gap-4">
+                          <Avatar className="h-12 w-12 md:h-14 md:w-14">
+                            <AvatarImage 
+                              src={testimonial.image} 
+                              alt={testimonial.name}
+                              loading="lazy"
+                            />
+                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                              {testimonial.initials}
+                            </AvatarFallback>
+                          </Avatar>
                         <div>
                           <p className="font-bold text-foreground text-base md:text-lg">{testimonial.name}</p>
                           <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>

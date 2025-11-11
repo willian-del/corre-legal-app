@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-image.jpg";
+import heroImage from "@/assets/hero-image.webp";
 const Hero = () => {
   const scrollToPricing = () => {
     const element = document.getElementById("pricing");
@@ -11,11 +11,21 @@ const Hero = () => {
     }
   };
   return <section id="home" className="relative min-h-screen flex items-center pt-16">
-      <div className="absolute inset-0 z-0" style={{
-      backgroundImage: `linear-gradient(to right, hsl(240 10% 8% / 0.95), hsl(240 10% 8% / 0.7)), url(${heroImage})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center"
-    }} />
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        <img 
+          src={heroImage} 
+          alt="Motorista de aplicativo" 
+          loading="eager"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "center" }}
+        />
+        <div 
+          className="absolute inset-0" 
+          style={{
+            background: "linear-gradient(to right, hsl(240 10% 8% / 0.95), hsl(240 10% 8% / 0.7))"
+          }}
+        />
+      </div>
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-2xl">
           <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-foreground leading-tight">

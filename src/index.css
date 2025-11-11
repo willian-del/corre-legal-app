@@ -167,6 +167,23 @@ All colors MUST be HSL.
   transform: none !important;
 }
 
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Will-change for animated elements (improves rendering performance) */
+.animate-fade-in,
+.animate-scale-in,
+[class*="translate-"],
+[class*="opacity-"] {
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation completes to free resources */
+.animation-complete {
+  will-change: auto;
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   .ripple-effect,
