@@ -70,6 +70,46 @@ Deno.serve(async (req) => {
 
     if (subError) throw subError;
 
+    // Fetch auth users for DAU/MAU calculation
+    const { data: authData, error: authError } = await supabaseClient.auth.admin.listUsers();
+    
+    if (authError) {
+      console.error('[ADMIN-ANALYTICS] Warning: Could not fetch auth users', authError);
+    }
+
+    const authUsers = authData?.users || [];
+
+    // Calculate DAU and MAU per day
+    const activityByDate = new Map();
+    
+    // Process each day in the period
+    for (let i = 0; i < daysBack; i++) {
+      const currentDate = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      activityByDate.set(dateStr, {
+        dau: new Set(),
+        mau: new Set()
+      });
+      
+      authUsers.forEach(user => {
+        if (!user.last_sign_in_at) return;
+        
+        const lastSignIn = new Date(user.last_sign_in_at);
+        const daysDiff = Math.floor((currentDate.getTime() - lastSignIn.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // DAU: signed in within last 24h from this date
+        if (daysDiff === 0) {
+          activityByDate.get(dateStr)?.dau.add(user.id);
+        }
+        
+        // MAU: signed in within last 30 days from this date
+        if (daysDiff >= 0 && daysDiff < 30) {
+          activityByDate.get(dateStr)?.mau.add(user.id);
+        }
+      });
+    }
+
     // Aggregate data by date
     const dataMap = new Map();
 
@@ -115,6 +155,12 @@ Deno.serve(async (req) => {
       // Accumulate revenue
       cumulativeRevenue += entry.revenue;
       entry.cumulativeRevenue = cumulativeRevenue;
+      
+      // Add activity metrics
+      const activity = activityByDate.get(entry.date);
+      entry.dau = activity?.dau.size || 0;
+      entry.mau = activity?.mau.size || 0;
+      entry.stickiness = entry.mau > 0 ? Number(((entry.dau / entry.mau) * 100).toFixed(2)) : 0;
       
       // Format revenue
       entry.revenue = Number(entry.revenue.toFixed(2));

@@ -313,7 +313,10 @@ export default function Admin() {
         revenue: rev,
         cumulativeRegistrations: Number(entry.cumulativeRegistrations) || cumReg,
         cumulativeSubscriptions: Number(entry.cumulativeSubscriptions) || cumSub,
-        cumulativeRevenue: Number(entry.cumulativeRevenue) || cumRev
+        cumulativeRevenue: Number(entry.cumulativeRevenue) || cumRev,
+        dau: Number(entry.dau) || 0,
+        mau: Number(entry.mau) || 0,
+        stickiness: Number(entry.stickiness) || 0
       };
     });
   };
@@ -413,6 +416,45 @@ export default function Admin() {
                 <CardContent>
                   <div className="text-2xl font-bold text-destructive">{stats.expiringCount}</div>
                   <p className="text-xs text-muted-foreground">Assinaturas próximas do vencimento</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">DAU (Hoje)</CardTitle>
+                  <Users className="h-4 w-4 text-primary" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {analyticsData.length > 0 ? analyticsData[analyticsData.length - 1].dau : 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Usuários ativos hoje</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">MAU (30 dias)</CardTitle>
+                  <Users className="h-4 w-4 text-chart-2" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-chart-2">
+                    {analyticsData.length > 0 ? analyticsData[analyticsData.length - 1].mau : 0}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Usuários ativos (30d)</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">Stickiness</CardTitle>
+                  <DollarSign className="h-4 w-4 text-chart-3" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-chart-3">
+                    {analyticsData.length > 0 ? analyticsData[analyticsData.length - 1].stickiness : 0}%
+                  </div>
+                  <p className="text-xs text-muted-foreground">DAU/MAU (engajamento)</p>
                 </CardContent>
               </Card>
             </div>
@@ -553,6 +595,175 @@ export default function Admin() {
                   </LineChart>
                 )}
               </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* New Analytics Charts - DAU/MAU/Stickiness */}
+            <div className="grid gap-6 md:grid-cols-3">
+              {/* Chart 3: DAU over time */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>DAU - Usuários Ativos Diários</CardTitle>
+                  <CardDescription>
+                    Usuários que fizeram login por dia
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingAnalytics ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={{
+                        dau: {
+                          label: "DAU",
+                          color: "hsl(var(--chart-1))"
+                        }
+                      }}
+                      className="aspect-auto h-[300px]"
+                    >
+                      {analyticsData.length === 0 ? (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                          Sem dados para o período selecionado
+                        </div>
+                      ) : (
+                        <AreaChart data={analyticsData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="date" 
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                          />
+                          <YAxis domain={[0, 'auto']} allowDecimals={false} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Legend />
+                          <Area 
+                            type="monotone" 
+                            dataKey="dau" 
+                            stroke="var(--color-dau)" 
+                            fill="var(--color-dau)"
+                            fillOpacity={0.2}
+                            name="Usuários Ativos Diários"
+                            strokeWidth={2}
+                          />
+                        </AreaChart>
+                      )}
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Chart 4: MAU over time */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>MAU - Usuários Ativos Mensais</CardTitle>
+                  <CardDescription>
+                    Usuários ativos nos últimos 30 dias
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingAnalytics ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={{
+                        mau: {
+                          label: "MAU",
+                          color: "hsl(var(--chart-2))"
+                        }
+                      }}
+                      className="aspect-auto h-[300px]"
+                    >
+                      {analyticsData.length === 0 ? (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                          Sem dados para o período selecionado
+                        </div>
+                      ) : (
+                        <AreaChart data={analyticsData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="date" 
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                          />
+                          <YAxis domain={[0, 'auto']} allowDecimals={false} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Legend />
+                          <Area 
+                            type="monotone" 
+                            dataKey="mau" 
+                            stroke="var(--color-mau)" 
+                            fill="var(--color-mau)"
+                            fillOpacity={0.2}
+                            name="Usuários Ativos Mensais"
+                            strokeWidth={2}
+                          />
+                        </AreaChart>
+                      )}
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Chart 5: Stickiness over time */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Stickiness - Aderência</CardTitle>
+                  <CardDescription>
+                    Razão DAU/MAU (% de engajamento)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {loadingAnalytics ? (
+                    <div className="h-[300px] flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : (
+                    <ChartContainer
+                      config={{
+                        stickiness: {
+                          label: "Stickiness",
+                          color: "hsl(var(--chart-3))"
+                        }
+                      }}
+                      className="aspect-auto h-[300px]"
+                    >
+                      {analyticsData.length === 0 ? (
+                        <div className="flex items-center justify-center h-full text-muted-foreground">
+                          Sem dados para o período selecionado
+                        </div>
+                      ) : (
+                        <LineChart data={analyticsData}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis 
+                            dataKey="date" 
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                          />
+                          <YAxis 
+                            domain={[0, 100]} 
+                            tickFormatter={(value) => `${value}%`}
+                          />
+                          <ChartTooltip 
+                            content={<ChartTooltipContent 
+                              formatter={(value) => `${Number(value).toFixed(1)}%`}
+                            />} 
+                          />
+                          <Legend />
+                          <Line 
+                            type="monotone" 
+                            dataKey="stickiness" 
+                            stroke="var(--color-stickiness)" 
+                            name="Stickiness (%)"
+                            strokeWidth={3}
+                            dot={{ r: 3 }}
+                            connectNulls
+                          />
+                        </LineChart>
+                      )}
+                    </ChartContainer>
                   )}
                 </CardContent>
               </Card>
