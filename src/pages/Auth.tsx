@@ -56,6 +56,14 @@ const Auth = () => {
       setIsSignUpMode(true);
     }
   }, [searchParams]);
+  
+  // Detect password reset mode
+  useEffect(() => {
+    const resetParam = searchParams.get('reset');
+    if (resetParam === 'true') {
+      setIsResetMode(true);
+    }
+  }, [searchParams]);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -83,11 +91,20 @@ const Auth = () => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  
+  // Password reset mode (after clicking email link)
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [resetPasswordErrors, setResetPasswordErrors] = useState<any>({});
 
   // Sign-up flow state
   const [completingSignUp, setCompletingSignUp] = useState(false);
 
   useEffect(() => {
+    // Don't redirect if in password reset mode
+    if (isResetMode) return;
+    
     // Only redirect if not completing sign-up
     if (!loading && user && profileComplete !== null && !completingSignUp) {
       // Prioridade 1: Se veio do checkout, voltar para página inicial com flag
@@ -113,7 +130,7 @@ const Auth = () => {
         navigate('/meu-corre');
       }
     }
-  }, [user, loading, profileComplete, navigate, searchParams, completingSignUp]);
+  }, [user, loading, profileComplete, navigate, searchParams, completingSignUp, isResetMode]);
 
 
   const formatPhone = (value: string) => {
@@ -322,6 +339,47 @@ const Auth = () => {
       toast.error('Erro ao enviar email de recuperação. Verifique se o email está correto.');
     }
   };
+  
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetPasswordErrors({});
+
+    // Validação
+    if (newPassword.length < 6) {
+      setResetPasswordErrors({ newPassword: 'Senha deve ter no mínimo 6 caracteres' });
+      return;
+    }
+
+    if (newPassword !== newPasswordConfirm) {
+      setResetPasswordErrors({ newPasswordConfirm: 'As senhas não conferem' });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error('Erro ao atualizar senha. Tente novamente.');
+      return;
+    }
+
+    toast.success('Senha atualizada com sucesso!');
+    setIsResetMode(false);
+    
+    // Redirecionar para área logada
+    await checkProfile();
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    
+    if (currentUser) {
+      const complete = await isProfileComplete(currentUser.id);
+      navigate(complete ? '/meu-corre' : '/onboarding');
+    }
+  };
 
   if (loading) {
     return (
@@ -373,10 +431,19 @@ const Auth = () => {
               </div>
             )}
             <CardTitle className="text-2xl">
-              {showPasswordReset ? 'Recuperar Senha' : isSignUpMode ? 'Cadastre-se' : 'Fazer Login'}
+              {isResetMode 
+                ? 'Criar Nova Senha' 
+                : showPasswordReset 
+                ? 'Recuperar Senha' 
+                : isSignUpMode 
+                ? 'Cadastre-se' 
+                : 'Fazer Login'
+              }
             </CardTitle>
             <CardDescription className="text-base">
-              {showPasswordReset 
+              {isResetMode
+                ? 'Digite sua nova senha abaixo'
+                : showPasswordReset 
                 ? 'Digite seu email para receber instruções de recuperação' 
                 : isSignUpMode
                 ? 'Crie sua conta gratuitamente para contratar um plano Corre Legal'
@@ -385,7 +452,67 @@ const Auth = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 md:p-8 pt-0">
-            {showPasswordReset ? (
+            {isResetMode ? (
+              <form onSubmit={handleUpdatePassword} className="space-y-6">
+                <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-4">
+                  <p className="text-sm text-foreground">
+                    <Shield className="inline h-4 w-4 mr-1" />
+                    Crie uma nova senha segura para sua conta
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nova Senha</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    placeholder="Mínimo 6 caracteres"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {resetPasswordErrors.newPassword && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {resetPasswordErrors.newPassword}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="new-password-confirm">Confirmar Nova Senha</Label>
+                  <Input
+                    id="new-password-confirm"
+                    type="password"
+                    placeholder="Digite a senha novamente"
+                    value={newPasswordConfirm}
+                    onChange={e => setNewPasswordConfirm(e.target.value)}
+                    className="focus:border-primary transition-colors"
+                    required
+                  />
+                  {resetPasswordErrors.newPasswordConfirm && (
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {resetPasswordErrors.newPasswordConfirm}
+                    </p>
+                  )}
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Atualizando...
+                    </>
+                  ) : (
+                    'Atualizar Senha'
+                  )}
+                </Button>
+              </form>
+            ) : showPasswordReset ? (
               <>
                 {resetEmailSent ? (
                   <div className="space-y-6">
