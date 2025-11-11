@@ -96,15 +96,24 @@ Deno.serve(async (req) => {
         if (!user.last_sign_in_at) return;
         
         const lastSignIn = new Date(user.last_sign_in_at);
-        const daysDiff = Math.floor((currentDate.getTime() - lastSignIn.getTime()) / (1000 * 60 * 60 * 24));
         
-        // DAU: signed in within last 24h from this date
+        // Normalize dates to compare only days (remove time component)
+        const currentDateOnly = new Date(currentDate);
+        currentDateOnly.setHours(0, 0, 0, 0);
+        
+        const lastSignInOnly = new Date(lastSignIn);
+        lastSignInOnly.setHours(0, 0, 0, 0);
+        
+        // Calculate days difference (positive means login is in the past)
+        const daysDiff = Math.floor((currentDateOnly.getTime() - lastSignInOnly.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // DAU: user logged in exactly on this day
         if (daysDiff === 0) {
           activityByDate.get(dateStr)?.dau.add(user.id);
         }
         
-        // MAU: signed in within last 30 days from this date
-        if (daysDiff >= 0 && daysDiff < 30) {
+        // MAU: user logged in within last 30 days (including today)
+        if (daysDiff >= 0 && daysDiff <= 30) {
           activityByDate.get(dateStr)?.mau.add(user.id);
         }
       });
