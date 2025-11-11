@@ -119,8 +119,18 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Aggregate data by date
+    // Build complete date range list for the selected period (oldest -> newest)
+    const dates = [] as string[];
+    for (let i = daysBack - 1; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      dates.push(d.toISOString().split('T')[0]);
+    }
+
+    // Aggregate data by date - initialize map with all dates set to zero values
     const dataMap = new Map();
+    dates.forEach(date => {
+      dataMap.set(date, { date, registrations: 0, subscriptions: 0, revenue: 0 });
+    });
 
     // Process registrations
     registrations?.forEach(reg => {
@@ -143,38 +153,38 @@ Deno.serve(async (req) => {
       entry.revenue += Number(sub.amount_paid || 0);
     });
 
-    // Convert to array and sort by date
-    const analytics = Array.from(dataMap.values())
-      .sort((a, b) => a.date.localeCompare(b.date));
-
-    // Calculate cumulative values
+    // Calculate cumulative values while building analytics array chronologically
     let cumulativeRevenue = 0;
     let cumulativeRegistrations = 0;
     let cumulativeSubscriptions = 0;
 
-    analytics.forEach(entry => {
-      // Accumulate registrations
-      cumulativeRegistrations += entry.registrations;
-      entry.cumulativeRegistrations = cumulativeRegistrations;
-      
-      // Accumulate subscriptions
-      cumulativeSubscriptions += entry.subscriptions;
-      entry.cumulativeSubscriptions = cumulativeSubscriptions;
-      
-      // Accumulate revenue
-      cumulativeRevenue += entry.revenue;
-      entry.cumulativeRevenue = cumulativeRevenue;
-      
+    const analytics = dates.map(date => {
+      const base = dataMap.get(date);
+
+      // Accumulate
+      cumulativeRegistrations += base.registrations;
+      cumulativeSubscriptions += base.subscriptions;
+      cumulativeRevenue += base.revenue;
+
       // Add activity metrics
-      const activity = activityByDate.get(entry.date);
-      entry.dau = activity?.dau.size || 0;
-      entry.mau = activity?.mau.size || 0;
-      entry.stickiness = entry.mau > 0 ? Number(((entry.dau / entry.mau) * 100).toFixed(2)) : 0;
-      
-      // Format revenue
-      entry.revenue = Number(entry.revenue.toFixed(2));
-      entry.cumulativeRevenue = Number(cumulativeRevenue.toFixed(2));
+      const activity = activityByDate.get(date);
+      const dau = activity?.dau.size || 0;
+      const mau = activity?.mau.size || 0;
+      const stickiness = mau > 0 ? Number(((dau / mau) * 100).toFixed(2)) : 0;
+
+      return {
+        ...base,
+        revenue: Number(base.revenue.toFixed(2)),
+        cumulativeRegistrations,
+        cumulativeSubscriptions,
+        cumulativeRevenue: Number(cumulativeRevenue.toFixed(2)),
+        dau,
+        mau,
+        stickiness
+      };
     });
+
+    console.log(`[ADMIN-ANALYTICS] Built ${analytics.length} days. Sample last day:`, analytics[analytics.length - 1]);
 
     console.log(`[ADMIN-ANALYTICS] Returning ${analytics.length} data points for period ${period}`);
 
