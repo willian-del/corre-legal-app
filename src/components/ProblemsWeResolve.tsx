@@ -54,12 +54,12 @@ const ProblemsWeResolve = () => {
   const { ref: cardsRef, isInView: cardsInView } = useInView();
 
   const renderCard = (problem: { title: string; description: string }, index: number) => (
-    <Card className="p-3 hover:shadow-lg transition-all duration-300 min-h-[180px] flex flex-col">
-      <div className="flex flex-col gap-2 flex-1">
+    <Card className="p-2.5 hover:shadow-lg transition-all duration-300 min-h-[140px] flex flex-col">
+      <div className="flex flex-col gap-1.5 flex-1">
         <h3 className="text-sm font-bold text-foreground line-clamp-1">
           {problem.title}
         </h3>
-        <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed">
+        <p className="text-xs text-muted-foreground line-clamp-4 leading-normal">
           {problem.description}
         </p>
       </div>
