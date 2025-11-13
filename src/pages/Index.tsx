@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
+import ProblemsWeResolve from "@/components/ProblemsWeResolve";
 import Services from "@/components/Services";
 import Pricing from "@/components/Pricing";
 import Testimonials from "@/components/Testimonials";
@@ -64,6 +65,7 @@ const Index = () => {
       <Navbar />
       <Hero />
       <About />
+      <ProblemsWeResolve />
       <Services />
       <Pricing />
       <Testimonials />
