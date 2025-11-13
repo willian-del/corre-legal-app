@@ -12,39 +12,39 @@ import {
 const PROBLEMS_DATA = [
   {
     title: "Bloqueio Injusto no App",
-    description: "Foi bloqueado sem explicação? Te acusaram de algo que você não fez? A gente te ajuda a entender o motivo, montar o pedido de reativação e aumentar suas chances de voltar a trabalhar rápido."
+    description: "Bloqueado sem explicação ou acusado injustamente? Te ajudamos a entender o motivo, montar pedido de reativação e voltar ao trabalho."
   },
   {
-    title: "Problemas com Compras, Devoluções e Golpes",
-    description: "Comprou algo pela internet e veio errado? Propaganda enganosa? Caiu em golpe de marketplace? Ajudamos você a exigir seus direitos, pedir devolução, contestar cobranças e resolver situações de consumo do dia a dia."
+    title: "Compras, Devoluções e Golpes Online",
+    description: "Produto errado, propaganda enganosa ou golpe? Ajudamos você a exigir direitos, pedir devolução e resolver problemas de consumo."
   },
   {
     title: "Multa Injusta ou Radar Irregular",
-    description: "Levou multa em rua mal sinalizada? Radar escondido? Avaliamos se dá para recorrer e preparamos a defesa para você não perder dinheiro nem pontos na CNH."
+    description: "Multa em local mal sinalizado ou radar escondido? Avaliamos se cabe recurso e preparamos defesa para preservar dinheiro e pontos."
   },
   {
-    title: "Acidente Durante a Corrida ou Entrega",
-    description: "Bateu o carro ou a moto? Foi atingido por outro veículo? Te ajudamos a entender seus direitos, cobrar seguro/indenização e resolver o caso do jeito certo."
+    title: "Acidente na Corrida ou Entrega",
+    description: "Envolvido em acidente durante o trabalho? Te orientamos sobre direitos, como cobrar seguro ou indenização e resolver tudo corretamente."
   },
   {
     title: "Problemas com Aluguel de Carro ou Moto",
-    description: "Cobrança indevida? Desconto abusivo? Contrato mal explicado? Analisamos o contrato, orientamos o que é legal e te mostramos como contestar a cobrança."
+    description: "Cobrança abusiva ou contrato mal explicado no aluguel? Analisamos documentos, orientamos sobre legalidade e ajudamos na contestação."
   },
   {
-    title: "Conta Bancária Bloqueada Após Pix ou Depósito",
-    description: "O banco travou sua conta depois de uma corrida ou pagamento? Explicamos o motivo, preparamos o pedido de desbloqueio e ajudamos você a recuperar o acesso ao dinheiro."
+    title: "Conta Bancária Bloqueada",
+    description: "Banco travou sua conta após corrida ou pagamento? Explicamos o motivo, preparamos documentos e ajudamos a recuperar acesso ao dinheiro."
   },
   {
-    title: "Compra ou Venda de Moto/Carro com Problema",
-    description: "Veículo com defeito oculto, documento atrasado ou promessa que não foi cumprida? Te mostramos como exigir reparo, devolução ou ressarcimento — tudo dentro da lei."
+    title: "Compra/Venda de Veículo com Problema",
+    description: "Veículo com defeito oculto, documento atrasado ou promessa não cumprida? Mostramos como exigir reparo, devolução ou ressarcimento legal."
   },
   {
     title: "Separação, Pensão ou Problemas de Família",
-    description: "Separação, guarda de filhos, pensão ou acordo malfeito? Damos orientação segura para você saber seus direitos, próximos passos e como resolver sem dor de cabeça."
+    description: "Questões de separação, guarda, pensão ou acordo? Damos orientação segura sobre direitos, próximos passos e resolução sem complicação."
   },
   {
     title: "Corrida com Cliente Problemático",
-    description: "Cliente que xingou, inventou história, deu nota baixa injusta ou abriu reclamação? Orientamos como responder, que provas juntar e como se proteger para não levar penalidade."
+    description: "Cliente abusivo, reclamação injusta ou nota baixa sem motivo? Orientamos como responder, que provas reunir e como se proteger de penalidades."
   }
 ];
 
@@ -54,12 +54,12 @@ const ProblemsWeResolve = () => {
   const { ref: cardsRef, isInView: cardsInView } = useInView();
 
   const renderCard = (problem: { title: string; description: string }, index: number) => (
-    <Card className="p-3 hover:shadow-lg transition-all duration-300">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-bold text-foreground leading-tight">
+    <Card className="p-3 hover:shadow-lg transition-all duration-300 min-h-[180px] flex flex-col">
+      <div className="flex flex-col gap-2 flex-1">
+        <h3 className="text-sm font-bold text-foreground line-clamp-1">
           {problem.title}
         </h3>
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed">
           {problem.description}
         </p>
       </div>
