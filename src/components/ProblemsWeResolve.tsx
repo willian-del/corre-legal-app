@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useInView } from "@/hooks/use-in-view";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
@@ -7,7 +8,9 @@ import {
   CarouselItem,
   CarouselPrevious,
   CarouselNext,
+  type CarouselApi,
 } from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
 const PROBLEMS_DATA = [
   {
@@ -52,6 +55,21 @@ const ProblemsWeResolve = () => {
   const isMobile = useIsMobile();
   const { ref: headerRef, isInView: headerInView } = useInView();
   const { ref: cardsRef, isInView: cardsInView } = useInView();
+  
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
 
   const renderCard = (problem: { title: string; description: string }, index: number) => (
     <Card className="p-2 md:p-2.5 hover:shadow-lg transition-all duration-300 min-h-[120px] md:min-h-[140px] flex flex-col">
@@ -85,20 +103,39 @@ const ProblemsWeResolve = () => {
 
         <div ref={cardsRef}>
           {isMobile ? (
-            <Carousel
-              opts={{ align: "start", loop: true }}
-              className="w-full"
-            >
-              <CarouselContent>
-                {PROBLEMS_DATA.map((problem, index) => (
-                  <CarouselItem key={index} className="basis-[85%]">
-                    {renderCard(problem, index)}
-                  </CarouselItem>
+            <div>
+              <Carousel
+                opts={{ align: "start", loop: true }}
+                className="w-full"
+                setApi={setApi}
+              >
+                <CarouselContent>
+                  {PROBLEMS_DATA.map((problem, index) => (
+                    <CarouselItem key={index} className="basis-[85%]">
+                      {renderCard(problem, index)}
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-0 hidden" />
+                <CarouselNext className="right-0 hidden" />
+              </Carousel>
+              
+              <div className="flex justify-center gap-2 mt-4">
+                {Array.from({ length: count }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all duration-300",
+                      current === index 
+                        ? "bg-primary w-6" 
+                        : "bg-muted-foreground/30"
+                    )}
+                    onClick={() => api?.scrollTo(index)}
+                    aria-label={`Ir para card ${index + 1}`}
+                  />
                 ))}
-              </CarouselContent>
-              <CarouselPrevious className="left-0 hidden" />
-              <CarouselNext className="right-0 hidden" />
-            </Carousel>
+              </div>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-4">
               {PROBLEMS_DATA.map((problem, index) => (
