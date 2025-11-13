@@ -15,35 +15,35 @@ const PROBLEMS_DATA = [
     description: "Bloqueado sem explicação ou acusado injustamente? Te ajudamos a entender o motivo, montar pedido de reativação e voltar ao trabalho."
   },
   {
-    title: "Compras, Devoluções e Golpes Online",
+    title: "Compras e Golpes Online",
     description: "Produto errado, propaganda enganosa ou golpe? Ajudamos você a exigir direitos, pedir devolução e resolver problemas de consumo."
   },
   {
-    title: "Multa Injusta ou Radar Irregular",
+    title: "Multa Injusta de Trânsito",
     description: "Multa em local mal sinalizado ou radar escondido? Avaliamos se cabe recurso e preparamos defesa para preservar dinheiro e pontos."
   },
   {
-    title: "Acidente na Corrida ou Entrega",
+    title: "Acidente no Trabalho",
     description: "Envolvido em acidente durante o trabalho? Te orientamos sobre direitos, como cobrar seguro ou indenização e resolver tudo corretamente."
   },
   {
-    title: "Problemas com Aluguel de Carro ou Moto",
+    title: "Aluguel de Veículo",
     description: "Cobrança abusiva ou contrato mal explicado no aluguel? Analisamos documentos, orientamos sobre legalidade e ajudamos na contestação."
   },
   {
-    title: "Conta Bancária Bloqueada",
+    title: "Conta Bancária Travada",
     description: "Banco travou sua conta após corrida ou pagamento? Explicamos o motivo, preparamos documentos e ajudamos a recuperar acesso ao dinheiro."
   },
   {
-    title: "Compra/Venda de Veículo com Problema",
+    title: "Compra/Venda de Veículo",
     description: "Veículo com defeito oculto, documento atrasado ou promessa não cumprida? Mostramos como exigir reparo, devolução ou ressarcimento legal."
   },
   {
-    title: "Separação, Pensão ou Problemas de Família",
+    title: "Problemas de Família",
     description: "Questões de separação, guarda, pensão ou acordo? Damos orientação segura sobre direitos, próximos passos e resolução sem complicação."
   },
   {
-    title: "Corrida com Cliente Problemático",
+    title: "Cliente Problemático",
     description: "Cliente abusivo, reclamação injusta ou nota baixa sem motivo? Orientamos como responder, que provas reunir e como se proteger de penalidades."
   }
 ];
@@ -54,8 +54,8 @@ const ProblemsWeResolve = () => {
   const { ref: cardsRef, isInView: cardsInView } = useInView();
 
   const renderCard = (problem: { title: string; description: string }, index: number) => (
-    <Card className="p-2.5 hover:shadow-lg transition-all duration-300 min-h-[140px] flex flex-col">
-      <div className="flex flex-col gap-1.5 flex-1">
+    <Card className="p-2 md:p-2.5 hover:shadow-lg transition-all duration-300 min-h-[120px] md:min-h-[140px] flex flex-col">
+      <div className="flex flex-col gap-1 md:gap-1.5 flex-1">
         <h3 className="text-sm font-bold text-foreground line-clamp-1">
           {problem.title}
         </h3>
@@ -67,7 +67,7 @@ const ProblemsWeResolve = () => {
   );
 
   return (
-    <section id="problems" className="py-20 bg-background">
+    <section id="problems" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
         <div
           ref={headerRef}
@@ -96,8 +96,8 @@ const ProblemsWeResolve = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="left-0" />
-              <CarouselNext className="right-0" />
+              <CarouselPrevious className="left-0 hidden" />
+              <CarouselNext className="right-0 hidden" />
             </Carousel>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-4">

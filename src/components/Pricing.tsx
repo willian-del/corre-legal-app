@@ -95,7 +95,7 @@ const Pricing = () => {
       setLoadingPlan(null);
     }
   };
-  return <section id="pricing" className="py-16 md:py-20 bg-secondary/30">
+  return <section id="pricing" className="py-12 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
       <div className="max-w-3xl mx-auto">
         

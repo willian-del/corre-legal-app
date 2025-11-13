@@ -47,7 +47,7 @@ const Services = () => {
     triggerOnce: true 
   });
 
-  return <section id="services" className="py-16 md:py-20 bg-secondary/30">
+  return <section id="services" className="py-12 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
         <div 
           ref={headerRef}
