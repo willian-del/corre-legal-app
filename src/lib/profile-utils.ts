@@ -133,7 +133,7 @@ export async function getProfile(userId: string) {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, full_name, phone, service_type, created_at, updated_at')
       .eq('id', userId)
       .single();
 
