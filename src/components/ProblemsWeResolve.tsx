@@ -41,6 +41,10 @@ const PROBLEMS_DATA = [
   {
     title: "Separação, Pensão ou Problemas de Família",
     description: "Separação, guarda de filhos, pensão ou acordo malfeito? Damos orientação segura para você saber seus direitos, próximos passos e como resolver sem dor de cabeça."
+  },
+  {
+    title: "Corrida com Cliente Problemático",
+    description: "Cliente que xingou, inventou história, deu nota baixa injusta ou abriu reclamação? Orientamos como responder, que provas juntar e como se proteger para não levar penalidade."
   }
 ];
 
@@ -52,10 +56,10 @@ const ProblemsWeResolve = () => {
   const renderCard = (problem: { title: string; description: string }, index: number) => (
     <Card className="p-3 hover:shadow-lg transition-all duration-300">
       <div className="flex flex-col gap-2">
-        <h3 className="text-sm font-bold text-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+        <h3 className="text-sm font-bold text-foreground leading-tight">
           {problem.title}
         </h3>
-        <p className="text-xs text-muted-foreground line-clamp-4 leading-relaxed">
+        <p className="text-xs text-muted-foreground leading-relaxed">
           {problem.description}
         </p>
       </div>
@@ -96,7 +100,7 @@ const ProblemsWeResolve = () => {
               <CarouselNext className="right-0" />
             </Carousel>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-3 md:gap-4">
               {PROBLEMS_DATA.map((problem, index) => (
                 <div
                   key={index}
