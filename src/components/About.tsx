@@ -27,7 +27,7 @@ const About = () => {
     triggerOnce: true 
   });
 
-  return <section id="about" className="py-24 bg-background">
+  return <section id="about" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
         <div 
           ref={headerRef}
