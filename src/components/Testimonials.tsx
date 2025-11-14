@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Quote } from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
 import {
@@ -6,8 +7,10 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import carlosImg from "@/assets/testimonials/carlos.webp";
 import fernandaImg from "@/assets/testimonials/fernanda.webp";
 import marcaoImg from "@/assets/testimonials/marcao.webp";
@@ -49,6 +52,21 @@ const Testimonials = () => {
     threshold: 0.1, 
     triggerOnce: true 
   });
+
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
 
   return (
     <section id="testimonials" className="py-12 md:py-20 bg-background">
@@ -92,6 +110,7 @@ const Testimonials = () => {
               loop: true,
             }}
             className="w-full"
+            setApi={setApi}
           >
             <CarouselContent>
               {TESTIMONIALS_DATA.map((testimonial, index) => (
@@ -127,6 +146,23 @@ const Testimonials = () => {
             <CarouselPrevious className="-left-4 md:-left-12" />
             <CarouselNext className="-right-4 md:-right-12" />
           </Carousel>
+          
+          {/* Dots indicadores */}
+          <div className="flex justify-center gap-2 mt-6">
+            {Array.from({ length: count }).map((_, index) => (
+              <button
+                key={index}
+                className={cn(
+                  "h-2 w-2 rounded-full transition-all duration-300",
+                  current === index 
+                    ? "bg-primary w-6" 
+                    : "bg-muted-foreground/30"
+                )}
+                onClick={() => api?.scrollTo(index)}
+                aria-label={`Ir para depoimento ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

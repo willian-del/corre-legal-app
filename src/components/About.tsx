@@ -1,5 +1,14 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useInView } from "@/hooks/use-in-view";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
 const ABOUT_CARDS = [
   {
@@ -17,6 +26,7 @@ const ABOUT_CARDS = [
 ];
 
 const About = () => {
+  const isMobile = useIsMobile();
   const { ref: headerRef, isInView: headerInView } = useInView({ 
     threshold: 0.2, 
     triggerOnce: true 
@@ -26,6 +36,45 @@ const About = () => {
     threshold: 0.15, 
     triggerOnce: true 
   });
+
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  const renderCard = (card: { title: string; description: string }, index: number) => (
+    <div 
+      key={index}
+      className={`
+        bg-card rounded-2xl p-6 border border-border hover:border-primary/50 
+        transition-all duration-700 ease-out hover:shadow-elevated
+        ${cardsInView && !isMobile
+          ? 'opacity-100 translate-y-0' 
+          : !isMobile ? 'opacity-0 translate-y-12' : ''
+        }
+      `}
+      style={!isMobile ? { 
+        transitionDelay: `${index * 100}ms`,
+        transitionProperty: 'opacity, transform',
+        willChange: cardsInView ? 'auto' : 'opacity, transform'
+      } : undefined}
+    >
+      <h3 className="text-xl font-bold mb-3 text-foreground">{card.title}</h3>
+      <p className="text-muted-foreground leading-relaxed">
+        {card.description}
+      </p>
+    </div>
+  );
 
   return <section id="about" className="py-12 md:py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -48,31 +97,56 @@ const About = () => {
 
         <div 
           ref={cardsRef}
-          className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto"
+          className={`
+            max-w-5xl mx-auto
+            transition-all duration-700 ease-out
+            ${cardsInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+          `}
         >
-          {ABOUT_CARDS.map((card, index) => (
-            <div 
-              key={index}
-              className={`
-                bg-card rounded-2xl p-6 border border-border hover:border-primary/50 
-                transition-all duration-700 ease-out hover:shadow-elevated
-                ${cardsInView 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-12'
-                }
-              `}
-              style={{ 
-                transitionDelay: `${index * 100}ms`,
-                transitionProperty: 'opacity, transform',
-                willChange: cardsInView ? 'auto' : 'opacity, transform'
-              }}
-            >
-              <h3 className="text-xl font-bold mb-3 text-foreground">{card.title}</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {card.description}
-              </p>
+          {isMobile ? (
+            <>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+                setApi={setApi}
+              >
+                <CarouselContent>
+                  {ABOUT_CARDS.map((card, index) => (
+                    <CarouselItem key={index}>
+                      {renderCard(card, index)}
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+
+              {/* Dots indicadores */}
+              <div className="flex justify-center gap-2 mt-6">
+                {Array.from({ length: count }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all duration-300",
+                      current === index 
+                        ? "bg-primary w-6" 
+                        : "bg-muted-foreground/30"
+                    )}
+                    onClick={() => api?.scrollTo(index)}
+                    aria-label={`Ir para card ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {ABOUT_CARDS.map((card, index) => renderCard(card, index))}
             </div>
-          ))}
+          )}
         </div>
 
       </div>
