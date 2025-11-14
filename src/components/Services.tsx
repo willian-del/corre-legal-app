@@ -1,4 +1,13 @@
+import { useState, useEffect } from "react";
 import { useInView } from "@/hooks/use-in-view";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
+import { cn } from "@/lib/utils";
 
 const SERVICES_DATA = [
     {
@@ -37,6 +46,7 @@ const SERVICES_DATA = [
   ];
 
 const Services = () => {
+  const isMobile = useIsMobile();
   const { ref: headerRef, isInView: headerInView } = useInView({ 
     threshold: 0.2, 
     triggerOnce: true 
@@ -46,6 +56,68 @@ const Services = () => {
     threshold: 0.1, 
     triggerOnce: true 
   });
+
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  const renderCard = (service: typeof SERVICES_DATA[0], index: number) => (
+    <div 
+      key={index} 
+      className={`
+        bg-card rounded-xl border border-border hover:border-primary/50 
+        transition-all duration-700 ease-out hover:shadow-lg flex flex-col overflow-hidden
+        ${cardsInView && !isMobile
+          ? 'opacity-100 translate-y-0' 
+          : !isMobile ? 'opacity-0 translate-y-12' : ''
+        }
+      `}
+      style={!isMobile ? { 
+        transitionDelay: `${index * 100}ms`,
+        transitionProperty: 'opacity, transform',
+        willChange: cardsInView ? 'auto' : 'opacity, transform'
+      } : undefined}
+    >
+      {/* CAIXA SUPERIOR - Informações principais */}
+      <div className="p-6 pb-5">
+        <h3 className="text-xl font-bold mb-3 text-foreground">
+          {service.title}
+        </h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          {service.description}
+        </p>
+      </div>
+      
+      {/* SEPARADOR */}
+      <div className="border-t border-border/50"></div>
+      
+      {/* CAIXA INFERIOR - Benefícios */}
+      <div className="p-6 pt-5 bg-muted/30">
+        <p className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
+          Você conta com:
+        </p>
+        <ul className="space-y-2">
+          {service.coverage.map((item, idx) => (
+            <li key={idx} className="text-[11px] text-muted-foreground flex items-start gap-2">
+              <span className="text-primary mt-0.5 flex-shrink-0">•</span>
+              <span className="leading-snug">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 
   return <section id="services" className="py-12 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
@@ -68,55 +140,56 @@ const Services = () => {
 
         <div 
           ref={cardsRef}
-          className="grid md:grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 max-w-7xl mx-auto items-stretch"
+          className={`
+            max-w-7xl mx-auto
+            transition-all duration-700 ease-out
+            ${cardsInView 
+              ? 'opacity-100 translate-y-0' 
+              : 'opacity-0 translate-y-12'
+            }
+          `}
         >
-          {SERVICES_DATA.map((service, index) => (
-            <div 
-              key={index} 
-              className={`
-                bg-card rounded-xl border border-border hover:border-primary/50 
-                transition-all duration-700 ease-out hover:shadow-lg flex flex-col overflow-hidden
-                ${cardsInView 
-                  ? 'opacity-100 translate-y-0' 
-                  : 'opacity-0 translate-y-12'
-                }
-              `}
-              style={{ 
-                transitionDelay: `${index * 100}ms`,
-                transitionProperty: 'opacity, transform',
-                willChange: cardsInView ? 'auto' : 'opacity, transform'
-              }}
-            >
-              {/* CAIXA SUPERIOR - Informações principais */}
-              <div className="p-6 pb-5">
-                <h3 className="text-xl font-bold mb-3 text-foreground">
-                  {service.title}
-                </h3>
-                
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {service.description}
-                </p>
-              </div>
-              
-              {/* SEPARADOR */}
-              <div className="border-t border-border/50"></div>
-              
-              {/* CAIXA INFERIOR - Benefícios */}
-              <div className="p-6 pt-5 bg-muted/30">
-                <p className="text-xs font-semibold text-foreground mb-3 uppercase tracking-wide">
-                  Você conta com:
-                </p>
-                <ul className="space-y-2">
-                  {service.coverage.map((item, idx) => (
-                    <li key={idx} className="text-[11px] text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary mt-0.5 flex-shrink-0">•</span>
-                      <span className="leading-snug">{item}</span>
-                    </li>
+          {isMobile ? (
+            <>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+                setApi={setApi}
+              >
+                <CarouselContent>
+                  {SERVICES_DATA.map((service, index) => (
+                    <CarouselItem key={index}>
+                      {renderCard(service, index)}
+                    </CarouselItem>
                   ))}
-                </ul>
+                </CarouselContent>
+              </Carousel>
+
+              {/* Dots indicadores */}
+              <div className="flex justify-center gap-2 mt-6">
+                {Array.from({ length: count }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all duration-300",
+                      current === index 
+                        ? "bg-primary w-6" 
+                        : "bg-muted-foreground/30"
+                    )}
+                    onClick={() => api?.scrollTo(index)}
+                    aria-label={`Ir para serviço ${index + 1}`}
+                  />
+                ))}
               </div>
+            </>
+          ) : (
+            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-stretch">
+              {SERVICES_DATA.map((service, index) => renderCard(service, index))}
             </div>
-          ))}
+          )}
         </div>
 
         <p className="text-center text-xs text-muted-foreground/70 italic mt-8 max-w-4xl mx-auto">
