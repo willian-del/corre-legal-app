@@ -1,0 +1,38 @@
+{
+  "PRIMEIRACOMPRA": {
+    "code": "PRIMEIRACOMPRA",
+    "name": "Primeira Compra",
+    "description": "15% de desconto na primeira compra",
+    "discountType": "percentage",
+    "discountValue": 15,
+    "active": true,
+    "validUntil": "2025-12-31"
+  },
+  "BEMVINDO10": {
+    "code": "BEMVINDO10",
+    "name": "Bem-vindo",
+    "description": "R$ 10,00 de desconto",
+    "discountType": "fixed",
+    "discountValue": 10,
+    "active": true,
+    "validUntil": "2025-12-31"
+  },
+  "BLACK50": {
+    "code": "BLACK50",
+    "name": "Black Friday",
+    "description": "50% de desconto",
+    "discountType": "percentage",
+    "discountValue": 50,
+    "active": true,
+    "validUntil": "2025-11-30"
+  },
+  "NATAL20": {
+    "code": "NATAL20",
+    "name": "Natal 2025",
+    "description": "20% de desconto",
+    "discountType": "percentage",
+    "discountValue": 20,
+    "active": true,
+    "validUntil": "2025-12-31"
+  }
+}

@@ -2,11 +2,12 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Tag } from "lucide-react";
 import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import plansConfig from "@/config/plans.json";
+import couponsConfig from "@/config/coupons.json";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -16,7 +17,12 @@ const Checkout = () => {
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const planType = searchParams.get("plan") || "monthly";
+  const couponCode = searchParams.get("coupon")?.toUpperCase();
   const checkoutRef = useRef<HTMLDivElement>(null);
+  
+  // Get coupon details
+  const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
+  const isCouponValid = coupon && coupon.active && new Date(coupon.validUntil) >= new Date();
 
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -44,6 +50,20 @@ const Checkout = () => {
   };
 
   const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.monthly;
+
+  // Calculate discount
+  const calculateDiscount = () => {
+    if (!isCouponValid || !coupon) return 0;
+    
+    if (coupon.discountType === "percentage") {
+      return (plan.price * coupon.discountValue) / 100;
+    } else {
+      return coupon.discountValue;
+    }
+  };
+
+  const discount = calculateDiscount();
+  const finalPrice = Math.max(0, plan.price - discount);
 
   async function handlePayment(data: any) {
     console.log("Handle paymente", data);
@@ -79,14 +99,50 @@ const Checkout = () => {
                 <p className="text-sm text-muted-foreground">{plan.description}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-primary">{plan.displayPrice}</p>
+                <p className={`text-2xl font-bold ${discount > 0 ? 'line-through text-muted-foreground' : 'text-primary'}`}>
+                  {plan.displayPrice}
+                </p>
               </div>
             </div>
+
+            {/* Coupon Applied */}
+            {isCouponValid && coupon && (
+              <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Tag className="w-5 h-5 text-primary" />
+                  <span className="font-semibold text-primary">Cupom Aplicado!</span>
+                </div>
+                <p className="text-sm text-foreground/80 mb-2">{coupon.name}: {coupon.description}</p>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium">Desconto:</span>
+                  <span className="text-lg font-bold text-primary">
+                    - {coupon.discountType === 'percentage' 
+                      ? `${coupon.discountValue}%` 
+                      : `R$ ${discount.toFixed(2).replace('.', ',')}`}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Invalid Coupon Warning */}
+            {couponCode && !isCouponValid && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-destructive" />
+                  <span className="font-semibold text-destructive">Cupom inválido ou expirado</span>
+                </div>
+                <p className="text-sm text-foreground/80 mt-1">
+                  O cupom "{couponCode}" não é válido ou já expirou.
+                </p>
+              </div>
+            )}
 
             <div className="border-t border-border pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold">{plan.displayPrice}</span>
+                <span className="text-2xl font-bold text-primary">
+                  R$ {finalPrice.toFixed(2).replace('.', ',')}
+                </span>
               </div>
             </div>
           </div>
@@ -105,7 +161,7 @@ const Checkout = () => {
                 <div id="checkout-container" ref={checkoutRef}>
                   <Payment
                     initialization={{
-                      amount: plan.price,
+                      amount: finalPrice,
                     }}
                     customization={customization}
                     locale="pt-BR"
