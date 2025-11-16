@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { initMercadoPago } from "@mercadopago/sdk-react";
+import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,61 +29,15 @@ const Checkout = () => {
 
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
-      createPreference();
     }
   }, [user, planType]);
 
-  const createPreference = async () => {
-    try {
-      setLoading(true);
-      const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
-        body: { plan_type: planType },
-      });
-
-      console.log(data);
-
-      if (error) throw error;
-
-      if (data?.preference_id) {
-        setPreferenceId(data.preference_id);
-        // Initialize Checkout Bricks after getting preference ID
-        renderCheckoutBricks(data.preference_id);
-      } else {
-        throw new Error("No preference ID received");
-      }
-    } catch (error: any) {
-      console.error("Error creating preference:", error);
-      toast({
-        title: "Erro ao iniciar pagamento",
-        description: "Não foi possível processar sua solicitação. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const renderCheckoutBricks = async (prefId: string) => {
-    try {
-      const mp = (window as any).MercadoPago;
-      if (!mp) return;
-
-      const bricksBuilder = mp.bricks();
-
-      await bricksBuilder.create("wallet", "checkout-container", {
-        initialization: {
-          preferenceId: prefId,
-        },
-        customization: {
-          texts: {
-            action: "pay",
-            valueProp: "security_details",
-          },
-        },
-      });
-    } catch (error) {
-      console.error("Error rendering checkout:", error);
-    }
+  const customization = {
+    paymentMethods: {
+      maxInstallments: 10,
+      bankTransfer: ["all"],
+      creditCard: ["all"],
+    },
   };
 
   const getPlanDetails = () => {
@@ -108,6 +62,10 @@ const Checkout = () => {
   };
 
   const plan = getPlanDetails();
+
+  async function handlePayment(data: any) {
+    console.log("Handle paymente", data);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -162,7 +120,17 @@ const Checkout = () => {
               </div>
             ) : preferenceId ? (
               <div className="space-y-4">
-                <div id="checkout-container" ref={checkoutRef}></div>
+                <div id="checkout-container" ref={checkoutRef}>
+                  <Payment
+                    initialization={{
+                      amount: plan.price,
+                    }}
+                    customization={customization}
+                    locale="pt-BR"
+                    onRenderNextStep={() => console.log("onRenderNextStep")}
+                    onSubmit={handlePayment}
+                  />
+                </div>
               </div>
             ) : (
               <div className="text-center py-12">
