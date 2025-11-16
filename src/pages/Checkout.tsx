@@ -141,9 +141,7 @@ const Checkout = () => {
             ) : (
               <div className="text-center py-12">
                 <p className="text-muted-foreground mb-4">Não foi possível carregar o pagamento</p>
-                <Button onClick={createPreference} variant="outline">
-                  Tentar novamente
-                </Button>
+                <Button variant="outline">Tentar novamente</Button>
               </div>
             )}
           </div>
