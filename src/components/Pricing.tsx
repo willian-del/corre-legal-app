@@ -24,76 +24,15 @@ const Pricing = () => {
     triggerOnce: true,
     rootMargin: "-50px"
   });
-  const handleSubscribe = async (planType: PlanType) => {
+  const handleSubscribe = (planType: PlanType) => {
     // Check if user is logged in
     if (!user) {
       navigate(`/auth?signup=true&checkout=true&plan=${planType}`);
       return;
     }
 
-    // Usuário já está logado - abrir checkout do Stripe
-    setLoadingPlan(planType);
-    try {
-      const {
-        data,
-        error
-      } = await supabase.functions.invoke('create-checkout', {
-        body: {
-          plan_type: planType
-        }
-      });
-      if (error) {
-        // Detectar erro de configuração de Price ID
-        if (error.message?.includes('INVALID_PRICE_ID')) {
-          throw new Error('CONFIG_ERROR');
-        }
-        throw error;
-      }
-      if (data?.url) {
-        const newWindow = window.open(data.url, '_blank');
-
-        // Detectar se o pop-up foi bloqueado
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          toast({
-            title: "Pop-up bloqueado",
-            description: "Por favor, permita pop-ups para este site e tente novamente.",
-            variant: "destructive",
-            action: <Button variant="outline" size="sm" onClick={() => window.open(data.url, '_blank')}>
-                Tentar novamente
-              </Button>
-          });
-          return;
-        }
-        toast({
-          title: "Redirecionando para pagamento",
-          description: "Você será direcionado para o Stripe para finalizar o pagamento."
-        });
-      } else {
-        throw new Error("No checkout URL received");
-      }
-    } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error("Error creating checkout:", error);
-      }
-      let title = "Erro ao processar pagamento";
-      let description = "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente.";
-      if (error.message === 'CONFIG_ERROR') {
-        title = "Erro de configuração";
-        description = "Há um problema na configuração dos planos. Por favor, entre em contato com o suporte (Código: CONFIG_PRICE_ID_INVALID).";
-      } else if (error.message?.includes('Network')) {
-        description = "Problema de conexão. Verifique sua internet e tente novamente.";
-      }
-      toast({
-        title,
-        description,
-        variant: "destructive",
-        action: <Button variant="outline" size="sm" onClick={() => handleSubscribe(planType)}>
-            Tentar novamente
-          </Button>
-      });
-    } finally {
-      setLoadingPlan(null);
-    }
+    // Navigate to checkout page
+    navigate(`/checkout?plan=${planType}`);
   };
   return <section id="pricing" className="py-12 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
