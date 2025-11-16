@@ -66,7 +66,59 @@ const Checkout = () => {
   const finalPrice = Math.max(0, plan.price - discount);
 
   async function handlePayment(data: any) {
-    console.log("Handle paymente", data);
+    console.log("Processing payment...", data);
+    
+    try {
+      setLoading(true);
+
+      // Call backend to process payment and create subscription
+      const { data: result, error } = await supabase.functions.invoke("process-payment", {
+        body: {
+          paymentId: data.payment_id,
+          status: data.status,
+          planType: planType,
+          amount: finalPrice,
+          couponCode: isCouponValid ? couponCode : undefined,
+          paymentMethod: data.payment_method_id || "mercadopago",
+        },
+      });
+
+      if (error) {
+        console.error("Error processing payment:", error);
+        toast({
+          title: "Erro ao processar pagamento",
+          description: "Não foi possível confirmar seu pagamento. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (result?.success) {
+        console.log("Payment processed successfully:", result);
+        toast({
+          title: "Pagamento confirmado!",
+          description: "Sua assinatura foi ativada com sucesso.",
+        });
+        
+        // Redirect to success page
+        navigate("/payment-success");
+      } else {
+        toast({
+          title: "Pagamento não aprovado",
+          description: result?.error || "O pagamento não foi aprovado.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error in handlePayment:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar seu pagamento.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
