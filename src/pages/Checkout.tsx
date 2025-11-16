@@ -25,6 +25,7 @@ const Checkout = () => {
 
     // Initialize Mercado Pago
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+    console.log(publicKey);
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
     }
@@ -37,7 +38,7 @@ const Checkout = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
-        body: { plan_type: planType }
+        body: { plan_type: planType },
       });
 
       if (error) throw error;
@@ -64,18 +65,18 @@ const Checkout = () => {
       monthly: {
         name: "Plano Mensal",
         price: "R$ 39,90",
-        description: "Cobertura completa por 30 dias"
+        description: "Cobertura completa por 30 dias",
       },
       quarterly: {
         name: "Plano Trimestral",
         price: "R$ 99,90",
-        description: "Cobertura completa por 90 dias"
+        description: "Cobertura completa por 90 dias",
       },
       annual: {
         name: "Plano Anual",
         price: "R$ 349,90",
-        description: "Cobertura completa por 365 dias"
-      }
+        description: "Cobertura completa por 365 dias",
+      },
     };
     return plans[planType as keyof typeof plans] || plans.monthly;
   };
@@ -87,11 +88,7 @@ const Checkout = () => {
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="gap-2"
-          >
+          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
@@ -105,9 +102,7 @@ const Checkout = () => {
             <h1 className="text-3xl md:text-4xl font-bold mb-4">
               Finalize sua <span className="text-primary">Assinatura</span>
             </h1>
-            <p className="text-muted-foreground">
-              Você está contratando o {plan.name}
-            </p>
+            <p className="text-muted-foreground">Você está contratando o {plan.name}</p>
           </div>
 
           {/* Plan Summary */}
@@ -133,7 +128,7 @@ const Checkout = () => {
           {/* Payment */}
           <div className="bg-card rounded-2xl p-6 border border-border">
             <h2 className="text-xl font-semibold mb-6">Pagamento</h2>
-            
+
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
@@ -145,9 +140,7 @@ const Checkout = () => {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">
-                  Não foi possível carregar o pagamento
-                </p>
+                <p className="text-muted-foreground mb-4">Não foi possível carregar o pagamento</p>
                 <Button onClick={createPreference} variant="outline">
                   Tentar novamente
                 </Button>
