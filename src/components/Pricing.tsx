@@ -129,7 +129,7 @@ const Pricing = () => {
                   className={`w-full text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
                     plan.featured 
                       ? 'bg-primary hover:bg-primary/90' 
-                      : 'bg-secondary hover:bg-secondary/90'
+                      : 'bg-muted hover:bg-muted/80 text-foreground'
                   }`}
                 >
                   {loadingPlan === plan.id ? (
