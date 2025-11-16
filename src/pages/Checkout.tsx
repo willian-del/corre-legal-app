@@ -68,7 +68,6 @@ const Checkout = () => {
 
   const plan = getPlanDetails();
 
-  console.log(plan);
   async function handlePayment(data: any) {
     console.log("Handle paymente", data);
   }
