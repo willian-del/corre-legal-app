@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft } from "lucide-react";
-import { initMercadoPago, Wallet } from "@mercadopago/sdk-react";
+import { initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,7 @@ const Checkout = () => {
   const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const planType = searchParams.get("plan") || "monthly";
+  const checkoutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -23,15 +24,13 @@ const Checkout = () => {
       return;
     }
 
-    // Initialize Mercado Pago
+    // Initialize Mercado Pago and create preference
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
 
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
+      createPreference();
     }
-
-    // Create preference
-    createPreference();
   }, [user, planType]);
 
   const createPreference = async () => {
@@ -45,6 +44,8 @@ const Checkout = () => {
 
       if (data?.preference_id) {
         setPreferenceId(data.preference_id);
+        // Initialize Checkout Bricks after getting preference ID
+        renderCheckoutBricks(data.preference_id);
       } else {
         throw new Error("No preference ID received");
       }
@@ -57,6 +58,29 @@ const Checkout = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const renderCheckoutBricks = async (prefId: string) => {
+    try {
+      const mp = (window as any).MercadoPago;
+      if (!mp) return;
+
+      const bricksBuilder = mp.bricks();
+
+      await bricksBuilder.create("wallet", "checkout-container", {
+        initialization: {
+          preferenceId: prefId,
+        },
+        customization: {
+          texts: {
+            action: "pay",
+            valueProp: "security_details",
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error rendering checkout:", error);
     }
   };
 
@@ -136,7 +160,7 @@ const Checkout = () => {
               </div>
             ) : preferenceId ? (
               <div className="space-y-4">
-                <Wallet initialization={{ preferenceId }} />
+                <div id="checkout-container" ref={checkoutRef}></div>
               </div>
             ) : (
               <div className="text-center py-12">
