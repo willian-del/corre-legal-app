@@ -6,6 +6,7 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import plansConfig from "@/config/plans.json";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -42,31 +43,7 @@ const Checkout = () => {
     },
   };
 
-  const getPlanDetails = () => {
-    const plans = {
-      monthly: {
-        name: "Plano Mensal",
-        price: "R$ 39,90",
-        amount: 39.9,
-        description: "Cobertura completa por 30 dias",
-      },
-      quarterly: {
-        name: "Plano Trimestral",
-        price: "R$ 99,90",
-        amount: 99.9,
-        description: "Cobertura completa por 90 dias",
-      },
-      annual: {
-        name: "Plano Anual",
-        price: "R$ 349,90",
-        amount: 349.9,
-        description: "Cobertura completa por 365 dias",
-      },
-    };
-    return plans[planType as keyof typeof plans] || plans.monthly;
-  };
-
-  const plan = getPlanDetails();
+  const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.monthly;
 
   async function handlePayment(data: any) {
     console.log("Handle paymente", data);
@@ -102,14 +79,14 @@ const Checkout = () => {
                 <p className="text-sm text-muted-foreground">{plan.description}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-primary">{plan.price}</p>
+                <p className="text-2xl font-bold text-primary">{plan.displayPrice}</p>
               </div>
             </div>
 
             <div className="border-t border-border pt-4">
               <div className="flex justify-between items-center">
                 <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold">{plan.price}</span>
+                <span className="text-2xl font-bold">{plan.displayPrice}</span>
               </div>
             </div>
           </div>
@@ -128,7 +105,7 @@ const Checkout = () => {
                 <div id="checkout-container" ref={checkoutRef}>
                   <Payment
                     initialization={{
-                      amount: plan.amount,
+                      amount: plan.price,
                     }}
                     customization={customization}
                     locale="pt-BR"
