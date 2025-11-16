@@ -80,6 +80,7 @@ const Checkout = () => {
           amount: finalPrice,
           couponCode: isCouponValid ? couponCode : undefined,
           paymentMethod: data.payment_method_id || "mercadopago",
+          paymentToken: data.token || undefined,
         },
       });
 
