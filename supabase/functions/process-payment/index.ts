@@ -1,19 +1,24 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface PaymentData {
-  paymentId: string;
-  status: string;
-  planType: string;
-  amount: number;
-  couponCode?: string;
-  paymentMethod: string;
-}
+// Input validation schema
+const PaymentDataSchema = z.object({
+  paymentId: z.string().min(1, "Payment ID is required").max(255),
+  status: z.string().min(1, "Status is required").max(50),
+  planType: z.enum(["monthly", "quarterly", "annual"]),
+  amount: z.number().positive("Amount must be positive").max(999999),
+  couponCode: z.string().max(50).optional(),
+  paymentMethod: z.string().max(50),
+  paymentToken: z.string().max(500).optional(),
+});
+
+type PaymentData = z.infer<typeof PaymentDataSchema>;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,21 +40,87 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
-    const paymentData: PaymentData = await req.json();
-    console.log("Processing payment:", { userId: user.id, ...paymentData });
+    // Parse and validate input
+    const rawData = await req.json();
+    const paymentData = PaymentDataSchema.parse(rawData);
+    
+    console.log("Processing payment:", { 
+      userId: user.id, 
+      paymentId: paymentData.paymentId,
+      planType: paymentData.planType,
+      amount: paymentData.amount 
+    });
 
-    // Verify payment was successful
-    if (paymentData.status !== "approved") {
+    // Check for duplicate payment
+    const { data: existingPayment } = await supabaseClient
+      .from("user_subscriptions")
+      .select("id")
+      .eq("mercadopago_payment_id", paymentData.paymentId)
+      .maybeSingle();
+
+    if (existingPayment) {
+      console.log("Duplicate payment detected:", paymentData.paymentId);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "Payment not approved" 
+          error: "Payment already processed" 
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
         }
       );
+    }
+
+    // Verify payment with Mercado Pago API
+    const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    if (!accessToken) {
+      throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
+    }
+
+    const mpResponse = await fetch(
+      `https://api.mercadopago.com/v1/payments/${paymentData.paymentId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (!mpResponse.ok) {
+      console.error("Mercado Pago API error:", await mpResponse.text());
+      throw new Error("Failed to verify payment with Mercado Pago");
+    }
+
+    const mpPayment = await mpResponse.json();
+    console.log("Mercado Pago payment verified:", {
+      id: mpPayment.id,
+      status: mpPayment.status,
+      amount: mpPayment.transaction_amount,
+    });
+
+    // Verify payment status and amount
+    if (mpPayment.status !== "approved") {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Payment not approved by Mercado Pago" 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+
+    // Verify amount matches (with small tolerance for rounding)
+    const amountDiff = Math.abs(mpPayment.transaction_amount - paymentData.amount);
+    if (amountDiff > 0.01) {
+      console.error("Amount mismatch:", {
+        expected: paymentData.amount,
+        received: mpPayment.transaction_amount,
+      });
+      throw new Error("Payment amount mismatch");
     }
 
     // Calculate subscription expiration based on plan type
@@ -70,7 +141,7 @@ serve(async (req) => {
         expiresAt = new Date(now.setMonth(now.getMonth() + 1));
     }
 
-    // Create subscription record
+    // Create subscription record with all payment data
     const { data: subscription, error: subscriptionError } = await supabaseClient
       .from("user_subscriptions")
       .insert({
@@ -78,11 +149,13 @@ serve(async (req) => {
         plan_type: paymentData.planType,
         status: "active",
         payment_method: "mercadopago",
-        amount_paid: paymentData.amount,
-        currency: "BRL",
+        amount_paid: mpPayment.transaction_amount,
+        currency: mpPayment.currency_id || "BRL",
         expires_at: expiresAt.toISOString(),
         paid_at: new Date().toISOString(),
-        stripe_payment_intent_id: paymentData.paymentId, // Using this field for MP payment ID
+        mercadopago_payment_id: paymentData.paymentId,
+        payment_token: paymentData.paymentToken,
+        coupon_code: paymentData.couponCode,
       })
       .select()
       .single();
@@ -92,7 +165,12 @@ serve(async (req) => {
       throw new Error("Failed to create subscription");
     }
 
-    console.log("Subscription created successfully:", subscription);
+    console.log("Subscription created successfully:", {
+      id: subscription.id,
+      userId: user.id,
+      planType: subscription.plan_type,
+      expiresAt: subscription.expires_at,
+    });
 
     return new Response(
       JSON.stringify({
@@ -101,6 +179,7 @@ serve(async (req) => {
           id: subscription.id,
           expiresAt: subscription.expires_at,
           planType: subscription.plan_type,
+          amountPaid: subscription.amount_paid,
         },
       }),
       {
@@ -110,6 +189,21 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error processing payment:", error);
+    
+    if (error instanceof z.ZodError) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Invalid input data",
+          details: error.errors 
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400,
+        }
+      );
+    }
+    
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),

@@ -227,14 +227,17 @@ export type Database = {
           alert_30_days_sent: boolean | null
           alert_7_days_sent: boolean | null
           amount_paid: number | null
+          coupon_code: string | null
           created_at: string | null
           currency: string | null
           current_period_end: string | null
           current_period_start: string | null
           expires_at: string | null
           id: string
+          mercadopago_payment_id: string | null
           paid_at: string | null
           payment_method: string | null
+          payment_token: string | null
           plan_type: string
           status: string
           stripe_customer_id: string | null
@@ -248,14 +251,17 @@ export type Database = {
           alert_30_days_sent?: boolean | null
           alert_7_days_sent?: boolean | null
           amount_paid?: number | null
+          coupon_code?: string | null
           created_at?: string | null
           currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
           expires_at?: string | null
           id?: string
+          mercadopago_payment_id?: string | null
           paid_at?: string | null
           payment_method?: string | null
+          payment_token?: string | null
           plan_type: string
           status: string
           stripe_customer_id?: string | null
@@ -269,14 +275,17 @@ export type Database = {
           alert_30_days_sent?: boolean | null
           alert_7_days_sent?: boolean | null
           amount_paid?: number | null
+          coupon_code?: string | null
           created_at?: string | null
           currency?: string | null
           current_period_end?: string | null
           current_period_start?: string | null
           expires_at?: string | null
           id?: string
+          mercadopago_payment_id?: string | null
           paid_at?: string | null
           payment_method?: string | null
+          payment_token?: string | null
           plan_type?: string
           status?: string
           stripe_customer_id?: string | null
