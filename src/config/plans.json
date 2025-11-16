@@ -1,0 +1,54 @@
+{
+  "monthly": {
+    "id": "monthly",
+    "name": "Plano Mensal",
+    "price": 39.90,
+    "displayPrice": "R$ 39,90",
+    "description": "Cobertura completa por 30 dias",
+    "duration": "30 dias",
+    "benefits": [
+      "1 Mês de Cobertura Completa",
+      "Canal de Atendimento Jurídico Especializado",
+      "Suporte para Reativação de Conta em caso de Bloqueio",
+      "Proteção Contra Multas e Taxas Indevidas"
+    ],
+    "installments": "ou 3x no cartão",
+    "featured": false
+  },
+  "quarterly": {
+    "id": "quarterly",
+    "name": "Plano Trimestral",
+    "price": 99.90,
+    "displayPrice": "R$ 99,90",
+    "description": "Cobertura completa por 90 dias",
+    "duration": "90 dias",
+    "benefits": [
+      "3 Meses de Cobertura Completa",
+      "Canal de Atendimento Jurídico Especializado",
+      "Suporte para Reativação de Conta em caso de Bloqueio",
+      "Proteção Contra Multas e Taxas Indevidas",
+      "Economia de 15% vs Mensal"
+    ],
+    "installments": "ou em até 6x no cartão",
+    "featured": false
+  },
+  "annual": {
+    "id": "annual",
+    "name": "Plano Anual",
+    "price": 349.90,
+    "displayPrice": "R$ 349,90",
+    "description": "Cobertura completa por 365 dias",
+    "duration": "365 dias",
+    "badge": "PLANO OURO",
+    "featured": true,
+    "benefits": [
+      "12 Meses de Cobertura Completa",
+      "Canal de Atendimento Jurídico Especializado",
+      "Suporte para Reativação de Conta em caso de Bloqueio",
+      "Proteção Contra Multas e Taxas Indevidas",
+      "Atendimento Prioritário 24/7",
+      "Economia de 30% vs Mensal"
+    ],
+    "installments": "ou em até 10x no cartão"
+  }
+}
