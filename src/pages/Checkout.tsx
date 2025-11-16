@@ -40,6 +40,8 @@ const Checkout = () => {
         body: { plan_type: planType },
       });
 
+      console.log(data);
+
       if (error) throw error;
 
       if (data?.preference_id) {
