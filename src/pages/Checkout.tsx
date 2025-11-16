@@ -25,7 +25,7 @@ const Checkout = () => {
 
     // Initialize Mercado Pago
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
-    console.log(publicKey);
+    console.log(publicKey, "MAMA");
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
     }
