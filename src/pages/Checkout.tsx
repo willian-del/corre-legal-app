@@ -45,16 +45,19 @@ const Checkout = () => {
       monthly: {
         name: "Plano Mensal",
         price: "R$ 39,90",
+        amount: 39.9,
         description: "Cobertura completa por 30 dias",
       },
       quarterly: {
         name: "Plano Trimestral",
         price: "R$ 99,90",
+        amount: 99.9,
         description: "Cobertura completa por 90 dias",
       },
       annual: {
         name: "Plano Anual",
         price: "R$ 349,90",
+        amount: 349.9,
         description: "Cobertura completa por 365 dias",
       },
     };
@@ -124,7 +127,7 @@ const Checkout = () => {
                 <div id="checkout-container" ref={checkoutRef}>
                   <Payment
                     initialization={{
-                      amount: plan.price,
+                      amount: plan.amount,
                     }}
                     customization={customization}
                     locale="pt-BR"
