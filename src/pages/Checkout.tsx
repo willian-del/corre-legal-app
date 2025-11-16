@@ -29,6 +29,8 @@ const Checkout = () => {
 
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
+
+      setLoading(false);
     }
   }, [user, planType]);
 
