@@ -124,7 +124,7 @@ const Checkout = () => {
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                 <p className="text-muted-foreground">Preparando pagamento...</p>
               </div>
-            ) : preferenceId ? (
+            ) : (
               <div className="space-y-4">
                 <div id="checkout-container" ref={checkoutRef}>
                   <Payment
@@ -137,11 +137,6 @@ const Checkout = () => {
                     onSubmit={handlePayment}
                   />
                 </div>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground mb-4">Não foi possível carregar o pagamento</p>
-                <Button variant="outline">Tentar novamente</Button>
               </div>
             )}
           </div>
