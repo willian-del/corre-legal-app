@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { mapToStripePlan } from "@/lib/plan-mapping";
 
 const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -41,7 +42,7 @@ const Index = () => {
         // Invocar checkout automaticamente
         try {
           const { data, error } = await supabase.functions.invoke('create-checkout', {
-            body: { plan_type: planParam }
+            body: { plan_type: mapToStripePlan(planParam) }
           });
           
           if (error) throw error;
