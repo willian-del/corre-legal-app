@@ -54,20 +54,20 @@ const Navbar = () => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-4">
             <Button
-              onClick={() => scrollToSection("pricing")}
-              size="default"
-              className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
-            >
-              Contrate Agora
-            </Button>
-            <Button
               onClick={handleMeuCorre}
-              variant="outline"
+              variant="ghost"
               size="default"
               className="gap-2 h-10"
             >
               <User size={18} />
               Meu Corre
+            </Button>
+            <Button
+              onClick={() => scrollToSection("pricing")}
+              size="default"
+              className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
+            >
+              Contrate Agora
             </Button>
           </div>
 
@@ -84,20 +84,20 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden py-4 space-y-4 border-t border-border">
             <Button
-              onClick={() => scrollToSection("pricing")}
-              size="default"
-              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
-            >
-              Contrate Agora
-            </Button>
-            <Button
               onClick={handleMeuCorre}
-              variant="outline"
+              variant="ghost"
               size="default"
               className="w-full gap-2 h-10"
             >
               <User size={18} />
               Meu Corre
+            </Button>
+            <Button
+              onClick={() => scrollToSection("pricing")}
+              size="default"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
+            >
+              Contrate Agora
             </Button>
           </div>
         )}
