@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Tag } from "lucide-react";
-import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
+import { Wallet, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import plansConfig from "@/config/plans.json";
@@ -18,7 +18,6 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const planType = searchParams.get("plan") || "monthly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
-  const checkoutRef = useRef<HTMLDivElement>(null);
 
   // Get coupon details
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
@@ -31,23 +30,47 @@ const Checkout = () => {
       return;
     }
 
-    // Initialize Mercado Pago and create preference
+    // Initialize Mercado Pago
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
-
     if (publicKey) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
-
-      setLoading(false);
     }
-  }, [user, planType]);
 
-  const customization = {
-    paymentMethods: {
-      maxInstallments: 10,
-      bankTransfer: ["all"],
-      creditCard: ["all"],
-    },
-  };
+    // Create payment preference
+    const createPreference = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
+          body: { plan_type: planType },
+        });
+
+        if (error) {
+          console.error("Error creating preference:", error);
+          toast({
+            title: "Erro ao preparar pagamento",
+            description: "Não foi possível preparar o checkout. Tente novamente.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        if (data?.preference_id) {
+          setPreferenceId(data.preference_id);
+        }
+      } catch (error) {
+        console.error("Error in createPreference:", error);
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro ao preparar o pagamento.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    createPreference();
+  }, [user, planType, toast, navigate]);
 
   const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.monthly;
 
@@ -64,60 +87,6 @@ const Checkout = () => {
 
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, plan.price - discount);
-
-  async function handlePayment(data: any) {
-    try {
-      setLoading(true);
-
-      // Call backend to process payment and create subscription
-      const { data: result, error } = await supabase.functions.invoke("process-payment", {
-        body: {
-          paymentId: data.payment_id,
-          status: data.status,
-          planType: planType,
-          amount: finalPrice,
-          couponCode: isCouponValid ? couponCode : undefined,
-          paymentMethod: data.payment_method_id || "mercadopago",
-          paymentToken: data.token || undefined,
-        },
-      });
-
-      if (error) {
-        console.error("Error processing payment:", error);
-        toast({
-          title: "Erro ao processar pagamento",
-          description: "Não foi possível confirmar seu pagamento. Tente novamente.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (result?.success) {
-        toast({
-          title: "Pagamento confirmado!",
-          description: "Sua assinatura foi ativada com sucesso.",
-        });
-
-        // Redirect to success page
-        navigate("/payment-success");
-      } else {
-        toast({
-          title: "Pagamento não aprovado",
-          description: result?.error || "O pagamento não foi aprovado.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error in handlePayment:", error);
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao processar seu pagamento.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -202,24 +171,17 @@ const Checkout = () => {
           <div className="bg-card rounded-2xl p-6 border border-border">
             <h2 className="text-xl font-semibold mb-6">Pagamento</h2>
 
-            {loading ? (
+            {loading || !preferenceId ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                 <p className="text-muted-foreground">Preparando pagamento...</p>
               </div>
             ) : (
               <div className="space-y-4">
-                <div id="checkout-container" ref={checkoutRef}>
-                  <Payment
-                    initialization={{
-                      amount: finalPrice,
-                    }}
-                    customization={customization}
-                    locale="pt-BR"
-                    onRenderNextStep={() => console.log("onRenderNextStep")}
-                    onSubmit={handlePayment}
-                  />
-                </div>
+                <Wallet
+                  initialization={{ preferenceId }}
+                  locale="pt-BR"
+                />
               </div>
             )}
           </div>

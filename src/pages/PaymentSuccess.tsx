@@ -15,12 +15,17 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const isFirstPurchase = searchParams.get('first_purchase') === 'true';
   const sessionId = searchParams.get('session_id');
+  
+  // Mercado Pago return parameters
+  const paymentId = searchParams.get('payment_id');
+  const paymentStatus = searchParams.get('status');
+  const externalReference = searchParams.get('external_reference');
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Confirm subscription if session_id present
+  // Confirm Stripe subscription if session_id present
   useEffect(() => {
     if (!user || !sessionId) return;
     setVerifying(true);
@@ -33,6 +38,34 @@ const PaymentSuccess = () => {
       })
       .finally(() => setVerifying(false));
   }, [user, sessionId]);
+
+  // Process Mercado Pago payment if payment_id present
+  useEffect(() => {
+    if (!user || !paymentId || !externalReference) return;
+    
+    setVerifying(true);
+    
+    // Extract plan type from external_reference (format: userId_planType_timestamp)
+    const parts = externalReference.split('_');
+    const planType = parts[1] || 'monthly';
+    
+    supabase.functions
+      .invoke('process-payment', {
+        body: {
+          paymentId: paymentId,
+          status: paymentStatus || 'pending',
+          planType: planType,
+          amount: 0, // Will be verified with Mercado Pago API
+          paymentMethod: 'mercadopago',
+        },
+      })
+      .catch((e) => {
+        if (import.meta.env.DEV) {
+          console.error('process-payment error', e);
+        }
+      })
+      .finally(() => setVerifying(false));
+  }, [user, paymentId, paymentStatus, externalReference]);
 
   // Determine redirect destination
   useEffect(() => {
