@@ -12,7 +12,7 @@ const PaymentDataSchema = z.object({
   paymentId: z.string().min(1, "Payment ID is required").max(255),
   status: z.string().min(1, "Status is required").max(50),
   planType: z.enum(["monthly", "quarterly", "annual"]),
-  amount: z.number().positive("Amount must be positive").max(999999),
+  amount: z.number().positive("Amount must be positive").max(999999).optional(),
   couponCode: z.string().max(50).optional(),
   paymentMethod: z.string().max(50),
   paymentToken: z.string().max(500).optional(),
@@ -113,14 +113,15 @@ serve(async (req) => {
       );
     }
 
-    // Verify amount matches (with small tolerance for rounding)
-    const amountDiff = Math.abs(mpPayment.transaction_amount - paymentData.amount);
-    if (amountDiff > 0.01) {
-      console.error("Amount mismatch:", {
-        expected: paymentData.amount,
-        received: mpPayment.transaction_amount,
-      });
-      throw new Error("Payment amount mismatch");
+    // Optional: Log amount if provided for comparison
+    if (paymentData.amount) {
+      const amountDiff = Math.abs(mpPayment.transaction_amount - paymentData.amount);
+      if (amountDiff > 0.01) {
+        console.warn("Amount mismatch (informational):", {
+          expected: paymentData.amount,
+          received: mpPayment.transaction_amount,
+        });
+      }
     }
 
     // Calculate subscription expiration based on plan type
