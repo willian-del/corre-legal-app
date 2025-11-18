@@ -30,6 +30,7 @@ const Pricing = () => {
     triggerOnce: true,
     rootMargin: "-50px",
   });
+
   const handleSubscribe = (planId: string) => {
     // Check if user is logged in
     if (!user) {
