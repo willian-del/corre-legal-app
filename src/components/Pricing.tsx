@@ -55,7 +55,7 @@ const Pricing = () => {
           </div>
 
           {/* Plans Grid */}
-          <div className="grid md:grid-cols-6 gap-6">
+          <div className="grid md:grid-cols-1 gap-6">
             {plans.map((plan) => (
               <div
                 key={plan.id}
