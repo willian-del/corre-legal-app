@@ -2,7 +2,7 @@
   "monthly": {
     "id": "monthly",
     "name": "Plano Mensal",
-    "price": 99,90,
+    "price": 99.9,
     "displayPrice": "R$ 99,90",
     "description": "Cobertura completa por 30 dias",
     "duration": "30 dias",
