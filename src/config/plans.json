@@ -13,6 +13,7 @@
       "Proteção Contra Multas e Taxas Indevidas"
     ],
     "installments": "ou 3x no cartão",
-    "featured": false
+    "featured": true,
+    "badge": "Melhor Escolha"
   }
 }
