@@ -47,6 +47,7 @@ serve(async (req) => {
       userId: user.id,
       planType: paymentData.planType,
       amount: paymentData.amount,
+      datMP: paymentDataMP,
     });
 
     // Verify payment with Mercado Pago API
@@ -56,6 +57,19 @@ serve(async (req) => {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
 
+    const mpData = {
+      additional_info: {
+        items: [
+          {
+            id: paymentData.planType + user.id,
+            title: paymentData.planType,
+            description: "Assinatura corre legal",
+            picture_url: null,
+            category_id: "services",
+          },
+        ],
+      },
+    };
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
