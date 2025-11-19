@@ -93,7 +93,12 @@ const Checkout = () => {
 
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("Payment data:", paymentData);
-    // Payment will be processed by Mercado Pago and redirect to success URL
+    
+    // If payment method is PIX, redirect to PIX payment page
+    if (paymentData.payment_method_id === "pix") {
+      navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}`);
+    }
+    // Other payment methods will be processed by Mercado Pago
   };
 
   const handlePaymentError = (error: any) => {
