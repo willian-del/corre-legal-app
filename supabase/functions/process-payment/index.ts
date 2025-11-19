@@ -58,23 +58,25 @@ serve(async (req) => {
     }
 
     const mpData = {
-      additional_info: {
-        items: [
-          {
-            id: paymentData.planType + user.id,
-            title: paymentData.planType,
-            description: "Assinatura corre legal",
-            picture_url: null,
-            category_id: "services",
-          },
-        ],
+      payer: {
+        email: paymentDataMP.formData.payer.email,
+        identification: paymentDataMP.formData.identification,
       },
+      binary_mode: true,
+      installments: paymentDataMP.formData.installments,
+      token: paymentDataMP.formData.token,
+      transaction_amount: paymentData.amount,
     };
+
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      body: JSON.stringify(mpData),
     });
+
+    console.log(mpResponse);
 
     if (!mpResponse.ok) {
       console.error("Mercado Pago API error:", await mpResponse.text());
