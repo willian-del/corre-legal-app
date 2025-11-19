@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ShieldCheck, Info, Edit } from 'lucide-react';
 import Logo from '@/components/Logo';
-import { PLAN_DETAILS } from '@/lib/stripe-config';
+import { PLAN_DETAILS } from '@/lib/plans-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
 import { useToast } from '@/hooks/use-toast';
 import { normalizeServiceType, SERVICE_TYPES } from '@/lib/service-type-utils';
