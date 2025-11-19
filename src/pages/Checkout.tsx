@@ -41,7 +41,11 @@ const Checkout = () => {
       try {
         setLoading(true);
         const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
-          body: { plan_type: planType },
+          body: { 
+            plan_type: planType,
+            amount: finalPrice,
+            coupon_code: couponCode || null
+          },
         });
 
         if (error) {
