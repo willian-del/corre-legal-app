@@ -189,6 +189,7 @@ serve(async (req) => {
           success: false,
           error: "Invalid input data",
           details: error.errors,
+          scheme: PaymentDataSchema,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
