@@ -98,11 +98,64 @@ const Checkout = () => {
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("Payment data:", paymentData);
     
-    // If payment method is PIX, redirect to PIX payment page
-    if (paymentData.payment_method_id === "pix") {
-      navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}`);
+    try {
+      // If payment method is PIX, redirect to PIX payment page
+      if (paymentData.payment_method_id === "pix") {
+        navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}&coupon=${couponCode || ""}`);
+        return;
+      }
+      
+      // For credit card and other payment methods, process the payment
+      if (paymentData.id) {
+        setLoading(true);
+        
+        const { data, error } = await supabase.functions.invoke("process-payment", {
+          body: {
+            paymentId: paymentData.id,
+            status: paymentData.status,
+            planType: planType,
+            amount: finalPrice,
+            couponCode: couponCode || null,
+            paymentMethod: paymentData.payment_method_id,
+            paymentToken: paymentData.token || null,
+          },
+        });
+        
+        if (error) {
+          console.error("Error processing payment:", error);
+          toast({
+            title: "Erro ao processar pagamento",
+            description: "Não foi possível processar seu pagamento. Tente novamente.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        
+        if (data?.success) {
+          toast({
+            title: "Pagamento aprovado!",
+            description: "Sua assinatura foi ativada com sucesso.",
+          });
+          navigate("/payment-success");
+        } else {
+          toast({
+            title: "Pagamento não aprovado",
+            description: data?.error || "O pagamento não foi aprovado. Tente novamente.",
+            variant: "destructive",
+          });
+          setLoading(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error in handlePaymentSubmit:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao processar o pagamento.",
+        variant: "destructive",
+      });
+      setLoading(false);
     }
-    // Other payment methods will be processed by Mercado Pago
   };
 
   const handlePaymentError = (error: any) => {

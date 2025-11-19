@@ -21,6 +21,7 @@ const PixPayment = () => {
   useEffect(() => {
     const planType = searchParams.get("plan");
     const amount = searchParams.get("amount");
+    const coupon = searchParams.get("coupon");
 
     if (!planType || !amount) {
       toast({
@@ -32,14 +33,18 @@ const PixPayment = () => {
       return;
     }
 
-    createPixPayment(planType, parseFloat(amount));
+    createPixPayment(planType, parseFloat(amount), coupon || null);
   }, [searchParams]);
 
-  const createPixPayment = async (planType: string, amount: number) => {
+  const createPixPayment = async (planType: string, amount: number, couponCode: string | null) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("create-pix-payment", {
-        body: { plan_type: planType, amount },
+        body: { 
+          plan_type: planType, 
+          amount,
+          coupon_code: couponCode 
+        },
       });
 
       if (error) throw error;
