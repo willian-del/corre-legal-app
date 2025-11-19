@@ -15,6 +15,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MeuCorre = lazy(() => import("./pages/MeuCorre"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Checkout = lazy(() => import("./pages/Checkout"));
+const PixPayment = lazy(() => import("./pages/PixPayment"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Admin = lazy(() => import("./pages/Admin"));
 
@@ -40,6 +41,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/checkout" element={<Checkout />} />
+              <Route path="/pix-payment" element={<PixPayment />} />
               
               {/* Onboarding - apenas requer autenticação */}
               <Route
