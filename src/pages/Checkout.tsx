@@ -202,13 +202,10 @@ const Checkout = () => {
                   locale="pt-BR"
                   customization={{
                     paymentMethods: {
-                      creditCard: "all",
-                      debitCard: "all",
-                      ticket: "all",
-                      bankTransfer: "all",
-                      atm: "all",
-                      mercadoPago: "all"
-                    }
+                      maxInstallments: 10,
+                      bankTransfer: ["all"],
+                      creditCard: ["all"],
+                    },
                   }}
                 />
               </div>
