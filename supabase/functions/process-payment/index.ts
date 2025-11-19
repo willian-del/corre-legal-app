@@ -7,15 +7,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Input validation schema baseado na API do Mercado Pago
+// Input validation schema
 const PaymentDataSchema = z.object({
-  paymentId: z.union([z.string(), z.number()]).transform(val => String(val)),
-  status: z.string().min(1, "Status is required"),
+  status: z.string().min(1, "Status is required").max(50),
   planType: z.enum(["monthly", "quarterly", "annual"]),
-  amount: z.number().positive("Amount must be positive").optional(),
-  couponCode: z.string().max(50).optional().nullable(),
-  paymentMethod: z.string().max(50).optional(),
-  paymentToken: z.string().max(500).optional().nullable(),
+  amount: z.number().positive("Amount must be positive").max(999999).optional(),
+  couponCode: z.string().max(50).optional(),
+  paymentMethod: z.string().max(50),
 });
 
 type PaymentData = z.infer<typeof PaymentDataSchema>;
@@ -26,16 +24,16 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
+    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser(token);
+
     if (userError || !user) {
       throw new Error("User not authenticated");
     }
@@ -43,123 +41,69 @@ serve(async (req) => {
     // Parse and validate input
     const rawData = await req.json();
     const paymentData = PaymentDataSchema.parse(rawData);
-    
-    console.log("Processing payment:", { 
-      userId: user.id, 
-      paymentId: paymentData.paymentId,
+    const paymentDataMP = rawData.paymentData;
+
+    console.log("Processing payment:", {
+      userId: user.id,
       planType: paymentData.planType,
-      amount: paymentData.amount 
+      amount: paymentData.amount,
     });
-
-    // Check for duplicate payment
-    const { data: existingPayment } = await supabaseClient
-      .from("user_subscriptions")
-      .select("id")
-      .eq("mercadopago_payment_id", paymentData.paymentId)
-      .maybeSingle();
-
-    if (existingPayment) {
-      console.log("Duplicate payment detected:", paymentData.paymentId);
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "Payment already processed" 
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
-        }
-      );
-    }
 
     // Verify payment with Mercado Pago API
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+
     if (!accessToken) {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
 
-    console.log("Fetching payment from Mercado Pago:", paymentData.paymentId);
-
-    const mpResponse = await fetch(
-      `https://api.mercadopago.com/v1/payments/${paymentData.paymentId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
 
     if (!mpResponse.ok) {
-      const errorText = await mpResponse.text();
-      console.error("Mercado Pago API error:", {
-        status: mpResponse.status,
-        statusText: mpResponse.statusText,
-        body: errorText,
-      });
-      throw new Error(`Failed to verify payment with Mercado Pago: ${mpResponse.statusText}`);
+      console.error("Mercado Pago API error:", await mpResponse.text());
+      throw new Error("Failed to verify payment with Mercado Pago");
     }
 
     const mpPayment = await mpResponse.json();
-    
-    // Log detalhado conforme documentação do MP
-    console.log("Mercado Pago payment details:", {
+
+    console.log("Mercado Pago payment verified:", {
       id: mpPayment.id,
       status: mpPayment.status,
-      status_detail: mpPayment.status_detail,
-      transaction_amount: mpPayment.transaction_amount,
-      currency_id: mpPayment.currency_id,
-      payment_method_id: mpPayment.payment_method_id,
-      payment_type_id: mpPayment.payment_type_id,
-      date_approved: mpPayment.date_approved,
-      date_created: mpPayment.date_created,
+      amount: mpPayment.transaction_amount,
     });
 
-    // Verificar status do pagamento conforme documentação
-    // Status possíveis: pending, approved, authorized, in_process, in_mediation, rejected, cancelled, refunded, charged_back
+    // Verify payment status and amount
     if (mpPayment.status !== "approved") {
-      const statusMessages: Record<string, string> = {
-        pending: "Pagamento pendente",
-        in_process: "Pagamento em processamento",
-        rejected: "Pagamento rejeitado",
-        cancelled: "Pagamento cancelado",
-        refunded: "Pagamento reembolsado",
-        charged_back: "Pagamento com chargeback",
-      };
-
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: statusMessages[mpPayment.status] || "Payment not approved",
-          status: mpPayment.status,
-          status_detail: mpPayment.status_detail,
+        JSON.stringify({
+          success: false,
+          error: "Payment not approved by Mercado Pago",
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
-        }
+        },
       );
     }
 
-    // Validar valor do pagamento se fornecido
+    // Optional: Log amount if provided for comparison
     if (paymentData.amount) {
       const amountDiff = Math.abs(mpPayment.transaction_amount - paymentData.amount);
       if (amountDiff > 0.01) {
-        console.warn("Amount mismatch detected:", {
+        console.warn("Amount mismatch (informational):", {
           expected: paymentData.amount,
           received: mpPayment.transaction_amount,
-          difference: amountDiff,
         });
-        
-        // Usar o valor real do Mercado Pago
-        console.log("Using Mercado Pago transaction amount as authoritative");
       }
     }
 
     // Calculate subscription expiration based on plan type
     const now = new Date();
     let expiresAt: Date;
-    
+
     switch (paymentData.planType) {
       case "monthly":
         expiresAt = new Date(now.setMonth(now.getMonth() + 1));
@@ -174,26 +118,22 @@ serve(async (req) => {
         expiresAt = new Date(now.setMonth(now.getMonth() + 1));
     }
 
-    // Create subscription record with all payment data from Mercado Pago
-    const subscriptionData = {
-      user_id: user.id,
-      plan_type: paymentData.planType,
-      status: "active",
-      payment_method: mpPayment.payment_method_id || "mercadopago",
-      amount_paid: mpPayment.transaction_amount,
-      currency: mpPayment.currency_id || "BRL",
-      expires_at: expiresAt.toISOString(),
-      paid_at: mpPayment.date_approved || mpPayment.date_created || new Date().toISOString(),
-      mercadopago_payment_id: String(mpPayment.id),
-      payment_token: paymentData.paymentToken || null,
-      coupon_code: paymentData.couponCode || null,
-    };
-
-    console.log("Creating subscription with data:", subscriptionData);
-
+    // Create subscription record with all payment data
     const { data: subscription, error: subscriptionError } = await supabaseClient
       .from("user_subscriptions")
-      .insert(subscriptionData)
+      .insert({
+        user_id: user.id,
+        plan_type: paymentData.planType,
+        status: "active",
+        payment_method: "mercadopago",
+        amount_paid: mpPayment.transaction_amount,
+        currency: mpPayment.currency_id || "BRL",
+        expires_at: expiresAt.toISOString(),
+        paid_at: new Date().toISOString(),
+        mercadopago_payment_id: paymentData.paymentId,
+        payment_token: paymentData.paymentToken,
+        coupon_code: paymentData.couponCode,
+      })
       .select()
       .single();
 
@@ -222,32 +162,29 @@ serve(async (req) => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
-      }
+      },
     );
   } catch (error) {
     console.error("Error processing payment:", error);
-    
+
     if (error instanceof z.ZodError) {
       return new Response(
-        JSON.stringify({ 
-          success: false, 
+        JSON.stringify({
+          success: false,
           error: "Invalid input data",
-          details: error.errors 
+          details: error.errors,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 400,
-        }
+        },
       );
     }
-    
+
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
-    );
+    return new Response(JSON.stringify({ success: false, error: errorMessage }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
   }
 });
