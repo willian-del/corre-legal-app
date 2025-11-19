@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Tag } from "lucide-react";
-import { Wallet, initMercadoPago } from "@mercadopago/sdk-react";
+import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import plansConfig from "@/config/plans.json";
@@ -14,10 +14,10 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
-  const [preferenceId, setPreferenceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const planType = searchParams.get("plan") || "monthly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
+  const [initialization, setInitialization] = useState<any>(null);
 
   // Get coupon details
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
@@ -36,7 +36,7 @@ const Checkout = () => {
       initMercadoPago(publicKey, { locale: "pt-BR" });
     }
 
-    // Create payment preference
+    // Create payment preference and initialization
     const createPreference = async () => {
       try {
         setLoading(true);
@@ -55,7 +55,10 @@ const Checkout = () => {
         }
 
         if (data?.preference_id) {
-          setPreferenceId(data.preference_id);
+          setInitialization({
+            amount: finalPrice,
+            preferenceId: data.preference_id,
+          });
         }
       } catch (error) {
         console.error("Error in createPreference:", error);
@@ -87,6 +90,20 @@ const Checkout = () => {
 
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, plan.price - discount);
+
+  const handlePaymentSubmit = async (paymentData: any) => {
+    console.log("Payment data:", paymentData);
+    // Payment will be processed by Mercado Pago and redirect to success URL
+  };
+
+  const handlePaymentError = (error: any) => {
+    console.error("Payment error:", error);
+    toast({
+      title: "Erro no pagamento",
+      description: "Ocorreu um erro ao processar o pagamento. Tente novamente.",
+      variant: "destructive",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,16 +188,28 @@ const Checkout = () => {
           <div className="bg-card rounded-2xl p-6 border border-border">
             <h2 className="text-xl font-semibold mb-6">Pagamento</h2>
 
-            {loading || !preferenceId ? (
+            {loading || !initialization ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
                 <p className="text-muted-foreground">Preparando pagamento...</p>
               </div>
             ) : (
               <div className="space-y-4">
-                <Wallet
-                  initialization={{ preferenceId }}
+                <Payment
+                  initialization={initialization}
+                  onSubmit={handlePaymentSubmit}
+                  onError={handlePaymentError}
                   locale="pt-BR"
+                  customization={{
+                    paymentMethods: {
+                      creditCard: "all",
+                      debitCard: "all",
+                      ticket: "all",
+                      bankTransfer: "all",
+                      atm: "all",
+                      mercadoPago: "all"
+                    }
+                  }}
                 />
               </div>
             )}
