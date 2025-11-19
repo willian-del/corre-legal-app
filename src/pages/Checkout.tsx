@@ -100,10 +100,10 @@ const Checkout = () => {
 
     try {
       // If payment method is PIX, redirect to PIX payment page
-      // if (paymentData.paymentType === "pix") {
-      //   navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}&coupon=${couponCode || ""}`);
-      //   return;
-      // }
+      if (paymentData.paymentType === "pix") {
+        navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}&coupon=${couponCode || ""}`);
+        return;
+      }
 
       setLoading(true);
 
