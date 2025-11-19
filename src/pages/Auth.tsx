@@ -1,45 +1,48 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Shield, CheckCircle, Loader2 } from 'lucide-react';
-import Logo from '@/components/Logo';
-import { z } from 'zod';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { updateProfile, isProfileComplete } from '@/lib/profile-utils';
-import { SERVICE_TYPES } from '@/lib/service-type-utils';
-import { isValidCPF, formatCPF } from '@/lib/cpf-utils';
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Shield, CheckCircle, Loader2 } from "lucide-react";
+import Logo from "@/components/Logo";
+import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { updateProfile, isProfileComplete } from "@/lib/profile-utils";
+import { SERVICE_TYPES } from "@/lib/service-type-utils";
+import { isValidCPF, formatCPF } from "@/lib/cpf-utils";
 
 const loginSchema = z.object({
   email: z.string().email({
-    message: "Email inválido"
+    message: "Email inválido",
   }),
   password: z.string().min(6, {
-    message: "Senha deve ter no mínimo 6 caracteres"
-  })
+    message: "Senha deve ter no mínimo 6 caracteres",
+  }),
 });
 
-const signUpSchema = z.object({
-  email: z.string().email({ message: "Email inválido" }),
-  password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
-  passwordConfirm: z.string(),
-  fullName: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres" }),
-  cpf: z.string()
-    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, { message: "CPF inválido (formato: 000.000.000-00)" })
-    .refine((val) => isValidCPF(val), { 
-      message: "CPF inválido - verifique os dígitos verificadores" 
-    }),
-  phone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, { message: "Telefone inválido (formato: (00) 00000-0000)" }),
-  serviceType: z.string().min(1, { message: "Selecione o tipo de serviço" })
-}).refine(data => data.password === data.passwordConfirm, {
-  message: "As senhas não conferem",
-  path: ["passwordConfirm"]
-});
+const signUpSchema = z
+  .object({
+    email: z.string().email({ message: "Email inválido" }),
+    password: z.string().min(6, { message: "Senha deve ter no mínimo 6 caracteres" }),
+    passwordConfirm: z.string(),
+    fullName: z.string().min(3, { message: "Nome deve ter no mínimo 3 caracteres" }),
+    cpf: z
+      .string()
+      .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, { message: "CPF inválido (formato: 000.000.000-00)" })
+      .refine((val) => isValidCPF(val), {
+        message: "CPF inválido - verifique os dígitos verificadores",
+      }),
+    phone: z.string().regex(/^\(\d{2}\) \d{5}-\d{4}$/, { message: "Telefone inválido (formato: (00) 00000-0000)" }),
+    serviceType: z.string().min(1, { message: "Selecione o tipo de serviço" }),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: "As senhas não conferem",
+    path: ["passwordConfirm"],
+  });
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -51,16 +54,16 @@ const Auth = () => {
 
   // Detect signup parameter in URL
   useEffect(() => {
-    const signupParam = searchParams.get('signup');
-    if (signupParam === 'true') {
+    const signupParam = searchParams.get("signup");
+    if (signupParam === "true") {
       setIsSignUpMode(true);
     }
   }, [searchParams]);
-  
+
   // Detect password reset mode
   useEffect(() => {
-    const resetParam = searchParams.get('reset');
-    if (resetParam === 'true') {
+    const resetParam = searchParams.get("reset");
+    if (resetParam === "true") {
       setIsResetMode(true);
     }
   }, [searchParams]);
@@ -71,31 +74,31 @@ const Auth = () => {
   }, []);
 
   // Login form
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
   const [loginErrors, setLoginErrors] = useState<any>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  
+
   // Sign up form
-  const [signUpEmail, setSignUpEmail] = useState('');
-  const [signUpPassword, setSignUpPassword] = useState('');
-  const [signUpPasswordConfirm, setSignUpPasswordConfirm] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [cpf, setCpf] = useState('');
-  const [phone, setPhone] = useState('');
-  const [serviceType, setServiceType] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState("");
+  const [signUpPassword, setSignUpPassword] = useState("");
+  const [signUpPasswordConfirm, setSignUpPasswordConfirm] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [phone, setPhone] = useState("");
+  const [serviceType, setServiceType] = useState("");
   const [signUpErrors, setSignUpErrors] = useState<any>({});
-  
+
   // Password reset
   const [showPasswordReset, setShowPasswordReset] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
+  const [resetEmail, setResetEmail] = useState("");
   const [resetEmailSent, setResetEmailSent] = useState(false);
-  
+
   // Password reset mode (after clicking email link)
   const [isResetMode, setIsResetMode] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [resetPasswordErrors, setResetPasswordErrors] = useState<any>({});
 
   // Sign-up flow state
@@ -104,41 +107,38 @@ const Auth = () => {
   useEffect(() => {
     // Don't redirect if in password reset mode
     if (isResetMode) return;
-    
+
     // Only redirect if not completing sign-up
     if (!loading && user && profileComplete !== null && !completingSignUp) {
       // Prioridade 1: Se veio do checkout, voltar para página inicial com flag
-      const checkoutParam = searchParams.get('checkout');
-      const planParam = searchParams.get('plan');
-      
-      if (checkoutParam === 'true' && planParam) {
+      const checkoutParam = searchParams.get("checkout");
+      const planParam = searchParams.get("plan");
+
+      if (checkoutParam === "true" && planParam) {
         navigate(`/?checkout=true&plan=${planParam}`);
         return;
       }
-      
+
       // Prioridade 2: Redirect explícito
-      const redirectParam = searchParams.get('redirect');
+      const redirectParam = searchParams.get("redirect");
       if (redirectParam) {
         navigate(redirectParam);
         return;
       }
-      
+
       // Prioridade 3: Redirecionamento baseado em perfil
       if (!profileComplete) {
-        navigate('/onboarding');
+        navigate("/onboarding");
       } else {
-        navigate('/meu-corre');
+        navigate("/meu-corre");
       }
     }
   }, [user, loading, profileComplete, navigate, searchParams, completingSignUp, isResetMode]);
 
-
   const formatPhone = (value: string) => {
-    const numbers = value.replace(/\D/g, '');
+    const numbers = value.replace(/\D/g, "");
     if (numbers.length <= 11) {
-      return numbers
-        .replace(/(\d{2})(\d)/, '($1) $2')
-        .replace(/(\d{5})(\d)/, '$1-$2');
+      return numbers.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
     }
     return value;
   };
@@ -149,12 +149,12 @@ const Auth = () => {
 
     const result = loginSchema.safeParse({
       email: loginEmail,
-      password: loginPassword
+      password: loginPassword,
     });
 
     if (!result.success) {
       const errors: any = {};
-      result.error.errors.forEach(err => {
+      result.error.errors.forEach((err) => {
         errors[err.path[0]] = err.message;
       });
       setLoginErrors(errors);
@@ -163,7 +163,7 @@ const Auth = () => {
 
     setIsSubmitting(true);
     const { error } = await signIn(loginEmail, loginPassword);
-    
+
     if (error) {
       setIsSubmitting(false);
       return;
@@ -171,38 +171,40 @@ const Auth = () => {
 
     // Iniciar animação de fade-out
     setIsTransitioning(true);
-    
+
     // Aguardar animação completar
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
+    await new Promise((resolve) => setTimeout(resolve, 300));
+
     // Verificar se o perfil está completo e redirecionar
     await checkProfile();
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+
     if (currentUser) {
       const complete = await isProfileComplete(currentUser.id);
-      
+
       // Prioridade 1: Checkout flow
-      const checkoutParam = searchParams.get('checkout');
-      const planParam = searchParams.get('plan');
-      
-      if (checkoutParam === 'true' && planParam) {
+      const checkoutParam = searchParams.get("checkout");
+      const planParam = searchParams.get("plan");
+
+      if (checkoutParam === "true" && planParam) {
         navigate(`/?checkout=true&plan=${planParam}`);
         return;
       }
-      
+
       // Prioridade 2: Redirect explícito
-      const redirectParam = searchParams.get('redirect');
-      
+      const redirectParam = searchParams.get("redirect");
+
       if (redirectParam) {
         navigate(redirectParam);
       } else if (!complete) {
-        navigate('/onboarding');
+        navigate("/onboarding");
       } else {
-        navigate('/meu-corre');
+        navigate("/meu-corre");
       }
     }
-    
+
     setIsSubmitting(false);
   };
 
@@ -217,12 +219,12 @@ const Auth = () => {
       fullName,
       cpf,
       phone,
-      serviceType
+      serviceType,
     });
 
     if (!result.success) {
       const errors: any = {};
-      result.error.errors.forEach(err => {
+      result.error.errors.forEach((err) => {
         errors[err.path[0]] = err.message;
       });
       setSignUpErrors(errors);
@@ -231,16 +233,9 @@ const Auth = () => {
 
     setIsSubmitting(true);
     setCompletingSignUp(true);
-    
+
     try {
-      const { error } = await signUp(
-        signUpEmail,
-        signUpPassword,
-        fullName,
-        cpf,
-        phone,
-        serviceType
-      );
+      const { error } = await signUp(signUpEmail, signUpPassword, fullName, cpf, phone, serviceType);
 
       if (error) {
         setIsSubmitting(false);
@@ -252,7 +247,7 @@ const Auth = () => {
       const { error: signInError } = await signIn(signUpEmail, signUpPassword);
 
       if (signInError) {
-        toast.error('Cadastro realizado! Faça login para continuar.');
+        toast.error("Cadastro realizado! Faça login para continuar.");
         setIsSignUpMode(false);
         setIsSubmitting(false);
         setCompletingSignUp(false);
@@ -260,29 +255,31 @@ const Auth = () => {
       }
 
       // Aguardar sessão estar pronta e salvar o CPF
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user: currentUser },
+      } = await supabase.auth.getUser();
+
       if (currentUser) {
         // Verificar se o perfil foi criado pela trigger
         const { data: profileData, error: profileCheckError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', currentUser.id)
+          .from("profiles")
+          .select("id")
+          .eq("id", currentUser.id)
           .single();
 
         // Se não existir perfil, criar manualmente (fallback caso trigger falhe)
         if (profileCheckError || !profileData) {
           if (import.meta.env.DEV) {
-            console.log('Trigger não criou perfil, criando manualmente');
+            console.log("Trigger não criou perfil, criando manualmente");
           }
-          
-          await supabase.from('profiles').insert({
+
+          await supabase.from("profiles").insert({
             id: currentUser.id,
             full_name: fullName,
             phone: phone,
-            service_type: serviceType
+            service_type: serviceType,
           });
         }
 
@@ -290,28 +287,28 @@ const Auth = () => {
         await updateProfile(currentUser.id, {
           cpf: cpf,
           phone: phone,
-          service_type: serviceType
+          service_type: serviceType,
         });
 
         await checkProfile();
-        
-        toast.success('Cadastro completo! Bem-vindo ao Corre Legal.');
-        
+
+        toast.success("Cadastro completo! Bem-vindo ao Corre Legal.");
+
         // Check if came from checkout flow
-        const checkoutParam = searchParams.get('checkout');
-        const planParam = searchParams.get('plan');
-        
-        if (checkoutParam === 'true' && planParam) {
+        const checkoutParam = searchParams.get("checkout");
+        const planParam = searchParams.get("plan");
+
+        if (checkoutParam === "true" && planParam) {
           navigate(`/?checkout=true&plan=${planParam}`);
         } else {
-          navigate('/meu-corre');
+          navigate("/meu-corre");
         }
       }
     } catch (profileError) {
       if (import.meta.env.DEV) {
-        console.error('Erro ao completar perfil:', profileError);
+        console.error("Erro ao completar perfil:", profileError);
       }
-      toast.error('Erro ao completar cadastro. Tente novamente.');
+      toast.error("Erro ao completar cadastro. Tente novamente.");
     } finally {
       setIsSubmitting(false);
       setCompletingSignUp(false);
@@ -320,64 +317,68 @@ const Auth = () => {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!resetEmail) {
-      toast.error('Por favor, digite seu email');
+      toast.error("Por favor, digite seu email");
       return;
     }
 
     setIsSubmitting(true);
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `${window.location.origin}/auth?reset=true`
+      redirectTo: `${window.location.origin}/auth?reset=true`,
     });
     setIsSubmitting(false);
 
     if (!error) {
       setResetEmailSent(true);
-      toast.success('Email de recuperação enviado! Verifique sua caixa de entrada.');
+      toast.success("Email de recuperação enviado! Verifique sua caixa de entrada.");
     } else {
-      toast.error('Erro ao enviar email de recuperação. Verifique se o email está correto.');
+      toast.error("Erro ao enviar email de recuperação. Verifique se o email está correto.");
     }
   };
-  
+
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetPasswordErrors({});
 
     // Validação
     if (newPassword.length < 6) {
-      setResetPasswordErrors({ newPassword: 'Senha deve ter no mínimo 6 caracteres' });
+      setResetPasswordErrors({ newPassword: "Senha deve ter no mínimo 6 caracteres" });
       return;
     }
 
     if (newPassword !== newPasswordConfirm) {
-      setResetPasswordErrors({ newPasswordConfirm: 'As senhas não conferem' });
+      setResetPasswordErrors({ newPasswordConfirm: "As senhas não conferem" });
       return;
     }
 
     setIsSubmitting(true);
-    
+
     const { error } = await supabase.auth.updateUser({
-      password: newPassword
+      password: newPassword,
     });
+
+    console.log(error);
 
     setIsSubmitting(false);
 
     if (error) {
-      toast.error('Erro ao atualizar senha. Tente novamente.');
+      toast.error("Erro ao atualizar senha. Tente novamente.");
       return;
     }
 
-    toast.success('Senha atualizada com sucesso!');
+    toast.success("Senha atualizada com sucesso!");
     setIsResetMode(false);
-    
+
     // Redirecionar para área logada
     await checkProfile();
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user: currentUser },
+    } = await supabase.auth.getUser();
+
     if (currentUser) {
       const complete = await isProfileComplete(currentUser.id);
-      navigate(complete ? '/meu-corre' : '/onboarding');
+      navigate(complete ? "/meu-corre" : "/onboarding");
     }
   };
 
@@ -391,21 +392,19 @@ const Auth = () => {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center relative px-4 py-12 transition-opacity duration-300 ${isTransitioning ? 'animate-fade-out' : ''}`}>
+    <div
+      className={`min-h-screen flex items-center justify-center relative px-4 py-12 transition-opacity duration-300 ${isTransitioning ? "animate-fade-out" : ""}`}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card" />
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="flex justify-center mb-8 animate-in fade-in duration-500">
           <Logo size={80} />
         </div>
 
         <div className="text-center mb-8 space-y-2 animate-in fade-in duration-500 delay-100">
-          <h1 className="text-3xl md:text-4xl font-bold text-primary">
-            Bem-vindo ao Corre Legal
-          </h1>
-          <p className="text-muted-foreground">
-            Seu parceiro legal para o corre de todo dia
-          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-primary">Bem-vindo ao Corre Legal</h1>
+          <p className="text-muted-foreground">Seu parceiro legal para o corre de todo dia</p>
         </div>
 
         <Card className="bg-card border border-border rounded-2xl shadow-elevated animate-in fade-in duration-700 delay-300">
@@ -431,24 +430,22 @@ const Auth = () => {
               </div>
             )}
             <CardTitle className="text-2xl">
-              {isResetMode 
-                ? 'Criar Nova Senha' 
-                : showPasswordReset 
-                ? 'Recuperar Senha' 
-                : isSignUpMode 
-                ? 'Cadastre-se' 
-                : 'Fazer Login'
-              }
+              {isResetMode
+                ? "Criar Nova Senha"
+                : showPasswordReset
+                  ? "Recuperar Senha"
+                  : isSignUpMode
+                    ? "Cadastre-se"
+                    : "Fazer Login"}
             </CardTitle>
             <CardDescription className="text-base">
               {isResetMode
-                ? 'Digite sua nova senha abaixo'
-                : showPasswordReset 
-                ? 'Digite seu email para receber instruções de recuperação' 
-                : isSignUpMode
-                ? 'Crie sua conta gratuitamente para contratar um plano Corre Legal'
-                : 'Entre com suas credenciais'
-              }
+                ? "Digite sua nova senha abaixo"
+                : showPasswordReset
+                  ? "Digite seu email para receber instruções de recuperação"
+                  : isSignUpMode
+                    ? "Crie sua conta gratuitamente para contratar um plano Corre Legal"
+                    : "Entre com suas credenciais"}
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 md:p-8 pt-0">
@@ -468,7 +465,7 @@ const Auth = () => {
                     type="password"
                     placeholder="Mínimo 6 caracteres"
                     value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
+                    onChange={(e) => setNewPassword(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
@@ -486,7 +483,7 @@ const Auth = () => {
                     type="password"
                     placeholder="Digite a senha novamente"
                     value={newPasswordConfirm}
-                    onChange={e => setNewPasswordConfirm(e.target.value)}
+                    onChange={(e) => setNewPasswordConfirm(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
@@ -497,9 +494,9 @@ const Auth = () => {
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -508,7 +505,7 @@ const Auth = () => {
                       Atualizando...
                     </>
                   ) : (
-                    'Atualizar Senha'
+                    "Atualizar Senha"
                   )}
                 </Button>
               </form>
@@ -519,21 +516,19 @@ const Auth = () => {
                     <div className="bg-primary/10 border border-primary/30 rounded-xl p-6 text-center space-y-3 animate-in fade-in">
                       <CheckCircle className="h-12 w-12 text-primary mx-auto" />
                       <div>
-                        <p className="font-semibold text-foreground mb-1">
-                          Email enviado com sucesso!
-                        </p>
+                        <p className="font-semibold text-foreground mb-1">Email enviado com sucesso!</p>
                         <p className="text-sm text-muted-foreground">
                           Verifique sua caixa de entrada e siga as instruções.
                         </p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      className="w-full transition-all duration-300 hover:-translate-y-0.5" 
+                    <Button
+                      variant="outline"
+                      className="w-full transition-all duration-300 hover:-translate-y-0.5"
                       onClick={() => {
                         setShowPasswordReset(false);
                         setResetEmailSent(false);
-                        setResetEmail('');
+                        setResetEmail("");
                       }}
                     >
                       Voltar para o Login
@@ -548,24 +543,24 @@ const Auth = () => {
                         type="email"
                         placeholder="seu@email.com"
                         value={resetEmail}
-                        onChange={e => setResetEmail(e.target.value)}
+                        onChange={(e) => setResetEmail(e.target.value)}
                         className="focus:border-primary transition-colors"
                         required
                       />
                     </div>
 
-                    <Button 
-                      type="submit" 
-                      className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                    <Button
+                      type="submit"
+                      className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5"
                       disabled={isSubmitting}
                     >
-                      {isSubmitting ? 'Enviando...' : 'Enviar Email de Recuperação'}
+                      {isSubmitting ? "Enviando..." : "Enviar Email de Recuperação"}
                     </Button>
 
-                    <Button 
+                    <Button
                       type="button"
-                      variant="ghost" 
-                      className="w-full transition-all duration-300" 
+                      variant="ghost"
+                      className="w-full transition-all duration-300"
                       onClick={() => setShowPasswordReset(false)}
                     >
                       Voltar para o Login
@@ -582,12 +577,14 @@ const Auth = () => {
                     type="text"
                     placeholder="João Silva"
                     value={fullName}
-                    onChange={e => setFullName(e.target.value)}
+                    onChange={(e) => setFullName(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {signUpErrors.fullName && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.fullName}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.fullName}
+                    </p>
                   )}
                 </div>
 
@@ -598,12 +595,14 @@ const Auth = () => {
                     type="email"
                     placeholder="seu@email.com"
                     value={signUpEmail}
-                    onChange={e => setSignUpEmail(e.target.value)}
+                    onChange={(e) => setSignUpEmail(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {signUpErrors.email && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.email}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.email}
+                    </p>
                   )}
                 </div>
 
@@ -614,13 +613,15 @@ const Auth = () => {
                     type="text"
                     placeholder="000.000.000-00"
                     value={cpf}
-                    onChange={e => setCpf(formatCPF(e.target.value))}
+                    onChange={(e) => setCpf(formatCPF(e.target.value))}
                     maxLength={14}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {signUpErrors.cpf && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.cpf}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.cpf}
+                    </p>
                   )}
                 </div>
 
@@ -631,13 +632,15 @@ const Auth = () => {
                     type="text"
                     placeholder="(00) 00000-0000"
                     value={phone}
-                    onChange={e => setPhone(formatPhone(e.target.value))}
+                    onChange={(e) => setPhone(formatPhone(e.target.value))}
                     maxLength={15}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {signUpErrors.phone && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.phone}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.phone}
+                    </p>
                   )}
                 </div>
 
@@ -648,7 +651,7 @@ const Auth = () => {
                       <SelectValue placeholder="Selecione..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {SERVICE_TYPES.map(type => (
+                      {SERVICE_TYPES.map((type) => (
                         <SelectItem key={type.value} value={type.value}>
                           {type.label}
                         </SelectItem>
@@ -656,7 +659,9 @@ const Auth = () => {
                     </SelectContent>
                   </Select>
                   {signUpErrors.serviceType && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.serviceType}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.serviceType}
+                    </p>
                   )}
                 </div>
 
@@ -667,12 +672,14 @@ const Auth = () => {
                     type="password"
                     placeholder="Mínimo 6 caracteres"
                     value={signUpPassword}
-                    onChange={e => setSignUpPassword(e.target.value)}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {signUpErrors.password && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.password}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.password}
+                    </p>
                   )}
                 </div>
 
@@ -683,18 +690,20 @@ const Auth = () => {
                     type="password"
                     placeholder="Digite a senha novamente"
                     value={signUpPasswordConfirm}
-                    onChange={e => setSignUpPasswordConfirm(e.target.value)}
+                    onChange={(e) => setSignUpPasswordConfirm(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {signUpErrors.passwordConfirm && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{signUpErrors.passwordConfirm}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {signUpErrors.passwordConfirm}
+                    </p>
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -703,13 +712,13 @@ const Auth = () => {
                       <span className="button-loading-pulse">Criando conta...</span>
                     </>
                   ) : (
-                    'Criar Conta Grátis'
+                    "Criar Conta Grátis"
                   )}
                 </Button>
 
                 <div className="text-center">
                   <p className="text-muted-foreground text-sm">
-                    Já fez o seu cadastro?{' '}
+                    Já fez o seu cadastro?{" "}
                     <button
                       type="button"
                       onClick={() => setIsSignUpMode(false)}
@@ -729,12 +738,14 @@ const Auth = () => {
                     type="email"
                     placeholder="seu@email.com"
                     value={loginEmail}
-                    onChange={e => setLoginEmail(e.target.value)}
+                    onChange={(e) => setLoginEmail(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {loginErrors.email && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{loginErrors.email}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {loginErrors.email}
+                    </p>
                   )}
                 </div>
 
@@ -755,18 +766,20 @@ const Auth = () => {
                     type="password"
                     placeholder="••••••"
                     value={loginPassword}
-                    onChange={e => setLoginPassword(e.target.value)}
+                    onChange={(e) => setLoginPassword(e.target.value)}
                     className="focus:border-primary transition-colors"
                     required
                   />
                   {loginErrors.password && (
-                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">{loginErrors.password}</p>
+                    <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
+                      {loginErrors.password}
+                    </p>
                   )}
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5" 
+                <Button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow transition-all duration-300 hover:-translate-y-0.5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
@@ -775,13 +788,13 @@ const Auth = () => {
                       <span className="button-loading-pulse">Entrando...</span>
                     </>
                   ) : (
-                    'Entrar'
+                    "Entrar"
                   )}
                 </Button>
 
                 <div className="text-center">
                   <p className="text-muted-foreground text-sm">
-                    Novo usuário?{' '}
+                    Novo usuário?{" "}
                     <button
                       type="button"
                       onClick={() => setIsSignUpMode(true)}
@@ -800,7 +813,7 @@ const Auth = () => {
           <Button
             variant="ghost"
             onClick={() => {
-              navigate('/');
+              navigate("/");
               window.scrollTo(0, 0);
             }}
             className="text-muted-foreground hover:text-primary transition-all duration-300 hover:-translate-y-0.5"
