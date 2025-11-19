@@ -114,6 +114,7 @@ const Checkout = () => {
           amount: finalPrice,
           couponCode: couponCode || null,
           paymentMethod: paymentData.paymentType,
+          paymentId: 12345332, //fake payment id edge function dont reload with new codes
         },
       });
 
