@@ -26,7 +26,7 @@ serve(async (req) => {
       throw new Error("User not authenticated");
     }
 
-    const { plan_type, amount } = await req.json();
+    const { plan_type, amount, coupon_code } = await req.json();
 
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
     if (!accessToken) {
@@ -36,7 +36,9 @@ serve(async (req) => {
     // Create PIX payment
     const paymentData = {
       transaction_amount: amount,
-      description: `Corre Legal - Plano ${plan_type}`,
+      description: coupon_code 
+        ? `Corre Legal - Plano ${plan_type} (Cupom: ${coupon_code})`
+        : `Corre Legal - Plano ${plan_type}`,
       payment_method_id: "pix",
       payer: {
         email: user.email,
@@ -45,6 +47,8 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         plan_type: plan_type,
+        amount: amount,
+        coupon_code: coupon_code || null,
       },
     };
 
