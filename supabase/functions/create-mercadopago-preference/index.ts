@@ -34,7 +34,7 @@ serve(async (req) => {
     }
 
     // Get request body
-    const { plan_type } = await req.json();
+    const { plan_type, amount, coupon_code } = await req.json();
 
     // Get Mercado Pago access token
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
@@ -42,29 +42,29 @@ serve(async (req) => {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
 
-    // Plan configuration
-    const plans: Record<string, PreferenceItem> = {
-      monthly: {
-        title: "Corre Legal - Plano Mensal",
-        quantity: 1,
-        unit_price: 39.90,
-        currency_id: "BRL",
-      },
-      quarterly: {
-        title: "Corre Legal - Plano Trimestral",
-        quantity: 1,
-        unit_price: 99.90,
-        currency_id: "BRL",
-      },
-      annual: {
-        title: "Corre Legal - Plano Anual",
-        quantity: 1,
-        unit_price: 349.90,
-        currency_id: "BRL",
-      },
+    // Plan configuration - default titles
+    const planTitles: Record<string, string> = {
+      monthly: "Corre Legal - Plano Mensal",
+      quarterly: "Corre Legal - Plano Trimestral",
+      annual: "Corre Legal - Plano Anual",
     };
 
-    const item = plans[plan_type] || plans.monthly;
+    // Use provided amount or fall back to default prices
+    const defaultPrices: Record<string, number> = {
+      monthly: 99.90,
+      quarterly: 99.90,
+      annual: 99.90,
+    };
+
+    const finalAmount = amount || defaultPrices[plan_type] || defaultPrices.monthly;
+    const title = planTitles[plan_type] || planTitles.monthly;
+
+    const item: PreferenceItem = {
+      title: coupon_code ? `${title} (Cupom: ${coupon_code})` : title,
+      quantity: 1,
+      unit_price: finalAmount,
+      currency_id: "BRL",
+    };
 
     // Create preference
     const preference = {
@@ -83,6 +83,8 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         plan_type: plan_type,
+        amount: finalAmount,
+        coupon_code: coupon_code || null,
       },
     };
 
