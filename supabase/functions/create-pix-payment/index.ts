@@ -44,6 +44,7 @@ serve(async (req) => {
         email: user.email,
       },
       external_reference: `${user.id}_${plan_type}_${Date.now()}`,
+      notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`,
       metadata: {
         user_id: user.id,
         plan_type: plan_type,
