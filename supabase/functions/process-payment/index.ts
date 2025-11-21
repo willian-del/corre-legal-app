@@ -12,7 +12,7 @@ const PaymentDataSchema = z.object({
   status: z.string().min(1, "Status is required").max(50),
   planType: z.enum(["monthly", "quarterly", "annual"]),
   amount: z.number().positive("Amount must be positive").max(999999).optional(),
-  couponCode: z.string().max(50).optional(),
+  couponCode: z.string().max(50).nullable().optional(),
   paymentMethod: z.string().max(50),
 });
 
