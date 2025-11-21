@@ -230,8 +230,6 @@ export type Database = {
           coupon_code: string | null
           created_at: string | null
           currency: string | null
-          current_period_end: string | null
-          current_period_start: string | null
           expires_at: string | null
           id: string
           mercadopago_payment_id: string | null
@@ -240,9 +238,6 @@ export type Database = {
           payment_token: string | null
           plan_type: string
           status: string
-          stripe_customer_id: string | null
-          stripe_payment_intent_id: string | null
-          stripe_subscription_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -254,8 +249,6 @@ export type Database = {
           coupon_code?: string | null
           created_at?: string | null
           currency?: string | null
-          current_period_end?: string | null
-          current_period_start?: string | null
           expires_at?: string | null
           id?: string
           mercadopago_payment_id?: string | null
@@ -264,9 +257,6 @@ export type Database = {
           payment_token?: string | null
           plan_type: string
           status: string
-          stripe_customer_id?: string | null
-          stripe_payment_intent_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -278,8 +268,6 @@ export type Database = {
           coupon_code?: string | null
           created_at?: string | null
           currency?: string | null
-          current_period_end?: string | null
-          current_period_start?: string | null
           expires_at?: string | null
           id?: string
           mercadopago_payment_id?: string | null
@@ -288,9 +276,6 @@ export type Database = {
           payment_token?: string | null
           plan_type?: string
           status?: string
-          stripe_customer_id?: string | null
-          stripe_payment_intent_id?: string | null
-          stripe_subscription_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
