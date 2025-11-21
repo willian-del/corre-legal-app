@@ -23,9 +23,14 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
+    // Use service role for database operations (bypass RLS)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "", 
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
-    // Authenticate user
+    // Authenticate user with anon key
+    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
     const {
@@ -137,8 +142,8 @@ serve(async (req) => {
         expiresAt = new Date(now.setMonth(now.getMonth() + 1));
     }
 
-    // Create subscription record with all payment data
-    const { data: subscription, error: subscriptionError } = await supabaseClient
+    // Create subscription record with all payment data using admin client
+    const { data: subscription, error: subscriptionError } = await supabaseAdmin
       .from("user_subscriptions")
       .insert({
         user_id: user.id,
