@@ -59,7 +59,7 @@ serve(async (req) => {
     const mpData = {
       payer: {
         email: paymentDataMP.formData.payer.email,
-        identification: paymentDataMP.formData.identification,
+        identification: paymentDataMP.formData.payer.identification,
       },
       binary_mode: true,
       installments: paymentDataMP.formData.installments,
@@ -72,7 +72,7 @@ serve(async (req) => {
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
         "X-Idempotency-Key": crypto.randomUUID(),
       },
