@@ -126,7 +126,7 @@ serve(async (req) => {
         subscriptionStatus = 'pending';
     }
 
-    // Buscar assinatura existente com este payment_id
+    // Implementar idempotência: verificar se o pagamento já foi processado
     const { data: existingSubscription } = await supabaseAdmin
       .from('user_subscriptions')
       .select('*')
@@ -134,7 +134,24 @@ serve(async (req) => {
       .single();
 
     if (existingSubscription) {
-      // Atualizar assinatura existente
+      // Se já existe e o status é o mesmo, retornar sucesso (idempotência)
+      if (existingSubscription.status === subscriptionStatus) {
+        console.log('Payment already processed (idempotent):', paymentData.id);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            status: subscriptionStatus,
+            payment_id: paymentData.id,
+            idempotent: true
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+
+      // Atualizar assinatura existente apenas se o status mudou
       const { error: updateError } = await supabaseAdmin
         .from('user_subscriptions')
         .update({
