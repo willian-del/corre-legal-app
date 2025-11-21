@@ -11,7 +11,7 @@ const corsHeaders = {
 const PaymentDataSchema = z.object({
   planType: z.enum(["monthly", "quarterly", "annual"]),
   amount: z.number().positive("Amount must be positive").max(999999).optional(),
-  couponCode: z.string().max(50).nullable().optional(),
+  couponCode: z.string().max(50).optional().nullable(),
   paymentMethod: z.string().max(50),
 });
 
@@ -72,7 +72,9 @@ serve(async (req) => {
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": crypto.randomUUID(),
       },
       body: JSON.stringify(mpData),
     });
