@@ -149,9 +149,9 @@ serve(async (req) => {
         currency: mpPayment.currency_id || "BRL",
         expires_at: expiresAt.toISOString(),
         paid_at: new Date().toISOString(),
-        mercadopago_payment_id: mpPayment.id,
-        payment_token: mpPayment.id,
-        coupon_code: paymentData.couponCode,
+        mercadopago_payment_id: String(mpPayment.id),
+        payment_token: String(mpPayment.id),
+        coupon_code: paymentData.couponCode || null,
       })
       .select()
       .single();
