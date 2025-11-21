@@ -100,7 +100,7 @@ const Checkout = () => {
 
     try {
       // If payment method is PIX, redirect to PIX payment page
-      if (paymentData.paymentType === "pix") {
+      if (paymentData.paymentType === "bank_transfer") {
         navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}&coupon=${couponCode || ""}`);
         return;
       }
