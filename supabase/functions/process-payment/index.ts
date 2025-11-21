@@ -67,6 +67,8 @@ serve(async (req) => {
       transaction_amount: paymentData.amount,
     };
 
+    console.log("Processing MP:", mpData);
+
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
       method: "POST",
       headers: {
