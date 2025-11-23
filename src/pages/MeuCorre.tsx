@@ -118,69 +118,14 @@ const MeuCorre = () => {
   const handleSubscribe = async () => {
     setLoadingPlan('ouro');
     
-    try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { plan_type: 'ouro' }
-      });
-
-      if (error) {
-        if (error.message?.includes('INVALID_PRICE_ID')) {
-          throw new Error('CONFIG_ERROR');
-        }
-        throw error;
-      }
-
-      if (data?.url) {
-        const newWindow = window.open(data.url, '_blank');
-        
-        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-          toast({
-            title: "Pop-up bloqueado",
-            description: "Por favor, permita pop-ups para este site e tente novamente.",
-            variant: "destructive",
-            action: (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.open(data.url, '_blank')}
-              >
-                Tentar novamente
-              </Button>
-            ),
-          });
-          return;
-        }
-        
-        toast({
-          title: "Redirecionando para pagamento",
-          description: "Você será direcionado para o Stripe para finalizar o pagamento.",
-        });
-      } else {
-        throw new Error("No checkout URL received");
-      }
-    } catch (error: any) {
-      if (import.meta.env.DEV) {
-        console.error("Error creating checkout:", error);
-      }
-      
-      let title = "Erro ao processar pagamento";
-      let description = "Não foi possível iniciar o processo de pagamento. Por favor, tente novamente.";
-      
-      if (error.message === 'CONFIG_ERROR') {
-        title = "Erro de configuração";
-        description = "Há um problema na configuração dos planos. Por favor, entre em contato com o suporte.";
-      } else if (error.message?.includes('Network')) {
-        description = "Problema de conexão. Verifique sua internet e tente novamente.";
-      }
-      
-      toast({
-        title,
-        description,
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingPlan(null);
-    }
+    toast({
+      title: "Redirecionando para pagamento",
+      description: "Você será direcionado para o checkout do Mercado Pago.",
+    });
+    
+    // Redirecionar para a página de checkout com o plano
+    navigate('/checkout?plan=monthly');
+    setLoadingPlan(null);
   };
 
   const handleRefresh = () => {
