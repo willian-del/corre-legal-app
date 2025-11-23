@@ -14,7 +14,6 @@ const PaymentSuccess = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const isFirstPurchase = searchParams.get('first_purchase') === 'true';
-  const sessionId = searchParams.get('session_id');
   
   // Mercado Pago return parameters
   const paymentId = searchParams.get('payment_id');
@@ -24,20 +23,6 @@ const PaymentSuccess = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  // Confirm Stripe subscription if session_id present
-  useEffect(() => {
-    if (!user || !sessionId) return;
-    setVerifying(true);
-    supabase.functions
-      .invoke('confirm-subscription', { body: { session_id: sessionId } })
-      .catch((e) => {
-        if (import.meta.env.DEV) {
-          console.error('confirm-subscription error', e);
-        }
-      })
-      .finally(() => setVerifying(false));
-  }, [user, sessionId]);
 
   // Process Mercado Pago payment if payment_id present
   useEffect(() => {
@@ -149,7 +134,7 @@ const PaymentSuccess = () => {
               )}
             </div>
 
-            {sessionId && verifying && (
+            {verifying && (
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
                 <p className="text-sm text-center text-primary">Confirmando sua ativação...</p>
               </div>
