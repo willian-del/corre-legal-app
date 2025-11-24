@@ -65,8 +65,6 @@ serve(async (req) => {
           amount_paid: amountPaid || 0,
           currency: 'BRL',
           payment_method: 'cortesia',
-          current_period_start: new Date().toISOString(),
-          current_period_end: expiresAt.toISOString(),
           paid_at: new Date().toISOString()
         })
         .select()
@@ -104,7 +102,6 @@ serve(async (req) => {
         .from('user_subscriptions')
         .update({
           expires_at: newExpires.toISOString(),
-          current_period_end: newExpires.toISOString(),
           status: 'active' // Reactivate if expired
         })
         .eq('id', subscriptionId)
