@@ -68,11 +68,23 @@ const MeuCorre = () => {
     if (user) {
       fetchSubscription();
       fetchProfile();
+    } else {
+      // Reset states when user logs out
+      setSubscription(null);
+      setPhone('');
+      setServiceType('');
+      setMaskedCpf('***.***.***-**');
+      setLoading(false);
     }
   }, [user]);
 
   const fetchProfile = async () => {
-    if (!user) return;
+    if (!user) {
+      if (import.meta.env.DEV) {
+        console.log('Cannot fetch profile: no user');
+      }
+      return;
+    }
 
     try {
       const profile = await getProfile(user.id);
@@ -94,7 +106,13 @@ const MeuCorre = () => {
   };
 
   const fetchSubscription = async () => {
-    if (!user) return;
+    if (!user) {
+      if (import.meta.env.DEV) {
+        console.log('Cannot fetch subscription: no user');
+      }
+      setLoading(false);
+      return;
+    }
 
     const { data, error } = await supabase.rpc('get_active_subscription', {
       _user_id: user.id

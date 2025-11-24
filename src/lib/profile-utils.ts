@@ -35,11 +35,20 @@ export async function updateProfile(userId: string, data: {
   service_type: string;
 }) {
   try {
-    // Verify we have a valid authenticated user before making any updates
+    // Verify we have a valid session before making any updates
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      if (import.meta.env.DEV) {
+        console.error('No valid session when trying to update profile');
+      }
+      return { error: { message: 'Sessão expirada. Por favor, faça login novamente.' } };
+    }
+
+    // Double-check the user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       if (import.meta.env.DEV) {
-        console.error('No authenticated user when trying to update profile:', authError);
+        console.error('No authenticated user when trying to update profile');
       }
       return { error: { message: 'Sessão expirada. Por favor, faça login novamente.' } };
     }
@@ -98,11 +107,20 @@ export async function updateProfile(userId: string, data: {
 // Get masked CPF from secure edge function
 export async function getMaskedCPF(userId: string): Promise<string | null> {
   try {
-    // Verify we have a valid authenticated user before calling the edge function
+    // Verify we have a valid session before calling the edge function
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      if (import.meta.env.DEV) {
+        console.log('No valid session when trying to get masked CPF');
+      }
+      return null;
+    }
+
+    // Double-check the user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       if (import.meta.env.DEV) {
-        console.error('No authenticated user when trying to get masked CPF:', authError);
+        console.log('No authenticated user when trying to get masked CPF');
       }
       return null;
     }
@@ -114,7 +132,12 @@ export async function getMaskedCPF(userId: string): Promise<string | null> {
     });
 
     if (error) {
-      if (import.meta.env.DEV) {
+      // Don't log error if it's just an auth issue (401)
+      if (error.message?.includes('401') || error.message?.includes('autorizado')) {
+        if (import.meta.env.DEV) {
+          console.log('Auth error fetching masked CPF (session expired)');
+        }
+      } else if (import.meta.env.DEV) {
         console.error('Error fetching masked CPF:', error);
       }
       return null;
@@ -123,7 +146,7 @@ export async function getMaskedCPF(userId: string): Promise<string | null> {
     return data?.maskedCPF || null;
   } catch (error) {
     if (import.meta.env.DEV) {
-      console.error('Error fetching masked CPF:', error);
+      console.log('Error fetching masked CPF:', error);
     }
     return null;
   }
