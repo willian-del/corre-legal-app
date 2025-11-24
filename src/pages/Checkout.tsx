@@ -267,20 +267,6 @@ const Checkout = () => {
                 <p className="text-sm text-foreground/80 mt-1">O cupom "{couponCode}" não é válido ou já expirou.</p>
               </div>
             )}
-
-            <div className="border-t-2 border-border pt-6 mt-6">
-              <div className="flex justify-between items-center bg-primary/5 rounded-xl p-4">
-                <span className="text-lg font-semibold">Total a pagar</span>
-                <div className="text-right">
-                  <span className="text-3xl font-bold text-primary tracking-tight">
-                    R$ {finalPrice.toFixed(2).replace(".", ",")}
-                  </span>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {planType === 'monthly' ? "por mês" : planType === 'quarterly' ? "a cada 3 meses" : "por ano"}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Payment */}
