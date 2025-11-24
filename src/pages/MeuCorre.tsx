@@ -765,7 +765,7 @@ const MeuCorre = () => {
             </div>
             ) : (
               // Usuário SEM plano ativo - bloqueado
-              <div className="bg-card rounded-2xl p-8 md:p-12 border border-border">
+              <div className="rounded-2xl p-8 md:p-12 border-2 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
                 <div className="flex flex-col items-center justify-center space-y-6">
                   <MessageSquare className="w-16 h-16 text-primary" />
                   <div className="text-center space-y-2">
