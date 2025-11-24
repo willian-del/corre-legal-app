@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, ArrowLeft, Tag } from "lucide-react";
 import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -277,12 +278,68 @@ const Checkout = () => {
             <h2 className="text-xl font-semibold mb-6">Pagamento</h2>
 
             {loading || !initialization ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground">Preparando pagamento...</p>
+              <div className="space-y-6 animate-fade-in">
+                {/* Payment Methods Skeleton */}
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-32" />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Skeleton className="h-16 rounded-lg" />
+                    <Skeleton className="h-16 rounded-lg" />
+                  </div>
+                </div>
+
+                {/* Card Form Skeleton */}
+                <div className="space-y-4">
+                  {/* Card Number */}
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-12 rounded-lg" />
+                  </div>
+
+                  {/* Card Holder Name */}
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="h-12 rounded-lg" />
+                  </div>
+
+                  {/* Expiry & CVV */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-12 rounded-lg" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-12 rounded-lg" />
+                    </div>
+                  </div>
+
+                  {/* CPF */}
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-12 rounded-lg" />
+                  </div>
+
+                  {/* Installments */}
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-12 rounded-lg" />
+                  </div>
+                </div>
+
+                {/* Submit Button Skeleton */}
+                <Skeleton className="h-12 w-full rounded-lg" />
+
+                {/* Loading Text */}
+                <div className="flex items-center justify-center gap-2 pt-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">
+                    Preparando formulário de pagamento...
+                  </p>
+                </div>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 animate-fade-in">
                 <Payment
                   initialization={initialization}
                   onSubmit={handlePaymentSubmit}
