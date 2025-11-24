@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useConfetti } from "@/hooks/use-confetti";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -22,6 +23,7 @@ const PaymentSuccess = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const isFirstPurchase = searchParams.get('first_purchase') === 'true';
+  const { celebrate } = useConfetti();
   
   // Mercado Pago return parameters
   const paymentId = searchParams.get('payment_id');
@@ -31,6 +33,15 @@ const PaymentSuccess = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Trigger confetti celebration on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      celebrate();
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [celebrate]);
 
   // Process Mercado Pago payment if payment_id present
   useEffect(() => {
@@ -137,7 +148,7 @@ const PaymentSuccess = () => {
         </Badge>
         <div className="bg-gradient-to-b from-card to-card/50 rounded-2xl p-8 shadow-elevated border border-primary/20">
           <div className="space-y-6 text-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto shadow-glow">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto shadow-glow animate-scale-in">
               <CheckCircle className="w-12 h-12 text-primary" />
             </div>
             

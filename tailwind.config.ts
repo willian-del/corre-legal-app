@@ -102,8 +102,11 @@ export default {
         },
         "scale-in": {
           "0%": {
-            transform: "scale(0.95)",
+            transform: "scale(0)",
             opacity: "0"
+          },
+          "50%": {
+            transform: "scale(1.1)"
           },
           "100%": {
             transform: "scale(1)",
@@ -116,7 +119,7 @@ export default {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.4s ease-out",
         "fade-out": "fade-out 0.3s ease-out",
-        "scale-in": "scale-in 0.3s ease-out",
+        "scale-in": "scale-in 0.5s ease-out",
       },
     },
   },
