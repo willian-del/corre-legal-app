@@ -61,7 +61,6 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-bold text-foreground mb-3">Empresa</h3>
             <div className="space-y-1.5 text-muted-foreground text-xs">
               <p className="font-semibold text-foreground text-sm">Juripass Desenvolvimento de Software LTDA</p>
               <p>CNPJ: 35.911.772/0001-37</p>
