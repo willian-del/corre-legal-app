@@ -87,48 +87,55 @@ const Pricing = () => {
                 )}
 
                 {/* Plan Name */}
-                <div className="text-center mb-2">
+                <div className="text-center mb-6">
                   <h3 className="text-xl font-bold text-foreground">{plan.name}</h3>
                   <p className="text-sm text-muted-foreground">{plan.duration}</p>
                 </div>
 
-                {/* Price */}
-                <div className="text-center mb-8">
-                  <div className="text-3xl md:text-4xl font-bold text-foreground mb-1">{plan.displayPrice}</div>
-                  <p className="text-sm text-muted-foreground">{plan.installments}</p>
-                </div>
+                {/* Grid Responsivo: 3 colunas (desktop) / 1 coluna (mobile) */}
+                <div className="grid md:grid-cols-3 gap-6 md:gap-8 items-center">
+                  
+                  {/* COLUNA 1: Preço */}
+                  <div className="text-center md:text-left md:border-r md:border-border md:pr-6">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Valor</p>
+                    <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
+                      {plan.displayPrice}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{plan.installments}</p>
+                  </div>
 
-                {/* Benefits */}
-                <div className="mb-8">
-                  <ul className="space-y-3">
-                    {plan.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
-                        <span className="text-sm leading-relaxed text-foreground/90">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  {/* COLUNA 2: Benefícios */}
+                  <div className="md:px-4">
+                    <ul className="space-y-2">
+                      {plan.benefits.map((benefit, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
+                          <span className="text-xs leading-relaxed text-foreground/90">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
 
-                {/* CTA Button */}
-                <div className="flex justify-center">
-                  <Button
-                    size="lg"
-                    onClick={() => handleSubscribe(plan.id)}
-                    disabled={loadingPlan === plan.id}
-                    className={`w-full text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
-                      plan.featured ? "bg-primary hover:bg-primary/90" : "bg-muted hover:bg-muted/80 text-foreground"
-                    }`}
-                  >
-                    {loadingPlan === plan.id ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        Processando...
-                      </>
-                    ) : (
-                      <>{user ? "Assinar Agora" : "Começar Agora"}</>
-                    )}
-                  </Button>
+                  {/* COLUNA 3: Botão */}
+                  <div className="flex items-center justify-center md:justify-end">
+                    <Button
+                      size="lg"
+                      onClick={() => handleSubscribe(plan.id)}
+                      disabled={loadingPlan === plan.id}
+                      className={`w-full md:w-auto text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
+                        plan.featured ? "bg-primary hover:bg-primary/90" : "bg-muted hover:bg-muted/80 text-foreground"
+                      }`}
+                    >
+                      {loadingPlan === plan.id ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          Processando...
+                        </>
+                      ) : (
+                        <>{user ? "Assinar Agora" : "Começar Agora"}</>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
