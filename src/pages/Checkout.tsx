@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ const Checkout = () => {
   const planType = searchParams.get("plan") || "monthly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
+  const hasCreatedPreference = useRef(false);
 
   // Get coupon details
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
@@ -64,10 +65,17 @@ const Checkout = () => {
       return;
     }
 
+    // Evitar múltiplas criações
+    if (hasCreatedPreference.current) {
+      return;
+    }
+
     // Create payment preference and initialization
     const createPreference = async () => {
       try {
         setLoading(true);
+        hasCreatedPreference.current = true;
+        
         const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
           body: {
             plan_type: planType,
@@ -78,6 +86,7 @@ const Checkout = () => {
 
         if (error) {
           console.error("Error creating preference:", error);
+          hasCreatedPreference.current = false;
           toast({
             title: "Erro ao preparar pagamento",
             description: "Não foi possível preparar o checkout. Tente novamente.",
@@ -94,6 +103,7 @@ const Checkout = () => {
         }
       } catch (error) {
         console.error("Error in createPreference:", error);
+        hasCreatedPreference.current = false;
         toast({
           title: "Erro",
           description: "Ocorreu um erro ao preparar o pagamento.",
@@ -105,6 +115,10 @@ const Checkout = () => {
     };
 
     createPreference();
+
+    return () => {
+      hasCreatedPreference.current = false;
+    };
   }, [user, planType, finalPrice, couponCode]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
@@ -341,19 +355,20 @@ const Checkout = () => {
               </div>
             ) : (
               <div className="space-y-4 animate-fade-in">
-                <Payment
-                  initialization={initialization}
-                  onSubmit={handlePaymentSubmit}
-                  onError={handlePaymentError}
-                  locale="pt-BR"
-                  customization={{
-                    paymentMethods: {
-                      maxInstallments: 10,
-                      bankTransfer: ["all"],
-                      creditCard: ["all"],
-                    },
-                  }}
-                />
+              <Payment
+                key={initialization?.preferenceId}
+                initialization={initialization}
+                onSubmit={handlePaymentSubmit}
+                onError={handlePaymentError}
+                locale="pt-BR"
+                customization={{
+                  paymentMethods: {
+                    maxInstallments: 10,
+                    bankTransfer: ["all"],
+                    creditCard: ["all"],
+                  },
+                }}
+              />
               </div>
             )}
           </div>
