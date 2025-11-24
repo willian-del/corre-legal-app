@@ -415,172 +415,193 @@ const MeuCorre = () => {
 
             {/* Aba Meu Cadastro */}
             <TabsContent value="cadastro" className="mt-6">
-              <div className="rounded-2xl p-8 border-2 bg-gradient-to-br from-primary/10 to-accent/10 border-primary/20">
-                <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <User className="w-5 h-5 text-primary" />
-                    <h3 className="text-2xl font-semibold">Meus Dados</h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Edite suas informações pessoais
+              <div className="space-y-6">
+                <div className="space-y-1 mb-8">
+                  <h3 className="text-2xl font-bold tracking-tight">Meus Dados</h3>
+                  <p className="text-muted-foreground">
+                    Gerencie suas informações pessoais
                   </p>
                 </div>
-                <div className="space-y-6">
-                  {/* Seção: Dados Cadastrais (Não Editáveis) */}
-                  <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Info className="w-4 h-4" />
-                      <span>Dados cadastrais (não podem ser alterados)</span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Nome Completo</p>
-                        <p className="text-sm font-semibold truncate">{user?.user_metadata?.full_name || 'Não informado'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">Email</p>
-                        <p className="text-sm font-semibold truncate">{user?.email || 'Não informado'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground">CPF</p>
-                        <p className="text-sm font-semibold">{maskedCpf || 'Carregando...'}</p>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Seção: Dados Editáveis */}
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Edit className="w-4 h-4 text-primary" />
-                      <h4 className="font-semibold">Dados Editáveis</h4>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">Telefone</Label>
-                        <Input 
-                          id="phone" 
-                          type="text" 
-                          placeholder="(00) 00000-0000" 
-                          value={phone} 
-                          onChange={e => setPhone(formatPhone(e.target.value))} 
-                          required 
-                        />
+                {/* Seção: Dados Cadastrais (Não Editáveis) */}
+                <Card className="border-border/40 shadow-none">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      Dados Cadastrais
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Estas informações não podem ser alteradas
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Nome Completo</Label>
+                        <p className="text-sm font-medium mt-1 truncate">
+                          {user?.user_metadata?.full_name || 'Não informado'}
+                        </p>
                       </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="service-type">Tipo de Serviço</Label>
-                        <Select value={serviceType} onValueChange={setServiceType}>
-                          <SelectTrigger id="service-type">
-                            <SelectValue placeholder="Selecione seu serviço" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {SERVICE_TYPES.map(type => (
-                              <SelectItem key={type.value} value={type.value}>
-                                {type.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Email</Label>
+                        <p className="text-sm font-medium mt-1 truncate">
+                          {user?.email || 'Não informado'}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">CPF</Label>
+                        <p className="text-sm font-medium mt-1">
+                          {maskedCpf || 'Carregando...'}
+                        </p>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button type="submit" className="w-full" disabled={isEditingProfile}>
-                      {isEditingProfile ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Salvando...
-                        </>
-                      ) : (
-                        'Salvar Alterações'
-                      )}
-                    </Button>
+                {/* Seção: Dados Editáveis */}
+                <Card className="border-border/40 shadow-none">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-semibold flex items-center gap-2">
+                      <Edit className="w-4 h-4 text-muted-foreground" />
+                      Informações Editáveis
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Atualize seu telefone e tipo de serviço
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <form onSubmit={handleUpdateProfile} className="space-y-5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">Telefone</Label>
+                          <Input 
+                            id="phone" 
+                            type="text" 
+                            placeholder="(00) 00000-0000" 
+                            value={phone} 
+                            onChange={e => setPhone(formatPhone(e.target.value))} 
+                            required 
+                          />
+                        </div>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                        <div className="space-y-2">
+                          <Label htmlFor="service-type">Tipo de Serviço</Label>
+                          <Select value={serviceType} onValueChange={setServiceType}>
+                            <SelectTrigger id="service-type">
+                              <SelectValue placeholder="Selecione seu serviço" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {SERVICE_TYPES.map(type => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3 pt-2">
                         <Button 
-                          type="button"
-                          variant="destructive" 
-                          className="w-full gap-2"
-                          disabled={isDeletingAccount}
+                          type="submit" 
+                          className="flex-1 bg-primary hover:bg-primary/90" 
+                          disabled={isEditingProfile}
                         >
-                          {isDeletingAccount ? (
+                          {isEditingProfile ? (
                             <>
                               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Apagando...
+                              Salvando...
                             </>
                           ) : (
-                            <>
-                              <Trash2 className="w-4 h-4" />
-                              Apagar Cadastro
-                            </>
+                            'Salvar Alterações'
                           )}
                         </Button>
-                      </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>⚠️ Tem certeza absoluta?</AlertDialogTitle>
-                <AlertDialogDescription className="space-y-3">
-                  <p className="font-bold text-destructive text-base">
-                    Esta ação é IRREVERSÍVEL e PERMANENTE!
-                  </p>
-                  
-                  {/* Avisos Financeiros e Contratuais */}
-                  <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 space-y-2">
-                    {subscription && (
-                      <p className="font-semibold text-destructive flex items-start gap-2">
-                        <span>⚠️</span>
-                        <span>Seu plano será cancelado IMEDIATAMENTE após a exclusão</span>
-                      </p>
-                    )}
-                    <p className="font-semibold text-destructive flex items-start gap-2">
-                      <span>💰</span>
-                      <span>NÃO haverá reembolso de valores pagos</span>
-                    </p>
-                    <p className="font-semibold text-destructive flex items-start gap-2">
-                      <span>🚫</span>
-                      <span>Esta ação NÃO pode ser desfeita de forma alguma</span>
-                    </p>
-                  </div>
 
-                  <p className="text-sm">
-                    Ao confirmar, os seguintes dados serão apagados para sempre:
-                  </p>
-                  <ul className="list-disc list-inside space-y-1 text-sm">
-                    <li>Seus dados pessoais (nome, CPF, telefone, email)</li>
-                    <li>Histórico de assinaturas e pagamentos</li>
-                    <li>Acesso à plataforma</li>
-                    <li>Todos os registros associados à sua conta</li>
-                  </ul>
-                  
-                  <p className="font-bold mt-4 text-base">
-                    Você tem certeza que deseja prosseguir?
-                  </p>
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Não, manter minha conta</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={handleDeleteAccount}
-                  className="bg-destructive hover:bg-destructive/90 button-destructive-hover"
-                  disabled={isDeletingAccount}
-                >
-                  {isDeletingAccount ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      <span className="button-loading-pulse">Deletando...</span>
-                    </>
-                  ) : (
-                    'Sim, apagar permanentemente'
-                  )}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </form>
-                </div>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              type="button"
+                              variant="outline" 
+                              className="flex-1 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                              disabled={isDeletingAccount}
+                            >
+                              {isDeletingAccount ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  Apagando...
+                                </>
+                              ) : (
+                                <>
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Apagar Cadastro
+                                </>
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>⚠️ Tem certeza absoluta?</AlertDialogTitle>
+                              <AlertDialogDescription className="space-y-3">
+                                <p className="font-bold text-destructive text-base">
+                                  Esta ação é IRREVERSÍVEL e PERMANENTE!
+                                </p>
+                                
+                                {/* Avisos Financeiros e Contratuais */}
+                                <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 space-y-2">
+                                  {subscription && (
+                                    <p className="font-semibold text-destructive flex items-start gap-2">
+                                      <span>⚠️</span>
+                                      <span>Seu plano será cancelado IMEDIATAMENTE após a exclusão</span>
+                                    </p>
+                                  )}
+                                  <p className="font-semibold text-destructive flex items-start gap-2">
+                                    <span>💰</span>
+                                    <span>NÃO haverá reembolso de valores pagos</span>
+                                  </p>
+                                  <p className="font-semibold text-destructive flex items-start gap-2">
+                                    <span>🚫</span>
+                                    <span>Esta ação NÃO pode ser desfeita de forma alguma</span>
+                                  </p>
+                                </div>
+
+                                <p className="text-sm">
+                                  Ao confirmar, os seguintes dados serão apagados para sempre:
+                                </p>
+                                <ul className="list-disc list-inside space-y-1 text-sm">
+                                  <li>Seus dados pessoais (nome, CPF, telefone, email)</li>
+                                  <li>Histórico de assinaturas e pagamentos</li>
+                                  <li>Acesso à plataforma</li>
+                                  <li>Todos os registros associados à sua conta</li>
+                                </ul>
+                                
+                                <p className="font-bold mt-4 text-base">
+                                  Você tem certeza que deseja prosseguir?
+                                </p>
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Não, manter minha conta</AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={handleDeleteAccount}
+                                className="bg-destructive hover:bg-destructive/90 button-destructive-hover"
+                                disabled={isDeletingAccount}
+                              >
+                                {isDeletingAccount ? (
+                                  <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <span className="button-loading-pulse">Deletando...</span>
+                                  </>
+                                ) : (
+                                  'Sim, apagar permanentemente'
+                                )}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </form>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
