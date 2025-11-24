@@ -6,6 +6,16 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Mapeamento de preços dos planos
+const PLAN_PRICES: Record<string, number> = {
+  'bronze': 60,
+  'monthly': 60,
+  'prata': 120,
+  'quarterly': 120,
+  'ouro': 180,
+  'annual': 180
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -55,6 +65,11 @@ serve(async (req) => {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 30); // 30 days by default
 
+      // Se amountPaid não for fornecido, usar o preço padrão do plano
+      const finalAmount = amountPaid !== undefined && amountPaid !== null 
+        ? amountPaid 
+        : (PLAN_PRICES[planType] || 0);
+
       const { data, error } = await supabaseClient
         .from('user_subscriptions')
         .insert({
@@ -62,7 +77,7 @@ serve(async (req) => {
           plan_type: planType,
           status: 'active',
           expires_at: expiresAt.toISOString(),
-          amount_paid: amountPaid || 0,
+          amount_paid: finalAmount,
           currency: 'BRL',
           payment_method: 'cortesia',
           paid_at: new Date().toISOString()
@@ -73,7 +88,7 @@ serve(async (req) => {
       if (error) throw error;
 
       result = data;
-      auditDetails = { operation: 'create-manual', planType, expiresAt, amountPaid };
+      auditDetails = { operation: 'create-manual', planType, expiresAt, amountPaid: finalAmount };
 
     } else if (operation === 'extend') {
       // Extend subscription period

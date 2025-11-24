@@ -201,7 +201,9 @@ const MeuCorre = () => {
     const methodMap: Record<string, string> = {
       'card': 'Cartão de Crédito',
       'pix': 'PIX',
-      'boleto': 'Boleto'
+      'boleto': 'Boleto',
+      'mercadopago': 'Mercado Pago',
+      'cortesia': 'Cortesia'
     };
     return methodMap[method || ''] || 'Não informado';
   };
