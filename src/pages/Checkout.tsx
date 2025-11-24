@@ -31,17 +31,36 @@ const Checkout = () => {
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
   const isCouponValid = coupon && coupon.active && new Date(coupon.validUntil) >= new Date();
 
+  const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.monthly;
+
+  // Calculate discount
+  const calculateDiscount = () => {
+    if (!isCouponValid || !coupon) return 0;
+
+    if (coupon.discountType === "percentage") {
+      return (plan.price * coupon.discountValue) / 100;
+    } else {
+      return coupon.discountValue;
+    }
+  };
+
+  const discount = calculateDiscount();
+  const finalPrice = Math.max(0, plan.price - discount);
+
+  // Initialize Mercado Pago SDK only once
+  useEffect(() => {
+    const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+    if (publicKey) {
+      initMercadoPago(publicKey, { locale: "pt-BR" });
+    }
+  }, []);
+
+  // Create payment preference
   useEffect(() => {
     // Redirect to auth if not logged in
     if (!user) {
       navigate(`/auth?signup=true&checkout=true&plan=${planType}`);
       return;
-    }
-
-    // Initialize Mercado Pago
-    const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
-    if (publicKey) {
-      initMercadoPago(publicKey, { locale: "pt-BR" });
     }
 
     // Create payment preference and initialization
@@ -85,23 +104,7 @@ const Checkout = () => {
     };
 
     createPreference();
-  }, [user, planType, toast, navigate]);
-
-  const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.monthly;
-
-  // Calculate discount
-  const calculateDiscount = () => {
-    if (!isCouponValid || !coupon) return 0;
-
-    if (coupon.discountType === "percentage") {
-      return (plan.price * coupon.discountValue) / 100;
-    } else {
-      return coupon.discountValue;
-    }
-  };
-
-  const discount = calculateDiscount();
-  const finalPrice = Math.max(0, plan.price - discount);
+  }, [user, planType, finalPrice, couponCode]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("Payment data:", paymentData);
