@@ -92,37 +92,49 @@ const Pricing = () => {
                   <p className="text-sm text-muted-foreground">{plan.duration}</p>
                 </div>
 
-                {/* Grid Responsivo: 3 colunas (desktop) / 1 coluna (mobile) */}
-                <div className="grid md:grid-cols-3 gap-6 md:gap-8 items-center">
+                {/* Layout de 2 Colunas Compacto */}
+                <div className="grid md:grid-cols-[minmax(200px,1fr)_2fr] gap-6 items-start">
                   
-                  {/* COLUNA 1: Preço */}
-                  <div className="text-center md:text-left md:border-r md:border-border md:pr-6">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide mb-2">Valor</p>
-                    <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
-                      {plan.displayPrice}
+                  {/* COLUNA 1: Preço Destacado */}
+                  <div className="relative">
+                    {/* Box de Preço com Background Destacado */}
+                    <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl p-6 border-2 border-primary/30 text-center sticky top-4">
+                      <div className="flex flex-col items-center justify-center min-h-[180px]">
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide mb-3 font-semibold">
+                          Investimento
+                        </p>
+                        <div className="text-4xl md:text-5xl font-bold text-primary mb-2">
+                          {plan.displayPrice}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {plan.installments}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">{plan.installments}</p>
                   </div>
 
-                  {/* COLUNA 2: Benefícios */}
-                  <div className="md:px-4">
-                    <ul className="space-y-2">
+                  {/* COLUNA 2: Benefícios + Botão */}
+                  <div className="flex flex-col gap-6">
+                    {/* Lista de Benefícios */}
+                    <ul className="space-y-3">
                       {plan.benefits.map((benefit, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
-                          <span className="text-xs leading-relaxed text-foreground/90">{benefit}</span>
+                        <li key={index} className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center mt-0.5">
+                            <Check className="w-3 h-3 text-primary stroke-[3]" />
+                          </div>
+                          <span className="text-sm leading-relaxed text-foreground/90 font-medium">
+                            {benefit}
+                          </span>
                         </li>
                       ))}
                     </ul>
-                  </div>
 
-                  {/* COLUNA 3: Botão */}
-                  <div className="flex items-center justify-center md:justify-end">
+                    {/* Botão CTA */}
                     <Button
                       size="lg"
                       onClick={() => handleSubscribe(plan.id)}
                       disabled={loadingPlan === plan.id}
-                      className={`w-full md:w-auto text-base px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ${
+                      className={`w-full text-base px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 ${
                         plan.featured ? "bg-primary hover:bg-primary/90" : "bg-muted hover:bg-muted/80 text-foreground"
                       }`}
                     >
