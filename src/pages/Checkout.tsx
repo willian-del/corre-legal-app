@@ -207,25 +207,28 @@ const Checkout = () => {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Finalize sua <span className="text-primary">Assinatura</span>
+      <main className="container mx-auto px-4 py-8 sm:py-12">
+        <div className="max-w-2xl mx-auto space-y-8">
+          <div className="text-center">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 leading-tight">
+              Finalize sua <span className="text-primary whitespace-nowrap">Assinatura</span>
             </h1>
-            <p className="text-muted-foreground">Você está contratando o {plan.name}</p>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-md mx-auto">
+              Você está contratando o <span className="font-semibold text-foreground">{plan.name}</span>
+            </p>
           </div>
 
           {/* Plan Summary */}
-          <div className="bg-card rounded-2xl p-6 border border-border mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <div>
-                <h3 className="font-semibold text-lg">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground">{plan.description}</p>
+          <div className="bg-gradient-to-br from-card via-card to-card/50 rounded-2xl p-6 sm:p-8 border border-border/50 shadow-lg">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-6 border-b border-border">
+              <div className="flex-1">
+                <h3 className="font-bold text-xl mb-1">{plan.name}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{plan.description}</p>
               </div>
-              <div className="text-right">
+              <div className="text-left sm:text-right">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Valor</p>
                 <p
-                  className={`text-2xl font-bold ${discount > 0 ? "line-through text-muted-foreground" : "text-primary"}`}
+                  className={`text-3xl font-bold ${discount > 0 ? "line-through text-muted-foreground" : "text-primary"}`}
                 >
                   {plan.displayPrice}
                 </p>
@@ -265,17 +268,29 @@ const Checkout = () => {
               </div>
             )}
 
-            <div className="border-t border-border pt-4">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold">Total</span>
-                <span className="text-2xl font-bold text-primary">R$ {finalPrice.toFixed(2).replace(".", ",")}</span>
+            <div className="border-t-2 border-border pt-6 mt-6">
+              <div className="flex justify-between items-center bg-primary/5 rounded-xl p-4">
+                <span className="text-lg font-semibold">Total a pagar</span>
+                <div className="text-right">
+                  <span className="text-3xl font-bold text-primary tracking-tight">
+                    R$ {finalPrice.toFixed(2).replace(".", ",")}
+                  </span>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {planType === 'monthly' ? "por mês" : planType === 'quarterly' ? "a cada 3 meses" : "por ano"}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Payment */}
           <div className="bg-card rounded-2xl p-6 border border-border">
-            <h2 className="text-xl font-semibold mb-6">Pagamento</h2>
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <span className="text-xl">💳</span>
+              </div>
+              <h2 className="text-2xl font-bold">Pagamento</h2>
+            </div>
 
             {loading || !initialization ? (
               <div className="space-y-6 animate-fade-in">
@@ -358,8 +373,13 @@ const Checkout = () => {
           </div>
 
           {/* Security Notice */}
-          <div className="mt-6 text-center text-sm text-muted-foreground">
-            <p>🔒 Pagamento seguro processado pelo Mercado Pago</p>
+          <div className="mt-8 text-center">
+            <div className="inline-flex items-center gap-2 bg-muted/50 rounded-full px-6 py-3 text-sm text-foreground/70">
+              <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+              </svg>
+              <span className="font-medium">Pagamento seguro processado pelo Mercado Pago</span>
+            </div>
           </div>
         </div>
       </main>
