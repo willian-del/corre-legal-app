@@ -1,16 +1,16 @@
 import Logo from "./Logo";
 const Footer = () => {
-  return <footer className="bg-background border-t border-border py-10">
+  return <footer className="bg-background border-t border-border py-12">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
+        <div className="grid md:grid-cols-3 gap-8 mb-8 items-start">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <Logo size={56} />
               <span className="text-xl font-bold text-foreground">Corre Legal</span>
             </div>
-            <p className="text-muted-foreground">Suporte jurídico especializado para
-motoristas de aplicativos e
-entregadores.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Suporte jurídico especializado para motoristas de aplicativos e entregadores.
+            </p>
           </div>
 
           <div>
@@ -24,7 +24,7 @@ entregadores.</p>
                     behavior: "smooth"
                   });
                 }
-              }} className="text-muted-foreground hover:text-primary transition-colors">
+              }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Sobre Nós
                 </button>
               </li>
@@ -36,7 +36,7 @@ entregadores.</p>
                     behavior: "smooth"
                   });
                 }
-              }} className="text-muted-foreground hover:text-primary transition-colors">
+              }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Cobertura
                 </button>
               </li>
@@ -48,7 +48,7 @@ entregadores.</p>
                     behavior: "smooth"
                   });
                 }
-              }} className="text-muted-foreground hover:text-primary transition-colors">
+              }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                   Contrate Agora
                 </button>
               </li>
@@ -56,20 +56,24 @@ entregadores.</p>
           </div>
 
           <div>
-            <div className="space-y-1.5 text-muted-foreground text-xs">
-              <p className="font-semibold text-foreground text-sm">Juripass Desenvolvimento de Software LTDA</p>
+            <h3 className="font-bold text-foreground mb-4">Contato</h3>
+            <div className="space-y-2 text-sm text-muted-foreground">
+              <p className="font-semibold text-foreground">
+                Juripass Desenvolvimento de Software LTDA
+              </p>
               <p>CNPJ: 35.911.772/0001-37</p>
               <p className="leading-relaxed">
                 Alameda Rio Negro, 1030 - Sala 2304<br />
-                Alphaville, Barueri - SP - CEP: 06454-000
+                Alphaville, Barueri - SP<br />
+                CEP: 06454-000
               </p>
-              <p className="pt-1">contato@correlegal.com.br</p>
+              <p className="pt-2">contato@correlegal.com.br</p>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-border pt-6 text-center text-muted-foreground">
-          <p className="text-xs">
+        <div className="border-t border-border pt-8 text-center">
+          <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Juripass. Todos os direitos reservados.
           </p>
         </div>
