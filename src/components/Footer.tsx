@@ -1,23 +1,14 @@
 import Logo from "./Logo";
 import { Instagram, Youtube } from "lucide-react";
-
-const TikTokIcon = ({ size = 24, className = "" }: { size?: number; className?: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={className}
-  >
+const TikTokIcon = ({
+  size = 24,
+  className = ""
+}: {
+  size?: number;
+  className?: string;
+}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-  </svg>
-);
-
+  </svg>;
 const Footer = () => {
   return <footer className="bg-background border-t border-border py-8">
       <div className="container mx-auto px-4">
@@ -27,35 +18,17 @@ const Footer = () => {
               <Logo size={40} />
               <span className="text-lg font-bold text-foreground">Corre Legal</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Suporte jurídico especializado para motoristas de aplicativos e entregadores.
-            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Suporte jurídico especializado para
+motoristas de aplicativos e
+entregadores.</p>
             <div className="flex items-center gap-3 mt-3">
-              <a 
-                href="https://instagram.com/correlegal" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1"
-                aria-label="Instagram"
-              >
+              <a href="https://instagram.com/correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="Instagram">
                 <Instagram size={20} />
               </a>
-              <a 
-                href="https://tiktok.com/@correlegal.app" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1"
-                aria-label="TikTok"
-              >
+              <a href="https://tiktok.com/@correlegal.app" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="TikTok">
                 <TikTokIcon size={20} />
               </a>
-              <a 
-                href="https://youtube.com/@correlegal" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1"
-                aria-label="YouTube"
-              >
+              <a href="https://youtube.com/@correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="YouTube">
                 <Youtube size={20} />
               </a>
             </div>
@@ -110,8 +83,8 @@ const Footer = () => {
                 Juripass Desenvolvimento de Software LTDA
               </p>
               <p>CNPJ: 35.911.772/0001-37</p>
-              <p className="leading-relaxed">
-                Alameda Rio Negro, 1030 - Sala 2304<br />
+              <p className="leading-relaxed">Alphaville, Barueri - SP
+              <br />
                 Alphaville, Barueri - SP<br />
                 CEP: 06454-000
               </p>
