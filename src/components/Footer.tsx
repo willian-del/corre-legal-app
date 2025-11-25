@@ -19,18 +19,18 @@ const TikTokIcon = ({ size = 24, className = "" }: { size?: number; className?: 
 );
 
 const Footer = () => {
-  return <footer className="bg-background border-t border-border py-12">
+  return <footer className="bg-background border-t border-border py-8">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-3 gap-8 mb-8 items-start">
+        <div className="grid md:grid-cols-3 gap-6 mb-6 items-start">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Logo size={56} />
-              <span className="text-xl font-bold text-foreground">Corre Legal</span>
+            <div className="flex items-center gap-2 mb-3">
+              <Logo size={40} />
+              <span className="text-lg font-bold text-foreground">Corre Legal</span>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Suporte jurídico especializado para motoristas de aplicativos e entregadores.
             </p>
-            <div className="flex items-center gap-4 mt-4">
+            <div className="flex items-center gap-3 mt-3">
               <a 
                 href="https://instagram.com/correlegal" 
                 target="_blank" 
@@ -62,7 +62,7 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-bold text-foreground mb-4">Links Rápidos</h3>
+            <h3 className="font-bold text-foreground mb-3">Links Rápidos</h3>
             <ul className="space-y-2">
               <li>
                 <button onClick={() => {
@@ -104,8 +104,8 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="font-bold text-foreground mb-4">Contato</h3>
-            <div className="space-y-2 text-sm text-muted-foreground">
+            <h3 className="font-bold text-foreground mb-3">Contato</h3>
+            <div className="space-y-1 text-sm text-muted-foreground">
               <p className="font-semibold text-foreground">
                 Juripass Desenvolvimento de Software LTDA
               </p>
@@ -115,12 +115,12 @@ const Footer = () => {
                 Alphaville, Barueri - SP<br />
                 CEP: 06454-000
               </p>
-              <p className="pt-2">contato@correlegal.com.br</p>
+              <p>contato@correlegal.com.br</p>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-border pt-8 text-center">
+        <div className="border-t border-border pt-4 text-center">
           <p className="text-sm text-muted-foreground">
             &copy; {new Date().getFullYear()} Juripass. Todos os direitos reservados.
           </p>
