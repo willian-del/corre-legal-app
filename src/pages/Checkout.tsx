@@ -199,6 +199,7 @@ const Checkout = () => {
           title: "Erro ao processar pagamento",
           description: "Não foi possível processar seu pagamento. Tente novamente.",
           variant: "destructive",
+          duration: 6000,
         });
         setLoading(false);
         return;
@@ -211,11 +212,22 @@ const Checkout = () => {
         });
         navigate("/payment-success");
       } else {
+        // Show specific error message from backend
+        const errorMessage = data?.error || "O pagamento não foi aprovado. Tente novamente.";
+        const paymentId = data?.details?.payment_id;
+        
         toast({
           title: "Pagamento não aprovado",
-          description: data?.error || "O pagamento não foi aprovado. Tente novamente.",
+          description: errorMessage,
           variant: "destructive",
+          duration: 8000,
         });
+
+        // Log details for debugging
+        if (data?.details) {
+          console.error("Payment rejection details:", data.details);
+        }
+
         setLoading(false);
       }
     } catch (error) {
