@@ -17,6 +17,16 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -29,6 +39,9 @@ const Checkout = () => {
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
   const hasCreatedPreference = useRef(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   // Get coupon details
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
@@ -68,6 +81,35 @@ const Checkout = () => {
       }
     };
   }, []);
+
+  // Track interaction with payment form
+  useEffect(() => {
+    const container = document.getElementById('payment-brick-container');
+    if (container) {
+      const handleInteraction = () => setHasInteracted(true);
+      container.addEventListener('click', handleInteraction, true);
+      container.addEventListener('input', handleInteraction, true);
+      container.addEventListener('change', handleInteraction, true);
+      return () => {
+        container.removeEventListener('click', handleInteraction, true);
+        container.removeEventListener('input', handleInteraction, true);
+        container.removeEventListener('change', handleInteraction, true);
+      };
+    }
+  }, [initialization, sdkReady]);
+
+  // Protect against browser navigation (close tab, refresh)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasInteracted && !loading) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasInteracted, loading]);
 
   // Create payment preference
   useEffect(() => {
@@ -196,12 +238,37 @@ const Checkout = () => {
     });
   };
 
+  const handleBack = () => {
+    if (hasInteracted) {
+      setPendingNavigation("/");
+      setShowExitDialog(true);
+    } else {
+      navigate("/");
+    }
+  };
+
+  const handleBreadcrumbClick = (e: React.MouseEvent, path: string) => {
+    if (hasInteracted) {
+      e.preventDefault();
+      setPendingNavigation(path);
+      setShowExitDialog(true);
+    }
+  };
+
+  const confirmExit = () => {
+    if (pendingNavigation) {
+      navigate(pendingNavigation);
+    }
+    setShowExitDialog(false);
+    setPendingNavigation(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b border-border">
         <div className="container mx-auto px-4 py-4">
-          <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
+          <Button variant="ghost" onClick={handleBack} className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
@@ -210,13 +277,13 @@ const Checkout = () => {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/">Home</Link>
+                  <Link to="/" onClick={(e) => handleBreadcrumbClick(e, "/")}>Home</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/meu-corre">Meu Corre</Link>
+                  <Link to="/meu-corre" onClick={(e) => handleBreadcrumbClick(e, "/meu-corre")}>Meu Corre</Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -392,6 +459,28 @@ const Checkout = () => {
           </div>
         </div>
       </main>
+
+      {/* Exit Confirmation Dialog */}
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sair do checkout?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você tem dados de pagamento preenchidos. Se sair agora, eles serão perdidos.
+              Tem certeza que deseja sair?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar no checkout</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmExit}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sair mesmo assim
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
