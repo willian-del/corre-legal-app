@@ -46,7 +46,7 @@ const Pricing = () => {
   return (
     <section id="pricing" className="py-12 md:py-20 bg-secondary/30">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-8">
@@ -54,21 +54,23 @@ const Pricing = () => {
             </h2>
           </div>
 
-          {/* Plans Grid */}
-          <div className="grid md:grid-cols-1 gap-6">
+          {/* Plans Banner */}
+          <div className="space-y-6">
             {plans.map((plan) => (
               <div
                 key={plan.id}
                 ref={plan.featured ? cardRef : undefined}
                 className={`
-                bg-gradient-to-br rounded-3xl p-6 md:p-8 
-                border-2 shadow-xl
+                bg-card
+                border border-border
+                rounded-xl
+                p-5 md:p-6
+                shadow-lg
+                flex flex-col md:flex-row
+                items-center
+                justify-between
+                gap-5 md:gap-8
                 transition-all duration-700 ease-out
-                ${
-                  plan.featured
-                    ? "from-primary/10 to-accent/10 border-primary/50 shadow-2xl scale-105"
-                    : "from-card to-card border-border"
-                }
                 ${plan.featured && isInView ? "opacity-100 translate-y-0" : ""}
                 ${plan.featured && !isInView ? "opacity-0 translate-y-12" : ""}
               `}
@@ -76,64 +78,54 @@ const Pricing = () => {
                   willChange: plan.featured && !isInView ? "opacity, transform" : "auto",
                 }}
               >
-                {/* Título com ícone inline */}
-                <div className="text-center mb-4">
-                  <h3 className="text-xl md:text-2xl font-bold text-foreground flex items-center justify-center gap-2 mb-2">
-                    {plan.badge && <span className="text-2xl">⭐</span>}
+                {/* Seção Esquerda: Título */}
+                <div className="border-l-4 border-primary pl-4 text-center md:text-left flex-shrink-0">
+                  <span className="text-muted-foreground text-sm uppercase tracking-wider flex items-center justify-center md:justify-start gap-2">
+                    {plan.badge && <span className="text-base">⭐</span>}
                     {plan.name}
+                  </span>
+                  <h3 className="text-lg md:text-xl font-bold text-foreground flex items-center justify-center md:justify-start gap-2 mt-1">
+                    <span className="text-base">🛡️</span>
+                    {plan.duration} de Proteção
                   </h3>
-                  <p className="text-sm md:text-base text-muted-foreground flex items-center justify-center gap-2">
-                    <span className="text-lg">🛡️</span>
-                    {plan.duration} de Proteção Completa
-                  </p>
                 </div>
 
-                {/* Divider */}
-                <div className="border-t border-border/50 my-6"></div>
+                {/* Seção Central: Benefícios */}
+                <div className="flex-1 bg-muted/30 rounded-lg p-4 w-full md:w-auto">
+                  <ul className="space-y-2 text-sm">
+                    {plan.benefits.map((benefit, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-muted-foreground">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-                {/* Lista de Benefícios Compacta */}
-                <ul className="space-y-3 mb-6">
-                  {plan.benefits.map((benefit, index) => (
-                    <li key={index} className="flex items-start gap-3">
-                      <Check className="w-5 h-5 text-primary stroke-[3] flex-shrink-0 mt-0.5" />
-                      <span className="text-sm md:text-base text-foreground/90">
-                        {benefit}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Divider */}
-                <div className="border-t border-border/50 my-6"></div>
-
-                {/* Preço e Parcelamento */}
-                <div className="text-center mb-6">
-                  <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                {/* Seção Direita: Preço + CTA */}
+                <div className="text-center md:text-right flex-shrink-0 w-full md:w-auto">
+                  <div className="text-2xl md:text-3xl font-bold text-primary">
                     {plan.displayPrice}
                   </div>
-                  <p className="text-sm md:text-base text-muted-foreground">
+                  <p className="text-muted-foreground text-sm mb-3">
                     {plan.installments}
                   </p>
+                  <Button
+                    size="lg"
+                    onClick={() => handleSubscribe(plan.id)}
+                    disabled={loadingPlan === plan.id}
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 w-full md:w-auto"
+                  >
+                    {loadingPlan === plan.id ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processando...
+                      </>
+                    ) : (
+                      <>{user ? "CONTRATAR AGORA" : "COMEÇAR AGORA"}</>
+                    )}
+                  </Button>
                 </div>
-
-                {/* Botão CTA */}
-                <Button
-                  size="lg"
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={loadingPlan === plan.id}
-                  className={`w-full text-base md:text-lg px-8 py-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-300 ${
-                    plan.featured ? "bg-primary hover:bg-primary/90" : "bg-muted hover:bg-muted/80 text-foreground"
-                  }`}
-                >
-                  {loadingPlan === plan.id ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Processando...
-                    </>
-                  ) : (
-                    <>{user ? "Assinar Agora" : "Começar Agora"}</>
-                  )}
-                </Button>
               </div>
             ))}
           </div>
