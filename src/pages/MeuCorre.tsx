@@ -89,7 +89,7 @@ const MeuCorre = () => {
     try {
       const profile = await getProfile(user.id);
       if (profile) {
-        setPhone(profile.phone || '');
+        setPhone(formatPhone(profile.phone || ''));
         // Normalizar valores legados para valores padronizados
         setServiceType(normalizeServiceType(profile.service_type));
         
