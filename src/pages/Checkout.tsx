@@ -193,11 +193,12 @@ const Checkout = () => {
         },
       });
 
+      // Handle network/server errors
       if (error) {
-        console.error("Error processing payment:", error);
+        console.error("Error invoking payment function:", error);
         toast({
-          title: "Erro ao processar pagamento",
-          description: "Não foi possível processar seu pagamento. Tente novamente.",
+          title: "Erro de conexão",
+          description: "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.",
           variant: "destructive",
           duration: 6000,
         });
@@ -205,31 +206,33 @@ const Checkout = () => {
         return;
       }
 
+      // Handle successful payment
       if (data?.success) {
         toast({
           title: "Pagamento aprovado!",
           description: "Sua assinatura foi ativada com sucesso.",
         });
         navigate("/payment-success");
-      } else {
-        // Show specific error message from backend
-        const errorMessage = data?.error || "O pagamento não foi aprovado. Tente novamente.";
-        const paymentId = data?.details?.payment_id;
-        
-        toast({
-          title: "Pagamento não aprovado",
-          description: errorMessage,
-          variant: "destructive",
-          duration: 8000,
-        });
-
-        // Log details for debugging
-        if (data?.details) {
-          console.error("Payment rejection details:", data.details);
-        }
-
-        setLoading(false);
+        return;
       }
+
+      // Handle payment rejection with specific error message
+      const errorMessage = data?.error || "O pagamento não foi aprovado. Tente novamente.";
+      const statusDetail = data?.details?.status_detail;
+      
+      console.error("Payment rejected:", {
+        error: errorMessage,
+        details: data?.details,
+      });
+
+      toast({
+        title: "Pagamento não aprovado",
+        description: errorMessage,
+        variant: "destructive",
+        duration: 8000,
+      });
+
+      setLoading(false);
     } catch (error) {
       console.error("Error in handlePaymentSubmit:", error);
       toast({

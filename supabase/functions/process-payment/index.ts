@@ -138,7 +138,7 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 400,
+          status: 200, // Changed to 200 so Supabase client doesn't treat as error
         },
       );
     }
