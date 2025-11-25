@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { checkActiveSubscription } from "@/lib/subscription-utils";
 import Logo from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -53,6 +54,7 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <Button
               onClick={handleMeuCorre}
               variant="ghost"
@@ -83,6 +85,9 @@ const Navbar = () => {
         {/* Mobile Menu */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-4 border-t border-border">
+            <div className="flex justify-center pb-4">
+              <ThemeToggle />
+            </div>
             <Button
               onClick={handleMeuCorre}
               variant="ghost"
