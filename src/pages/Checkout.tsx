@@ -35,7 +35,7 @@ const Checkout = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [sdkReady, setSdkReady] = useState(false);
-  const planType = searchParams.get("plan") || "monthly";
+  const planType = searchParams.get("plan") || "quarterly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
   const hasCreatedPreference = useRef(false);
@@ -47,7 +47,7 @@ const Checkout = () => {
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
   const isCouponValid = coupon && coupon.active && new Date(coupon.validUntil) >= new Date();
 
-  const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.monthly;
+  const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.quarterly;
 
   // Calculate discount
   const calculateDiscount = () => {
