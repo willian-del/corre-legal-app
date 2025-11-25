@@ -1,8 +1,6 @@
 import Logo from "./Logo";
-
 const Footer = () => {
-  return (
-    <footer className="bg-background border-t border-border py-10">
+  return <footer className="bg-background border-t border-border py-10">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-3 gap-6 mb-6">
           <div>
@@ -10,50 +8,47 @@ const Footer = () => {
               <Logo size={56} />
               <span className="text-xl font-bold text-foreground">Corre Legal</span>
             </div>
-            <p className="text-muted-foreground">
-              Suporte jurídico especializado para motoristas de aplicativos e entregadores.
-            </p>
+            <p className="text-muted-foreground">Suporte jurídico especializado para
+motoristas de aplicativos e
+entregadores.</p>
           </div>
 
           <div>
             <h3 className="font-bold text-foreground mb-4">Links Rápidos</h3>
             <ul className="space-y-2">
               <li>
-                <button
-                  onClick={() => {
-                    const element = document.getElementById("about");
-                    if (element) {
-                      element.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
+                <button onClick={() => {
+                const element = document.getElementById("about");
+                if (element) {
+                  element.scrollIntoView({
+                    behavior: "smooth"
+                  });
+                }
+              }} className="text-muted-foreground hover:text-primary transition-colors">
                   Sobre Nós
                 </button>
               </li>
               <li>
-                <button
-                  onClick={() => {
-                    const element = document.getElementById("services");
-                    if (element) {
-                      element.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
+                <button onClick={() => {
+                const element = document.getElementById("services");
+                if (element) {
+                  element.scrollIntoView({
+                    behavior: "smooth"
+                  });
+                }
+              }} className="text-muted-foreground hover:text-primary transition-colors">
                   Cobertura
                 </button>
               </li>
               <li>
-                <button
-                  onClick={() => {
-                    const element = document.getElementById("pricing");
-                    if (element) {
-                      element.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                  className="text-muted-foreground hover:text-primary transition-colors"
-                >
+                <button onClick={() => {
+                const element = document.getElementById("pricing");
+                if (element) {
+                  element.scrollIntoView({
+                    behavior: "smooth"
+                  });
+                }
+              }} className="text-muted-foreground hover:text-primary transition-colors">
                   Contrate Agora
                 </button>
               </li>
@@ -79,8 +74,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
