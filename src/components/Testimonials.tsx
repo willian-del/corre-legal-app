@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Quote } from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Carousel,
   CarouselContent,
@@ -43,6 +44,8 @@ const TESTIMONIALS_DATA = [
   ];
 
 const Testimonials = () => {
+  const isMobile = useIsMobile();
+  
   const { ref: headerRef, isInView: headerInView } = useInView({ 
     threshold: 0.2, 
     triggerOnce: true 
@@ -67,6 +70,49 @@ const Testimonials = () => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
+
+  const renderCard = (testimonial: typeof TESTIMONIALS_DATA[0], index: number) => (
+    <div 
+      key={index}
+      className={`
+        bg-card rounded-2xl p-6 md:p-8 border border-border h-full
+        transition-all duration-700 ease-out hover:border-primary/50 hover:shadow-lg
+        ${carouselInView && !isMobile
+          ? 'opacity-100 translate-y-0' 
+          : !isMobile ? 'opacity-0 translate-y-12' : ''
+        }
+      `}
+      style={!isMobile ? { 
+        transitionDelay: `${index * 100}ms`,
+        transitionProperty: 'opacity, transform',
+        willChange: carouselInView ? 'auto' : 'opacity, transform'
+      } : undefined}
+    >
+      <div className="flex items-start justify-between mb-4 md:mb-6">
+        <div className="flex items-center gap-3 md:gap-4">
+          <Avatar className="h-12 w-12 md:h-14 md:w-14">
+            <AvatarImage 
+              src={testimonial.image} 
+              alt={testimonial.name}
+              loading="lazy"
+            />
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {testimonial.initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-bold text-foreground text-base md:text-lg">{testimonial.name}</p>
+            <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
+            <p className="text-xs md:text-sm text-muted-foreground">{testimonial.location}</p>
+          </div>
+        </div>
+        <Quote className="w-8 h-8 md:w-10 md:h-10 text-primary/20 shrink-0" />
+      </div>
+      <p className="text-foreground leading-relaxed text-sm md:text-base italic">
+        "{testimonial.content}"
+      </p>
+    </div>
+  );
 
   return (
     <section id="testimonials" className="py-12 md:py-20 bg-background">
@@ -104,65 +150,47 @@ const Testimonials = () => {
             willChange: carouselInView ? 'auto' : 'opacity, transform'
           }}
         >
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-            setApi={setApi}
-          >
-            <CarouselContent>
-              {TESTIMONIALS_DATA.map((testimonial, index) => (
-                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                  <div className="bg-card rounded-2xl p-6 md:p-8 border border-border h-full">
-                      <div className="flex items-start justify-between mb-4 md:mb-6">
-                        <div className="flex items-center gap-3 md:gap-4">
-                          <Avatar className="h-12 w-12 md:h-14 md:w-14">
-                            <AvatarImage 
-                              src={testimonial.image} 
-                              alt={testimonial.name}
-                              loading="lazy"
-                            />
-                            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                              {testimonial.initials}
-                            </AvatarFallback>
-                          </Avatar>
-                        <div>
-                          <p className="font-bold text-foreground text-base md:text-lg">{testimonial.name}</p>
-                          <p className="text-xs md:text-sm text-muted-foreground">{testimonial.role}</p>
-                          <p className="text-xs md:text-sm text-muted-foreground">{testimonial.location}</p>
-                        </div>
-                      </div>
-                      <Quote className="w-8 h-8 md:w-10 md:h-10 text-primary/20 shrink-0" />
-                    </div>
-                    <p className="text-foreground leading-relaxed text-sm md:text-base italic">
-                      "{testimonial.content}"
-                    </p>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="-left-4 md:-left-12" />
-            <CarouselNext className="-right-4 md:-right-12" />
-          </Carousel>
-          
-          {/* Dots indicadores */}
-          <div className="flex justify-center gap-2 mt-6">
-            {Array.from({ length: count }).map((_, index) => (
-              <button
-                key={index}
-                className={cn(
-                  "h-2 w-2 rounded-full transition-all duration-300",
-                  current === index 
-                    ? "bg-primary w-6" 
-                    : "bg-muted-foreground/30"
-                )}
-                onClick={() => api?.scrollTo(index)}
-                aria-label={`Ir para depoimento ${index + 1}`}
-              />
-            ))}
-          </div>
+          {isMobile ? (
+            <>
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+                setApi={setApi}
+              >
+                <CarouselContent>
+                  {TESTIMONIALS_DATA.map((testimonial, index) => (
+                    <CarouselItem key={index}>
+                      {renderCard(testimonial, index)}
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+              </Carousel>
+              
+              {/* Dots indicadores - apenas no mobile */}
+              <div className="flex justify-center gap-2 mt-6">
+                {Array.from({ length: count }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={cn(
+                      "h-2 w-2 rounded-full transition-all duration-300",
+                      current === index 
+                        ? "bg-primary w-6" 
+                        : "bg-muted-foreground/30"
+                    )}
+                    onClick={() => api?.scrollTo(index)}
+                    aria-label={`Ir para depoimento ${index + 1}`}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-6">
+              {TESTIMONIALS_DATA.map((testimonial, index) => renderCard(testimonial, index))}
+            </div>
+          )}
         </div>
       </div>
     </section>
