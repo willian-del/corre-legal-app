@@ -12,86 +12,32 @@ const TikTokIcon = ({
 const Footer = () => {
   return <footer className="bg-background border-t border-border py-8">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-3 gap-6 mb-6 items-start">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Logo size={40} />
-              <span className="text-lg font-bold text-foreground">Corre Legal</span>
-            </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">Suporte jurídico especializado para 
-motoristas de aplicativos e entregadores.</p>
-            <div className="flex items-center gap-3 mt-3">
-              <a href="https://instagram.com/correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="Instagram">
-                <Instagram size={20} />
-              </a>
-              <a href="https://tiktok.com/@correlegal.app" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="TikTok">
-                <TikTokIcon size={20} />
-              </a>
-              <a href="https://youtube.com/@correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="YouTube">
-                <Youtube size={20} />
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-foreground mb-3">Links Rápidos</h3>
-            <ul className="space-y-2">
-              <li>
-                <button onClick={() => {
-                const element = document.getElementById("about");
-                if (element) {
-                  element.scrollIntoView({
-                    behavior: "smooth"
-                  });
-                }
-              }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Sobre Nós
-                </button>
-              </li>
-              <li>
-                <button onClick={() => {
-                const element = document.getElementById("services");
-                if (element) {
-                  element.scrollIntoView({
-                    behavior: "smooth"
-                  });
-                }
-              }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Cobertura
-                </button>
-              </li>
-              <li>
-                <button onClick={() => {
-                const element = document.getElementById("pricing");
-                if (element) {
-                  element.scrollIntoView({
-                    behavior: "smooth"
-                  });
-                }
-              }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-                  Contrate Agora
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-foreground mb-3">
+        <div className="flex flex-col items-center text-center space-y-4">
+          {/* Informações da empresa */}
+          <div className="space-y-1 text-sm text-muted-foreground">
+            <p className="font-bold text-foreground text-base">
               Juripass Desenvolvimento de Software LTDA
-            </h3>
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <p>CNPJ: 35.911.772/0001-37</p>
-              <p className="leading-relaxed">
-                Alphaville, Barueri - SP<br />
-                CEP: 06454-000
-              </p>
-              <p>contato@correlegal.com.br</p>
-            </div>
+            </p>
+            <p>CNPJ: 35.911.772/0001-37</p>
+            <p>Alphaville, Barueri - SP</p>
+            <p>contato@correlegal.com.br</p>
           </div>
-        </div>
 
-        <div className="border-t border-border pt-4 text-center">
-          <p className="text-sm text-muted-foreground">
+          {/* Redes sociais */}
+          <div className="flex items-center gap-4">
+            <a href="https://instagram.com/correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="Instagram">
+              <Instagram size={20} />
+            </a>
+            <a href="https://tiktok.com/@correlegal.app" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="TikTok">
+              <TikTokIcon size={20} />
+            </a>
+            <a href="https://youtube.com/@correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="YouTube">
+              <Youtube size={20} />
+            </a>
+          </div>
+
+          {/* Copyright */}
+          <p className="text-sm text-muted-foreground pt-2">
             &copy; {new Date().getFullYear()} Juripass. Todos os direitos reservados.
           </p>
         </div>
