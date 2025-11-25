@@ -1,5 +1,5 @@
 import Logo from "./Logo";
-import { Instagram, Youtube } from "lucide-react";
+import { Instagram, Youtube, Mail } from "lucide-react";
 const TikTokIcon = ({
   size = 24,
   className = ""
@@ -24,6 +24,9 @@ const Footer = () => {
             <a href="https://youtube.com/@correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="YouTube">
               <Youtube size={16} />
             </a>
+            <a href="mailto:contato@correlegal.com.br" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="Email">
+              <Mail size={16} />
+            </a>
           </div>
 
           {/* Informações da empresa */}
@@ -31,9 +34,7 @@ const Footer = () => {
             <p className="text-foreground">
               Juripass Desenvolvimento de Software LTDA
             </p>
-            <p>CNPJ: 35.911.772/0001-37</p>
-            <p>Alphaville, Barueri - SP</p>
-            <p>contato@correlegal.com.br</p>
+            <p>35.911.772/0001-37 · Alphaville, Barueri - SP</p>
           </div>
 
           {/* Copyright */}
