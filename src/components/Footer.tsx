@@ -18,9 +18,8 @@ const Footer = () => {
               <Logo size={40} />
               <span className="text-lg font-bold text-foreground">Corre Legal</span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">Suporte jurídico especializado para
-motoristas de aplicativos e
-entregadores.</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">Suporte jurídico especializado para 
+motoristas de aplicativos e entregadores.</p>
             <div className="flex items-center gap-3 mt-3">
               <a href="https://instagram.com/correlegal" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1" aria-label="Instagram">
                 <Instagram size={20} />
@@ -77,7 +76,8 @@ entregadores.</p>
           </div>
 
           <div>
-            <h3 className="font-bold text-foreground mb-3">Contato</h3>
+            <h3 className="font-bold text-foreground mb-3">
+          </h3>
             <div className="space-y-1 text-sm text-muted-foreground">
               <p className="font-semibold text-foreground">
                 Juripass Desenvolvimento de Software LTDA
