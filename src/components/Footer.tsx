@@ -35,7 +35,7 @@ const Footer = () => {
                 href="https://instagram.com/correlegal" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1"
                 aria-label="Instagram"
               >
                 <Instagram size={20} />
@@ -44,7 +44,7 @@ const Footer = () => {
                 href="https://tiktok.com/@correlegal.app" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1"
                 aria-label="TikTok"
               >
                 <TikTokIcon size={20} />
@@ -53,7 +53,7 @@ const Footer = () => {
                 href="https://youtube.com/@correlegal" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-primary transition-colors"
+                className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110 hover:-translate-y-1"
                 aria-label="YouTube"
               >
                 <Youtube size={20} />
