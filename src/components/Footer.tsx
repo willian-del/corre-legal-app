@@ -77,14 +77,11 @@ motoristas de aplicativos e entregadores.</p>
 
           <div>
             <h3 className="font-bold text-foreground mb-3">
-          </h3>
+              Juripass Desenvolvimento de Software LTDA
+            </h3>
             <div className="space-y-1 text-sm text-muted-foreground">
-              <p className="font-semibold text-foreground">
-                Juripass Desenvolvimento de Software LTDA
-              </p>
               <p>CNPJ: 35.911.772/0001-37</p>
-              <p className="leading-relaxed">Alphaville, Barueri - SP
-              <br />
+              <p className="leading-relaxed">
                 Alphaville, Barueri - SP<br />
                 CEP: 06454-000
               </p>
