@@ -96,15 +96,45 @@ serve(async (req) => {
     console.log("Mercado Pago payment verified:", {
       id: mpPayment.id,
       status: mpPayment.status,
+      status_detail: mpPayment.status_detail,
       amount: mpPayment.transaction_amount,
     });
 
+    // Map Mercado Pago error codes to user-friendly messages
+    const errorMessages: Record<string, string> = {
+      "cc_rejected_insufficient_amount": "Saldo insuficiente no cartão",
+      "cc_rejected_bad_filled_security_code": "Código de segurança inválido",
+      "cc_rejected_bad_filled_date": "Data de validade inválida",
+      "cc_rejected_bad_filled_card_number": "Número do cartão inválido",
+      "cc_rejected_call_for_authorize": "Cartão requer autorização - entre em contato com seu banco",
+      "cc_rejected_duplicated_payment": "Pagamento duplicado detectado",
+      "cc_rejected_max_attempts": "Número máximo de tentativas excedido",
+      "cc_rejected_high_risk": "Pagamento recusado por segurança",
+      "cc_amount_rate_limit_exceeded": "Limite de transações excedido - aguarde alguns minutos e tente novamente",
+      "cc_rejected_other_reason": "Pagamento não autorizado pelo banco",
+    };
+
     // Verify payment status and amount
     if (mpPayment.status !== "approved") {
+      const statusDetail = mpPayment.status_detail || "unknown";
+      const userMessage = errorMessages[statusDetail] || 
+        "Pagamento não aprovado. Entre em contato com seu banco para mais informações.";
+      
+      console.error("Payment rejected:", {
+        status: mpPayment.status,
+        status_detail: statusDetail,
+        payment_id: mpPayment.id,
+      });
+
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Payment not approved by Mercado Pago",
+          error: userMessage,
+          details: {
+            status: mpPayment.status,
+            status_detail: statusDetail,
+            payment_id: mpPayment.id,
+          },
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
