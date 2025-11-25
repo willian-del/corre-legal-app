@@ -75,25 +75,25 @@ const Checkout = () => {
   // Cleanup payment brick container on unmount
   useEffect(() => {
     return () => {
-      const container = document.getElementById('payment-brick-container');
+      const container = document.getElementById("payment-brick-container");
       if (container) {
-        container.innerHTML = '';
+        container.innerHTML = "";
       }
     };
   }, []);
 
   // Track interaction with payment form
   useEffect(() => {
-    const container = document.getElementById('payment-brick-container');
+    const container = document.getElementById("payment-brick-container");
     if (container) {
       const handleInteraction = () => setHasInteracted(true);
-      container.addEventListener('click', handleInteraction, true);
-      container.addEventListener('input', handleInteraction, true);
-      container.addEventListener('change', handleInteraction, true);
+      container.addEventListener("click", handleInteraction, true);
+      container.addEventListener("input", handleInteraction, true);
+      container.addEventListener("change", handleInteraction, true);
       return () => {
-        container.removeEventListener('click', handleInteraction, true);
-        container.removeEventListener('input', handleInteraction, true);
-        container.removeEventListener('change', handleInteraction, true);
+        container.removeEventListener("click", handleInteraction, true);
+        container.removeEventListener("input", handleInteraction, true);
+        container.removeEventListener("change", handleInteraction, true);
       };
     }
   }, [initialization, sdkReady]);
@@ -103,12 +103,12 @@ const Checkout = () => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasInteracted && !loading) {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = "";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasInteracted, loading]);
 
   // Create payment preference
@@ -129,7 +129,7 @@ const Checkout = () => {
       try {
         setLoading(true);
         hasCreatedPreference.current = true;
-        
+
         const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
           body: {
             plan_type: planType,
@@ -219,7 +219,7 @@ const Checkout = () => {
       // Handle payment rejection with specific error message
       const errorMessage = data?.error || "O pagamento não foi aprovado. Tente novamente.";
       const statusDetail = data?.details?.status_detail;
-      
+
       console.error("Payment rejected:", {
         error: errorMessage,
         details: data?.details,
@@ -287,18 +287,22 @@ const Checkout = () => {
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
-          
+
           <Breadcrumb className="mt-3">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/" onClick={(e) => handleBreadcrumbClick(e, "/")}>Home</Link>
+                  <Link to="/" onClick={(e) => handleBreadcrumbClick(e, "/")}>
+                    Home
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link to="/meu-corre" onClick={(e) => handleBreadcrumbClick(e, "/meu-corre")}>Meu Corre</Link>
+                  <Link to="/meu-corre" onClick={(e) => handleBreadcrumbClick(e, "/meu-corre")}>
+                    Meu Corre
+                  </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />
@@ -438,9 +442,7 @@ const Checkout = () => {
                 {/* Loading Text */}
                 <div className="flex items-center justify-center gap-2 pt-2">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    Preparando formulário de pagamento...
-                  </p>
+                  <p className="text-sm text-muted-foreground">Preparando formulário de pagamento...</p>
                 </div>
               </div>
             ) : (
@@ -453,7 +455,7 @@ const Checkout = () => {
                   locale="pt-BR"
                   customization={{
                     paymentMethods: {
-                      maxInstallments: 10,
+                      maxInstallments: 3,
                       bankTransfer: ["all"],
                       creditCard: ["all"],
                     },
@@ -467,7 +469,11 @@ const Checkout = () => {
           <div className="mt-8 text-center">
             <div className="inline-flex items-center gap-2 bg-muted/50 rounded-full px-6 py-3 text-sm text-foreground/70">
               <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span className="font-medium">Pagamento seguro processado pelo Mercado Pago</span>
             </div>
@@ -481,8 +487,7 @@ const Checkout = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Sair do checkout?</AlertDialogTitle>
             <AlertDialogDescription>
-              Você tem dados de pagamento preenchidos. Se sair agora, eles serão perdidos.
-              Tem certeza que deseja sair?
+              Você tem dados de pagamento preenchidos. Se sair agora, eles serão perdidos. Tem certeza que deseja sair?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
