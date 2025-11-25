@@ -54,6 +54,50 @@ All colors MUST be HSL.
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 98%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 158 64% 42%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 158 64% 52%;
+    --primary-rgb: 60, 160, 115;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 197 71% 63%;
+    --accent-foreground: 240 10% 3.9%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 158 64% 42%;
+
+    /* Chart colors - optimized for light theme visibility */
+    --chart-1: 142 76% 36%;
+    --chart-2: 217 91% 50%;
+    --chart-3: 262 83% 48%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(240 5% 96%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 98%) 0%, hsl(240 5% 96%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(158 64% 42%) 0%, hsl(158 64% 52%) 100%);
+    
+    --shadow-elevated: 0 10px 40px -10px hsl(240 10% 70% / 0.3);
+    --shadow-glow: 0 0 40px hsl(158 64% 42% / 0.15);
+  }
 }
 
 @layer base {
