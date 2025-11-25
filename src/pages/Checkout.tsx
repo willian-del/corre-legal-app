@@ -82,22 +82,6 @@ const Checkout = () => {
     };
   }, []);
 
-  // Track interaction with payment form
-  useEffect(() => {
-    const container = document.getElementById("payment-brick-container");
-    if (container) {
-      const handleInteraction = () => setHasInteracted(true);
-      container.addEventListener("click", handleInteraction, true);
-      container.addEventListener("input", handleInteraction, true);
-      container.addEventListener("change", handleInteraction, true);
-      return () => {
-        container.removeEventListener("click", handleInteraction, true);
-        container.removeEventListener("input", handleInteraction, true);
-        container.removeEventListener("change", handleInteraction, true);
-      };
-    }
-  }, [initialization, sdkReady]);
-
   // Protect against browser navigation (close tab, refresh)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
