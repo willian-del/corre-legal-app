@@ -24,6 +24,7 @@ const Checkout = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
+  const [sdkReady, setSdkReady] = useState(false);
   const planType = searchParams.get("plan") || "monthly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
@@ -52,9 +53,20 @@ const Checkout = () => {
   // Initialize Mercado Pago SDK only once
   useEffect(() => {
     const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
-    if (publicKey) {
+    if (publicKey && !sdkReady) {
       initMercadoPago(publicKey, { locale: "pt-BR" });
+      setSdkReady(true);
     }
+  }, [sdkReady]);
+
+  // Cleanup payment brick container on unmount
+  useEffect(() => {
+    return () => {
+      const container = document.getElementById('payment-brick-container');
+      if (container) {
+        container.innerHTML = '';
+      }
+    };
   }, []);
 
   // Create payment preference
@@ -115,10 +127,6 @@ const Checkout = () => {
     };
 
     createPreference();
-
-    return () => {
-      hasCreatedPreference.current = false;
-    };
   }, [user, planType, finalPrice, couponCode]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
@@ -292,7 +300,7 @@ const Checkout = () => {
               <h2 className="text-2xl font-bold">Pagamento</h2>
             </div>
 
-            {loading || !initialization ? (
+            {loading || !initialization || !sdkReady ? (
               <div className="space-y-6 animate-fade-in">
                 {/* Payment Methods Skeleton */}
                 <div className="space-y-3">
@@ -354,21 +362,21 @@ const Checkout = () => {
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 animate-fade-in">
-              <Payment
-                key={initialization?.preferenceId}
-                initialization={initialization}
-                onSubmit={handlePaymentSubmit}
-                onError={handlePaymentError}
-                locale="pt-BR"
-                customization={{
-                  paymentMethods: {
-                    maxInstallments: 10,
-                    bankTransfer: ["all"],
-                    creditCard: ["all"],
-                  },
-                }}
-              />
+              <div id="payment-brick-container" className="space-y-4 animate-fade-in">
+                <Payment
+                  key={`payment-${initialization?.preferenceId}`}
+                  initialization={initialization}
+                  onSubmit={handlePaymentSubmit}
+                  onError={handlePaymentError}
+                  locale="pt-BR"
+                  customization={{
+                    paymentMethods: {
+                      maxInstallments: 10,
+                      bankTransfer: ["all"],
+                      creditCard: ["all"],
+                    },
+                  }}
+                />
               </div>
             )}
           </div>
