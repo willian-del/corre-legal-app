@@ -32,7 +32,15 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
         // Always validate profile completeness server-side - never trust client state
         if (requireCompleteProfile && location.pathname !== '/onboarding') {
           const { isProfileComplete } = await import('@/lib/profile-utils');
-          const complete = await isProfileComplete(user.id);
+          
+          // Adicionar retry para tolerar delay no salvamento de novos cadastros
+          let complete = await isProfileComplete(user.id);
+          
+          // Se não completo na primeira tentativa, tentar mais uma vez após delay
+          if (!complete) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            complete = await isProfileComplete(user.id);
+          }
           
           if (!complete) {
             navigate('/onboarding');

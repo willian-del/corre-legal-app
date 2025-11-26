@@ -290,6 +290,30 @@ const Auth = () => {
           service_type: serviceType,
         });
 
+        // Aguardar confirmação de que o perfil foi salvo completamente
+        let retries = 0;
+        const maxRetries = 10;
+        let profileIsComplete = false;
+
+        while (retries < maxRetries && !profileIsComplete) {
+          profileIsComplete = await isProfileComplete(currentUser.id);
+          if (!profileIsComplete) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+            retries++;
+          }
+        }
+
+        if (!profileIsComplete) {
+          if (import.meta.env.DEV) {
+            console.error('Perfil não foi completado após tentativas de verificação');
+          }
+          toast.error("Houve um problema ao salvar seus dados. Por favor, complete seu cadastro.");
+          setIsSubmitting(false);
+          setCompletingSignUp(false);
+          navigate("/onboarding");
+          return;
+        }
+
         await checkProfile();
 
         toast.success("Cadastro completo! Bem-vindo ao Corre Legal.");
@@ -298,6 +322,7 @@ const Auth = () => {
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
 
+        // Navegar SOMENTE após confirmar que o perfil está completo
         if (checkoutParam === "true" && planParam) {
           navigate(`/?checkout=true&plan=${planParam}`);
         } else {
