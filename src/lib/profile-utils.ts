@@ -175,3 +175,48 @@ export async function getProfile(userId: string) {
     return null;
   }
 }
+
+// Verificar se o usuário já viu a tela de boas-vindas
+export async function hasSeenWelcome(userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('has_seen_welcome')
+      .eq('id', userId)
+      .single();
+
+    if (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error checking welcome status:', error);
+      }
+      return true; // Default para true em caso de erro (não mostrar a tela)
+    }
+
+    return data?.has_seen_welcome ?? true;
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Error checking welcome status:', error);
+    }
+    return true;
+  }
+}
+
+// Marcar que o usuário viu a tela de boas-vindas
+export async function markWelcomeAsSeen(userId: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({ has_seen_welcome: true })
+      .eq('id', userId);
+
+    if (error) {
+      if (import.meta.env.DEV) {
+        console.error('Error marking welcome as seen:', error);
+      }
+    }
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error('Error marking welcome as seen:', error);
+    }
+  }
+}

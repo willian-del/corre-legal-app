@@ -95,6 +95,7 @@ export type Database = {
           cpf_hash: string | null
           created_at: string | null
           full_name: string | null
+          has_seen_welcome: boolean | null
           id: string
           phone: string | null
           service_type: string | null
@@ -105,6 +106,7 @@ export type Database = {
           cpf_hash?: string | null
           created_at?: string | null
           full_name?: string | null
+          has_seen_welcome?: boolean | null
           id: string
           phone?: string | null
           service_type?: string | null
@@ -115,6 +117,7 @@ export type Database = {
           cpf_hash?: string | null
           created_at?: string | null
           full_name?: string | null
+          has_seen_welcome?: boolean | null
           id?: string
           phone?: string | null
           service_type?: string | null
