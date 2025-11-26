@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight } from "lucide-react";
+import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useConfetti } from "@/hooks/use-confetti";
 import { markWelcomeAsSeen } from "@/lib/profile-utils";
@@ -113,6 +113,12 @@ const containerVariants = {
   }
 };
 
+// Constantes para detectar swipe
+const swipeConfidenceThreshold = 10000;
+const swipePower = (offset: number, velocity: number) => {
+  return Math.abs(offset) * velocity;
+};
+
 export default function Welcome() {
   const [currentStep, setCurrentStep] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -131,6 +137,30 @@ export default function Welcome() {
     } else {
       setDirection(1);
       setCurrentStep((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentStep > 0) {
+      setDirection(-1);
+      setCurrentStep((prev) => prev - 1);
+    }
+  };
+
+  const handleDragEnd = (
+    e: MouseEvent | TouchEvent | PointerEvent,
+    { offset, velocity }: PanInfo
+  ) => {
+    const swipe = swipePower(offset.x, velocity.x);
+
+    if (swipe < -swipeConfidenceThreshold) {
+      // Swipe para a esquerda → próximo step
+      if (!isLastStep) {
+        handleNext();
+      }
+    } else if (swipe > swipeConfidenceThreshold) {
+      // Swipe para a direita → step anterior
+      handlePrevious();
     }
   };
 
@@ -233,13 +263,17 @@ export default function Welcome() {
                     initial="enter"
                     animate="center"
                     exit="exit"
+                    drag="x"
+                    dragConstraints={{ left: 0, right: 0 }}
+                    dragElastic={1}
+                    onDragEnd={handleDragEnd}
                     transition={{ 
                       x: { type: "spring", stiffness: 300, damping: 30 },
                       opacity: { duration: 0.3 },
                       scale: { duration: 0.3 },
                       rotateY: { duration: 0.3 }
                     }}
-                    className="space-y-4"
+                    className="space-y-4 cursor-grab active:cursor-grabbing"
                   >
                     <motion.div
                       variants={containerVariants}
@@ -357,6 +391,18 @@ export default function Welcome() {
                 transition={{ delay: 0.5 }}
               >
                 Passo {currentStep + 1} de {welcomeSteps.length}
+              </motion.p>
+
+              {/* Indicador de swipe */}
+              <motion.p 
+                className="text-xs text-muted-foreground/50 pt-2 flex items-center justify-center gap-1"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+              >
+                <ChevronLeft className="h-3 w-3" />
+                Deslize para navegar
+                <ChevronRight className="h-3 w-3" />
               </motion.p>
             </div>
           </Card>
