@@ -201,7 +201,15 @@ const Auth = () => {
       } else if (!complete) {
         navigate("/onboarding");
       } else {
-        navigate("/meu-corre");
+        // Verificar se já viu a tela de boas-vindas
+        const { hasSeenWelcome } = await import("@/lib/profile-utils");
+        const seen = await hasSeenWelcome(currentUser.id);
+        
+        if (!seen) {
+          navigate("/welcome");
+        } else {
+          navigate("/meu-corre");
+        }
       }
     }
 
@@ -323,10 +331,11 @@ const Auth = () => {
         const planParam = searchParams.get("plan");
 
         // Navegar SOMENTE após confirmar que o perfil está completo
+        // Novos usuários vão para a tela de boas-vindas
         if (checkoutParam === "true" && planParam) {
           navigate(`/?checkout=true&plan=${planParam}`);
         } else {
-          navigate("/meu-corre");
+          navigate("/welcome");
         }
       }
     } catch (profileError) {
