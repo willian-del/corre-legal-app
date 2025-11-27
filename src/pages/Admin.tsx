@@ -23,6 +23,7 @@ import {
   Calendar,
   DollarSign,
   AlertCircle,
+  AlertTriangle,
   Plus,
   RefreshCw,
   Trash2
@@ -90,6 +91,10 @@ export default function Admin() {
   const [extendDays, setExtendDays] = useState('30');
   const [manualSubPlan, setManualSubPlan] = useState('bronze');
   const [manualSubUser, setManualSubUser] = useState('');
+  
+  // Delete confirmation dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Analytics states
   const [analyticsData, setAnalyticsData] = useState<any[]>([]);
@@ -192,33 +197,29 @@ export default function Admin() {
     }
   };
 
-  const handleDeleteUser = async (userId: string, userName: string) => {
-    const confirmed = window.confirm(
-      `⚠️ ATENÇÃO: Esta ação é IRREVERSÍVEL!\n\n` +
-      `Você está prestes a deletar permanentemente o usuário:\n` +
-      `${userName}\n\n` +
-      `Isso irá remover:\n` +
-      `• Perfil e dados pessoais\n` +
-      `• Assinaturas\n` +
-      `• Roles e permissões\n` +
-      `• Logs de auditoria\n\n` +
-      `Deseja continuar?`
-    );
+  const openDeleteDialog = (userId: string, userName: string) => {
+    setUserToDelete({ id: userId, name: userName });
+    setDeleteDialogOpen(true);
+  };
 
-    if (!confirmed) return;
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
 
     try {
       const { error } = await supabase.functions.invoke('admin-delete-user', {
-        body: { userId }
+        body: { userId: userToDelete.id }
       });
 
       if (error) throw error;
 
-      toast.success(`Usuário ${userName} deletado com sucesso`);
+      toast.success(`Usuário ${userToDelete.name} deletado com sucesso`);
       loadData();
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast.error(error.message || 'Erro ao deletar usuário');
+    } finally {
+      setDeleteDialogOpen(false);
+      setUserToDelete(null);
     }
   };
 
@@ -854,7 +855,7 @@ export default function Admin() {
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => handleDeleteUser(u.id, u.full_name)}
+                                onClick={() => openDeleteDialog(u.id, u.full_name)}
                                 title="Deletar usuário"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -1068,6 +1069,59 @@ export default function Admin() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setSelectedUser(null)}>Cancelar</Button>
             <Button onClick={handleExtendSubscription}>Estender</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-3 rounded-full bg-destructive/10">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
+              </div>
+              <DialogTitle className="text-xl">Deletar Usuário</DialogTitle>
+            </div>
+            <DialogDescription className="text-base space-y-3 pt-2">
+              <p className="font-semibold text-foreground">
+                ⚠️ Esta ação é irreversível!
+              </p>
+              <p>
+                Você está prestes a deletar permanentemente o usuário:
+              </p>
+              <p className="font-medium text-foreground px-3 py-2 bg-muted rounded">
+                {userToDelete?.name}
+              </p>
+              <div className="space-y-1 text-sm">
+                <p className="font-medium text-foreground">Isso irá remover:</p>
+                <ul className="list-disc list-inside space-y-1 pl-2">
+                  <li>Perfil e dados pessoais</li>
+                  <li>Assinaturas ativas</li>
+                  <li>Roles e permissões</li>
+                  <li>Histórico e logs</li>
+                </ul>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setUserToDelete(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive"
+              onClick={confirmDeleteUser}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              Deletar Permanentemente
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
