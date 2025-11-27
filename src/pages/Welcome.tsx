@@ -14,7 +14,7 @@ const welcomeSteps = [
   {
     icon: PartyPopper,
     title: "Bem-vindo ao Corre Legal!",
-    description: "Você agora faz parte da maior comunidade de proteção jurídica para entregadores",
+    description: "Você agora faz parte da maior comunidade de proteção jurídica para entregadores e para motoristas de aplicativo.",
     color: "text-primary",
   },
   {
