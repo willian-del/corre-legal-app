@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft, HeartHandshake } from "lucide-react";
+import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft, HeartHandshake, ShieldCheck } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useConfetti } from "@/hooks/use-confetti";
 import { markWelcomeAsSeen } from "@/lib/profile-utils";
@@ -34,6 +34,12 @@ const welcomeSteps = [
     title: "Estamos cuidando de você!",
     description: "Um de nossos especialistas entrará em contato com orientações sobre a sua dúvida ou problema. E fique tranquilo, que a partir de agora nós estamos cuidando de você.",
     color: "text-rose-500",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Transparência e segurança para você!",
+    description: "Caso nosso advogado identifique potencial para uma ação, os honorários serão negociados diretamente com você.",
+    color: "text-amber-500",
   },
   {
     icon: Rocket,
