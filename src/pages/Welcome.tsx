@@ -25,8 +25,8 @@ const welcomeSteps = [
   },
   {
     icon: UserCircle,
-    title: "Sua área exclusiva",
-    description: "No 'Meu Corre' você gerencia seu plano, atualiza dados e acompanha tudo",
+    title: "Quanto mais detalhes, melhor!",
+    description: "Explique exatamente o que aconteceu. Nos conte a sua dúvida ou descreva o seu problema. Não esqueça os detalhes: quando, como, onde e com quem?",
     color: "text-cyan-500",
   },
   {
