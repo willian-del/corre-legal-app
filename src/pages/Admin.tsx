@@ -795,58 +795,73 @@ export default function Admin() {
                 </div>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Telefone</TableHead>
-                      <TableHead>Serviço</TableHead>
-                      <TableHead>Assinatura</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead className="text-right">Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((u) => (
-                      <TableRow key={u.id}>
-                        <TableCell className="font-medium">{u.full_name}</TableCell>
-                        <TableCell>{u.email}</TableCell>
-                        <TableCell>{u.phone || '-'}</TableCell>
-                        <TableCell>{u.service_type || '-'}</TableCell>
-                        <TableCell>
-                          {u.subscription ? (
-                            <Badge variant={u.subscription.status === 'active' ? 'default' : 'secondary'}>
-                              {u.subscription.plan_type} ({u.subscription.status})
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline">Sem assinatura</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          {u.is_admin ? (
-                            <Badge variant="default" className="gap-1">
-                              <ShieldCheck className="h-3 w-3" />
-                              Admin
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline">Usuário</Badge>
-                          )}
-                        </TableCell>
+              <Table className="text-sm">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[180px]">Nome</TableHead>
+                    <TableHead className="w-[220px]">Email</TableHead>
+                    <TableHead className="w-[130px]">Telefone</TableHead>
+                    <TableHead className="w-[100px]">Serviço</TableHead>
+                    <TableHead className="w-[130px]">Assinatura</TableHead>
+                    <TableHead className="w-[100px]">Role</TableHead>
+                    <TableHead className="w-[180px] text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.map((u) => (
+                    <TableRow key={u.id}>
+                      <TableCell className="font-medium text-sm truncate max-w-[180px]" title={u.full_name}>
+                        {u.full_name}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground truncate max-w-[220px]" title={u.email}>
+                        {u.email}
+                      </TableCell>
+                      <TableCell className="text-sm font-mono">
+                        {u.phone || '-'}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {u.service_type ? u.service_type.charAt(0).toUpperCase() + u.service_type.slice(1) : '-'}
+                      </TableCell>
+                      <TableCell>
+                        {u.subscription ? (
+                          <Badge 
+                            variant={u.subscription.status === 'active' ? 'default' : 'secondary'}
+                            className="text-xs whitespace-nowrap"
+                          >
+                            {u.subscription.plan_type === 'quarterly' ? 'Trimestral' : u.subscription.plan_type}
+                            {u.subscription.status === 'active' && ' ✓'}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-xs whitespace-nowrap">
+                            Sem assinatura
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          variant={u.is_admin ? 'default' : 'outline'} 
+                          className="text-xs gap-1"
+                        >
+                          {u.is_admin && <ShieldCheck className="h-3 w-3" />}
+                          {u.is_admin ? 'Admin' : 'Usuário'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-1 justify-end">
                           {u.id !== user?.id && (
                             <>
                               <Button
                                 variant="outline"
                                 size="sm"
+                                className="text-xs h-8 px-2"
                                 onClick={() => u.is_admin ? handleRemoveAdmin(u.id) : handleMakeAdmin(u.id)}
                               >
-                                {u.is_admin ? 'Remover Admin' : 'Tornar Admin'}
+                                {u.is_admin ? 'Remover' : 'Admin'}
                               </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
+                                className="h-8 w-8 p-0"
                                 onClick={() => openDeleteDialog(u.id, u.full_name)}
                                 title="Deletar usuário"
                               >
@@ -856,10 +871,10 @@ export default function Admin() {
                           )}
                         </div>
                       </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
               </CardContent>
             </Card>
           </TabsContent>
