@@ -44,12 +44,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        if (import.meta.env.DEV) {
+          console.log('[AUTH] State change event:', event, session ? 'with session' : 'no session');
+        }
+
         // Detect events that indicate invalid session
         if (event === 'TOKEN_REFRESHED' && !session) {
           // Token refresh failed - clear everything
-          if (import.meta.env.DEV) {
-            console.log('Token refresh failed, clearing session');
-          }
+          console.log('[AUTH] Token refresh failed, clearing session');
           setSession(null);
           setUser(null);
           setProfileComplete(null);
@@ -58,9 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
         
         if (event === 'SIGNED_OUT') {
-          if (import.meta.env.DEV) {
-            console.log('User signed out');
-          }
+          console.log('[AUTH] User signed out');
           setSession(null);
           setUser(null);
           setProfileComplete(null);
@@ -89,9 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        if (import.meta.env.DEV) {
-          console.error('Session error:', error);
-        }
+        console.error('[AUTH] Session error on mount:', error);
         // Clear localStorage if there's an error
         supabase.auth.signOut();
         setSession(null);
@@ -100,6 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       
+      if (import.meta.env.DEV) {
+        console.log('[AUTH] Initial session check:', session ? 'session found' : 'no session');
+      }
+
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
