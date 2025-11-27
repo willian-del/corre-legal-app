@@ -8,12 +8,7 @@ const corsHeaders = {
 
 // Mapeamento de preços dos planos
 const PLAN_PRICES: Record<string, number> = {
-  'bronze': 60,
-  'monthly': 60,
-  'prata': 120,
-  'quarterly': 120,
-  'ouro': 180,
-  'annual': 180
+  'quarterly': 60
 };
 
 serve(async (req) => {
@@ -63,7 +58,7 @@ serve(async (req) => {
       }
 
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // 30 days by default
+      expiresAt.setDate(expiresAt.getDate() + 90); // 90 days for quarterly plan
 
       // Se amountPaid não for fornecido, usar o preço padrão do plano
       const finalAmount = amountPaid !== undefined && amountPaid !== null 

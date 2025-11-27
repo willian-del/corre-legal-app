@@ -64,9 +64,7 @@ interface User {
 interface Stats {
   totalUsers: number;
   activeSubscriptions: number;
-  bronzeCount: number;
-  prataCount: number;
-  ouroCount: number;
+  quarterlyCount: number;
   expiringCount: number;
 }
 
@@ -77,9 +75,7 @@ export default function Admin() {
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     activeSubscriptions: 0,
-    bronzeCount: 0,
-    prataCount: 0,
-    ouroCount: 0,
+    quarterlyCount: 0,
     expiringCount: 0
   });
   const [loading, setLoading] = useState(true);
@@ -89,7 +85,7 @@ export default function Admin() {
   // Modal states
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [extendDays, setExtendDays] = useState('30');
-  const [manualSubPlan, setManualSubPlan] = useState('bronze');
+  const [manualSubPlan, setManualSubPlan] = useState('quarterly');
   const [manualSubUser, setManualSubUser] = useState('');
   
   // Delete confirmation dialog state
@@ -136,9 +132,7 @@ export default function Admin() {
       // Calculate stats
       const totalUsers = data.users?.length || 0;
       const activeSubscriptions = data.users?.filter((u: User) => u.subscription?.status === 'active').length || 0;
-      const bronzeCount = data.users?.filter((u: User) => u.subscription?.plan_type === 'bronze' && u.subscription?.status === 'active').length || 0;
-      const prataCount = data.users?.filter((u: User) => u.subscription?.plan_type === 'prata' && u.subscription?.status === 'active').length || 0;
-      const ouroCount = data.users?.filter((u: User) => u.subscription?.plan_type === 'ouro' && u.subscription?.status === 'active').length || 0;
+      const quarterlyCount = data.users?.filter((u: User) => u.subscription?.plan_type === 'quarterly' && u.subscription?.status === 'active').length || 0;
       
       const now = new Date();
       const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -151,9 +145,7 @@ export default function Admin() {
       setStats({
         totalUsers,
         activeSubscriptions,
-        bronzeCount,
-        prataCount,
-        ouroCount,
+        quarterlyCount,
         expiringCount
       });
 
@@ -404,7 +396,7 @@ export default function Admin() {
                 <CardContent>
                   <div className="text-2xl font-bold">{stats.activeSubscriptions}</div>
                   <p className="text-xs text-muted-foreground">
-                    Bronze: {stats.bronzeCount} | Prata: {stats.prataCount} | Ouro: {stats.ouroCount}
+                    Plano Trimestral: {stats.quarterlyCount}
                   </p>
                 </CardContent>
               </Card>
@@ -918,9 +910,7 @@ export default function Admin() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="bronze">Bronze</SelectItem>
-                              <SelectItem value="prata">Prata</SelectItem>
-                              <SelectItem value="ouro">Ouro</SelectItem>
+                              <SelectItem value="quarterly">Plano Trimestral (R$ 60,00)</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -1005,35 +995,38 @@ export default function Admin() {
                 <CardDescription>Configure os planos de assinatura</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card>
+                <div className="grid gap-4">
+                  <Card className="border-primary">
                     <CardHeader>
-                      <CardTitle>Bronze</CardTitle>
-                      <CardDescription>Plano básico</CardDescription>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="flex items-center gap-2">
+                            Plano Trimestral
+                            <Badge variant="default">Melhor Escolha</Badge>
+                          </CardTitle>
+                          <CardDescription>Cobertura completa por 90 dias</CardDescription>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-3xl font-bold text-primary">R$ 60,00</div>
+                          <p className="text-sm text-muted-foreground">90 dias</p>
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-3xl font-bold">R$ 60,00</div>
-                      <p className="text-sm text-muted-foreground mt-2">Mensal</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Prata</CardTitle>
-                      <CardDescription>Plano intermediário</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">R$ 120,00</div>
-                      <p className="text-sm text-muted-foreground mt-2">Mensal</p>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Ouro</CardTitle>
-                      <CardDescription>Plano premium</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-3xl font-bold">R$ 180,00</div>
-                      <p className="text-sm text-muted-foreground mt-2">Mensal</p>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-primary" />
+                          <span className="text-sm">Canal de Atendimento Jurídico Especializado</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-primary" />
+                          <span className="text-sm">Suporte para Reativação de Conta em caso de Bloqueio</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-primary" />
+                          <span className="text-sm">Proteção Contra Multas e Taxas Indevidas</span>
+                        </li>
+                      </ul>
                     </CardContent>
                   </Card>
                 </div>
