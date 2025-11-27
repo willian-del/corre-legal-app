@@ -330,12 +330,16 @@ const Auth = () => {
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
 
+        // Resetar estados ANTES de navegar para evitar race condition
+        setIsSubmitting(false);
+        setCompletingSignUp(false);
+
         // Navegar SOMENTE após confirmar que o perfil está completo
         // Novos usuários vão para a tela de boas-vindas
         if (checkoutParam === "true" && planParam) {
-          navigate(`/?checkout=true&plan=${planParam}`);
+          navigate(`/?checkout=true&plan=${planParam}`, { replace: true });
         } else {
-          navigate("/welcome");
+          navigate("/welcome", { replace: true });
         }
       }
     } catch (profileError) {
@@ -343,7 +347,6 @@ const Auth = () => {
         console.error("Erro ao completar perfil:", profileError);
       }
       toast.error("Erro ao completar cadastro. Tente novamente.");
-    } finally {
       setIsSubmitting(false);
       setCompletingSignUp(false);
     }
