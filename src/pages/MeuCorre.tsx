@@ -87,21 +87,35 @@ const MeuCorre = () => {
     }
 
     try {
+      // Verify session is still valid before fetching
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.log('[PROFILE] Session expired, logging out');
+        await signOut();
+        navigate('/auth');
+        return;
+      }
+
       const profile = await getProfile(user.id);
       if (profile) {
         setPhone(formatPhone(profile.phone || ''));
-        // Normalizar valores legados para valores padronizados
         setServiceType(normalizeServiceType(profile.service_type));
         
         // Get masked CPF from secure edge function (only if session is valid)
         const maskedCpf = await getMaskedCPF(user.id);
         setMaskedCpf(maskedCpf || 'Não informado');
       }
-    } catch (error) {
+    } catch (error: any) {
       if (import.meta.env.DEV) {
         console.error('Error loading profile:', error);
       }
-      // Don't show error toast - CPF might just not be set yet
+      
+      // If 401 error, session expired - logout
+      if (error?.message?.includes('401') || error?.message?.includes('autorizado')) {
+        console.log('[PROFILE] Auth error, logging out');
+        await signOut();
+        navigate('/auth');
+      }
     }
   };
 
