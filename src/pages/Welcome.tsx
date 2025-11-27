@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft } from "lucide-react";
+import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft, HeartHandshake } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useConfetti } from "@/hooks/use-confetti";
 import { markWelcomeAsSeen } from "@/lib/profile-utils";
@@ -28,6 +28,12 @@ const welcomeSteps = [
     title: "Quanto mais detalhes, melhor!",
     description: "Nos conte a sua dúvida ou descreva o seu problema. Não esqueça os detalhes: quando, como, onde e com quem?",
     color: "text-cyan-500",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Estamos cuidando de você!",
+    description: "Um de nossos especialistas entrará em contato com orientações sobre a sua dúvida ou problema. E fique tranquilo, que a partir de agora nós estamos cuidando de você.",
+    color: "text-rose-500",
   },
   {
     icon: Rocket,
