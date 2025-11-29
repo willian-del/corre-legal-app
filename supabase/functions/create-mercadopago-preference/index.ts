@@ -1,10 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Validation schema - only accept valid plan types, no client-provided amounts
+const PreferenceRequestSchema = z.object({
+  plan_type: z.enum(["quarterly"]),
+  coupon_code: z.string().max(50).nullable().optional(),
+});
 
 interface PreferenceItem {
   title: string;
@@ -33,8 +40,9 @@ serve(async (req) => {
       throw new Error("User not authenticated or email not available");
     }
 
-    // Get request body
-    const { plan_type, amount, coupon_code } = await req.json();
+    // Validate request body
+    const body = await req.json();
+    const validated = PreferenceRequestSchema.parse(body);
 
     // Get Mercado Pago access token
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
@@ -42,25 +50,60 @@ serve(async (req) => {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
 
+    // Fetch authoritative price from database (using admin client for security)
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    const { data: planData, error: planError } = await supabaseAdmin
+      .from("plan_prices")
+      .select("amount_cents, plan_type")
+      .eq("plan_type", validated.plan_type)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (planError || !planData) {
+      console.error("Error fetching plan price:", planError);
+      throw new Error("Invalid plan type");
+    }
+
+    // Calculate final amount (convert cents to BRL)
+    let finalAmount = planData.amount_cents / 100;
+
+    // Validate and apply coupon server-side
+    let couponApplied = null;
+    if (validated.coupon_code) {
+      // Load coupons from config (in production, fetch from database)
+      const couponsConfig = {
+        "PRIMEIRACOMPRA": { discountType: "percentage", discountValue: 15, active: true, validUntil: "2025-12-31" },
+        "BEMVINDO10": { discountType: "fixed", discountValue: 10, active: true, validUntil: "2025-12-31" },
+        "BLACK50": { discountType: "percentage", discountValue: 50, active: true, validUntil: "2025-11-30" },
+        "NATAL20": { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
+      };
+
+      const coupon = couponsConfig[validated.coupon_code as keyof typeof couponsConfig];
+      if (coupon && coupon.active && new Date(coupon.validUntil) >= new Date()) {
+        couponApplied = validated.coupon_code;
+        if (coupon.discountType === "percentage") {
+          finalAmount = finalAmount * (1 - coupon.discountValue / 100);
+        } else {
+          finalAmount = Math.max(0, finalAmount - coupon.discountValue);
+        }
+      }
+    }
+
+    console.log("Server-calculated amount:", finalAmount, "BRL for plan:", validated.plan_type);
+
     // Plan configuration - default titles
     const planTitles: Record<string, string> = {
-      monthly: "Corre Legal - Plano Mensal",
       quarterly: "Corre Legal - Plano Trimestral",
-      annual: "Corre Legal - Plano Anual",
     };
 
-    // Use provided amount or fall back to default prices
-    const defaultPrices: Record<string, number> = {
-      monthly: 99.90,
-      quarterly: 99.90,
-      annual: 99.90,
-    };
-
-    const finalAmount = amount || defaultPrices[plan_type] || defaultPrices.monthly;
-    const title = planTitles[plan_type] || planTitles.monthly;
+    const title = planTitles[validated.plan_type];
 
     const item: PreferenceItem = {
-      title: coupon_code ? `${title} (Cupom: ${coupon_code})` : title,
+      title: couponApplied ? `${title} (Cupom: ${couponApplied})` : title,
       quantity: 1,
       unit_price: finalAmount,
       currency_id: "BRL",
@@ -74,18 +117,18 @@ serve(async (req) => {
       },
       back_urls: {
         success: `${req.headers.get("origin")}/payment-success`,
-        failure: `${req.headers.get("origin")}/checkout?plan=${plan_type}`,
+        failure: `${req.headers.get("origin")}/checkout?plan=${validated.plan_type}`,
         pending: `${req.headers.get("origin")}/payment-success`,
       },
       auto_return: "approved",
       statement_descriptor: "Corre Legal",
-      external_reference: `${user.id}_${plan_type}_${Date.now()}`,
+      external_reference: `${user.id}_${validated.plan_type}_${Date.now()}`,
       notification_url: `${Deno.env.get("SUPABASE_URL")}/functions/v1/mercadopago-webhook`,
       metadata: {
         user_id: user.id,
-        plan_type: plan_type,
+        plan_type: validated.plan_type,
         amount: finalAmount,
-        coupon_code: coupon_code || null,
+        coupon_code: couponApplied,
       },
     };
 

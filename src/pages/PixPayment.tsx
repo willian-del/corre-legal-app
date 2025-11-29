@@ -28,10 +28,9 @@ const PixPayment = () => {
 
   useEffect(() => {
     const planType = searchParams.get("plan");
-    const amount = searchParams.get("amount");
     const coupon = searchParams.get("coupon");
 
-    if (!planType || !amount) {
+    if (!planType) {
       toast({
         title: "Erro",
         description: "Informações do pagamento não encontradas",
@@ -41,16 +40,15 @@ const PixPayment = () => {
       return;
     }
 
-    createPixPayment(planType, parseFloat(amount), coupon || null);
+    createPixPayment(planType, coupon || null);
   }, [searchParams]);
 
-  const createPixPayment = async (planType: string, amount: number, couponCode: string | null) => {
+  const createPixPayment = async (planType: string, couponCode: string | null) => {
     try {
       setLoading(true);
       const { data, error } = await supabase.functions.invoke("create-pix-payment", {
         body: { 
-          plan_type: planType, 
-          amount,
+          plan_type: planType,
           coupon_code: couponCode 
         },
       });
