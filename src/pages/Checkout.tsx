@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import plansConfig from "@/config/plans.json";
 import couponsConfig from "@/config/coupons.json";
+import { PLAN_DETAILS } from "@/lib/plans-config";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -39,9 +40,23 @@ const Checkout = () => {
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
   const hasCreatedPreference = useRef(false);
+  const brickMounted = useRef(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+
+  // Validate plan type - only quarterly is valid
+  const validPlanTypes = Object.keys(PLAN_DETAILS);
+  useEffect(() => {
+    if (!validPlanTypes.includes(planType)) {
+      toast({
+        title: "Plano inválido",
+        description: "No momento, apenas o plano trimestral está disponível.",
+        variant: "destructive",
+      });
+      navigate(`/checkout?plan=quarterly${couponCode ? `&coupon=${couponCode}` : ""}`, { replace: true });
+    }
+  }, [planType, couponCode, navigate]);
 
   // Get coupon details
   const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
@@ -79,6 +94,7 @@ const Checkout = () => {
       if (container) {
         container.innerHTML = "";
       }
+      brickMounted.current = false;
     };
   }, []);
 
@@ -117,7 +133,6 @@ const Checkout = () => {
         const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
           body: {
             plan_type: planType,
-            amount: finalPrice,
             coupon_code: couponCode || null,
           },
         });
@@ -161,7 +176,7 @@ const Checkout = () => {
     try {
       // If payment method is PIX, redirect to PIX payment page
       if (paymentData.paymentType === "bank_transfer") {
-        navigate(`/pix-payment?plan=${planType}&amount=${finalPrice}&coupon=${couponCode || ""}`);
+        navigate(`/pix-payment?plan=${planType}&coupon=${couponCode || ""}`);
         return;
       }
 
@@ -431,20 +446,26 @@ const Checkout = () => {
               </div>
             ) : (
               <div id="payment-brick-container" className="space-y-4 animate-fade-in">
-                <Payment
-                  key={`payment-${initialization?.preferenceId}`}
-                  initialization={initialization}
-                  onSubmit={handlePaymentSubmit}
-                  onError={handlePaymentError}
-                  locale="pt-BR"
-                  customization={{
-                    paymentMethods: {
-                      maxInstallments: 3,
-                      bankTransfer: ["all"],
-                      creditCard: ["all"],
-                    },
-                  }}
-                />
+                {!brickMounted.current && (
+                  <Payment
+                    key={initialization?.preferenceId}
+                    initialization={initialization}
+                    onSubmit={handlePaymentSubmit}
+                    onError={handlePaymentError}
+                    onReady={() => {
+                      brickMounted.current = true;
+                      setHasInteracted(true);
+                    }}
+                    locale="pt-BR"
+                    customization={{
+                      paymentMethods: {
+                        maxInstallments: 3,
+                        bankTransfer: ["all"],
+                        creditCard: ["all"],
+                      },
+                    }}
+                  />
+                )}
               </div>
             )}
           </div>
