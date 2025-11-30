@@ -234,15 +234,20 @@ const Auth = () => {
         return;
       }
 
-      // Prioridade 2: Redirect explícito
+      // Prioridade 2: Redirect explícito (mas só se perfil completo)
       const redirectParam = searchParams.get("redirect");
 
-      if (redirectParam) {
+      if (redirectParam && !complete) {
+        // Perfil incompleto: vai para onboarding primeiro
+        navigate("/onboarding");
+      } else if (redirectParam && complete) {
+        // Perfil completo: segue o redirect
         navigate(redirectParam);
       } else if (!complete) {
+        // Sem redirect: vai para onboarding se incompleto
         navigate("/onboarding");
       } else {
-        // Verificar se já viu a tela de boas-vindas
+        // Perfil completo e sem redirect: fluxo normal
         const { hasSeenWelcome } = await import("@/lib/profile-utils");
         const seen = await hasSeenWelcome(currentUser.id);
         
