@@ -110,28 +110,40 @@ const Auth = () => {
 
     // Only redirect if not completing sign-up
     if (!loading && user && profileComplete !== null && !completingSignUp) {
-      // Prioridade 1: Se veio do checkout, voltar para página inicial com flag
-      const checkoutParam = searchParams.get("checkout");
-      const planParam = searchParams.get("plan");
+      const handleRedirect = async () => {
+        // Prioridade 1: Se veio do checkout, voltar para página inicial com flag
+        const checkoutParam = searchParams.get("checkout");
+        const planParam = searchParams.get("plan");
 
-      if (checkoutParam === "true" && planParam) {
-        navigate(`/?checkout=true&plan=${planParam}`);
-        return;
-      }
+        if (checkoutParam === "true" && planParam) {
+          navigate(`/?checkout=true&plan=${planParam}`);
+          return;
+        }
 
-      // Prioridade 2: Redirect explícito
-      const redirectParam = searchParams.get("redirect");
-      if (redirectParam) {
-        navigate(redirectParam);
-        return;
-      }
+        // Prioridade 2: Redirect explícito
+        const redirectParam = searchParams.get("redirect");
+        if (redirectParam) {
+          navigate(redirectParam);
+          return;
+        }
 
-      // Prioridade 3: Redirecionamento baseado em perfil
-      if (!profileComplete) {
-        navigate("/onboarding");
-      } else {
-        navigate("/meu-corre");
-      }
+        // Prioridade 3: Redirecionamento baseado em perfil
+        if (!profileComplete) {
+          navigate("/onboarding");
+        } else {
+          // Verificar se já viu a tela de boas-vindas
+          const { hasSeenWelcome } = await import("@/lib/profile-utils");
+          const seen = await hasSeenWelcome(user.id);
+          
+          if (!seen) {
+            navigate("/welcome");
+          } else {
+            navigate("/meu-corre");
+          }
+        }
+      };
+      
+      handleRedirect();
     }
   }, [user, loading, profileComplete, navigate, searchParams, completingSignUp, isResetMode]);
 
@@ -330,17 +342,16 @@ const Auth = () => {
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
 
-        // Resetar estados ANTES de navegar para evitar race condition
-        setIsSubmitting(false);
-        setCompletingSignUp(false);
-
-        // Navegar SOMENTE após confirmar que o perfil está completo
-        // Novos usuários vão para a tela de boas-vindas
+        // Navegar ANTES de resetar estados para evitar race condition com useEffect
         if (checkoutParam === "true" && planParam) {
           navigate(`/?checkout=true&plan=${planParam}`, { replace: true });
         } else {
           navigate("/welcome", { replace: true });
         }
+
+        // Resetar estados APÓS navegação
+        setIsSubmitting(false);
+        setCompletingSignUp(false);
       }
     } catch (profileError) {
       if (import.meta.env.DEV) {
