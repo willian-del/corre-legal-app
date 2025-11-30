@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,9 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, signIn, signUp, loading, profileComplete, checkProfile } = useAuth();
+  
+  // Ref to prevent duplicate navigation
+  const hasNavigatedRef = useRef(false);
 
   // Mode toggle
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -107,44 +110,66 @@ const Auth = () => {
   useEffect(() => {
     // Don't redirect if in password reset mode
     if (isResetMode) return;
+    
+    // Don't redirect if manual navigation already happened
+    if (hasNavigatedRef.current) return;
 
-    // Only redirect if not completing sign-up
-    if (!loading && user && profileComplete !== null && !completingSignUp) {
-      const handleRedirect = async () => {
-        // Prioridade 1: Se veio do checkout, voltar para página inicial com flag
-        const checkoutParam = searchParams.get("checkout");
-        const planParam = searchParams.get("plan");
+    let cancelled = false;
 
-        if (checkoutParam === "true" && planParam) {
-          navigate(`/?checkout=true&plan=${planParam}`);
-          return;
-        }
-
-        // Prioridade 2: Redirect explícito
-        const redirectParam = searchParams.get("redirect");
-        if (redirectParam) {
-          navigate(redirectParam);
-          return;
-        }
-
-        // Prioridade 3: Redirecionamento baseado em perfil
-        if (!profileComplete) {
-          navigate("/onboarding");
-        } else {
-          // Verificar se já viu a tela de boas-vindas
-          const { hasSeenWelcome } = await import("@/lib/profile-utils");
-          const seen = await hasSeenWelcome(user.id);
-          
-          if (!seen) {
-            navigate("/welcome");
-          } else {
-            navigate("/meu-corre");
-          }
-        }
-      };
+    const handleRedirect = async () => {
+      // Only redirect if not completing sign-up
+      if (loading || !user || profileComplete === null || completingSignUp) {
+        return;
+      }
       
-      handleRedirect();
-    }
+      if (cancelled || hasNavigatedRef.current) return;
+
+      // Prioridade 1: Se veio do checkout
+      const checkoutParam = searchParams.get("checkout");
+      const planParam = searchParams.get("plan");
+
+      if (checkoutParam === "true" && planParam) {
+        hasNavigatedRef.current = true;
+        navigate(`/?checkout=true&plan=${planParam}`);
+        return;
+      }
+
+      // Prioridade 2: Redirect explícito
+      const redirectParam = searchParams.get("redirect");
+      if (redirectParam) {
+        hasNavigatedRef.current = true;
+        navigate(redirectParam);
+        return;
+      }
+
+      // Prioridade 3: Redirecionamento baseado em perfil
+      if (!profileComplete) {
+        hasNavigatedRef.current = true;
+        navigate("/onboarding");
+        return;
+      }
+      
+      // Verificar se já viu a tela de boas-vindas
+      if (cancelled || hasNavigatedRef.current) return;
+      
+      const { hasSeenWelcome } = await import("@/lib/profile-utils");
+      const seen = await hasSeenWelcome(user.id);
+      
+      if (cancelled || hasNavigatedRef.current) return;
+      
+      hasNavigatedRef.current = true;
+      if (!seen) {
+        navigate("/welcome");
+      } else {
+        navigate("/meu-corre");
+      }
+    };
+    
+    handleRedirect();
+    
+    return () => {
+      cancelled = true;
+    };
   }, [user, loading, profileComplete, navigate, searchParams, completingSignUp, isResetMode]);
 
   const formatPhone = (value: string) => {
@@ -338,18 +363,20 @@ const Auth = () => {
 
         toast.success("Cadastro completo! Bem-vindo ao Corre Legal.");
 
+        // Marcar navegação e navegar
+        hasNavigatedRef.current = true;
+
         // Check if came from checkout flow
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
 
-        // Navegar ANTES de resetar estados para evitar race condition com useEffect
         if (checkoutParam === "true" && planParam) {
           navigate(`/?checkout=true&plan=${planParam}`, { replace: true });
         } else {
           navigate("/welcome", { replace: true });
         }
 
-        // Resetar estados APÓS navegação
+        // Resetar estados após navegação (componente será desmontado de qualquer forma)
         setIsSubmitting(false);
         setCompletingSignUp(false);
       }
