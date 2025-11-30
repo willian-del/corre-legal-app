@@ -221,12 +221,16 @@ const Auth = () => {
     if (currentUser) {
       const complete = await isProfileComplete(currentUser.id);
 
+      // Marcar navegação ANTES de navegar para evitar race condition com useEffect
+      hasNavigatedRef.current = true;
+
       // Prioridade 1: Checkout flow
       const checkoutParam = searchParams.get("checkout");
       const planParam = searchParams.get("plan");
 
       if (checkoutParam === "true" && planParam) {
         navigate(`/?checkout=true&plan=${planParam}`);
+        setIsSubmitting(false);
         return;
       }
 
@@ -250,6 +254,7 @@ const Auth = () => {
       }
     }
 
+    // Resetar estado após navegação
     setIsSubmitting(false);
   };
 
