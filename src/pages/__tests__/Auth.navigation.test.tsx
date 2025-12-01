@@ -3,9 +3,11 @@ import { render, screen, waitFor } from '@/test/utils/render';
 import Auth from '../Auth';
 import { resetSupabaseMocks } from '@/test/mocks/supabase';
 import { defaultMockUser, defaultMockSession } from '@/test/mocks/auth-context';
-import * as profileUtils from '@/lib/profile-utils';
 
-// Mock dependencies
+// Mock dependencies - declare before vi.mock
+const mockNavigate = vi.fn();
+let mockSearchParams = new URLSearchParams();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -15,13 +17,14 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const mockNavigate = vi.fn();
-const mockSearchParams = new URLSearchParams();
+const mockIsProfileComplete = vi.fn();
+const mockHasSeenWelcome = vi.fn();
+const mockUpdateProfile = vi.fn();
 
 vi.mock('@/lib/profile-utils', () => ({
-  isProfileComplete: vi.fn(),
-  hasSeenWelcome: vi.fn(),
-  updateProfile: vi.fn(),
+  isProfileComplete: mockIsProfileComplete,
+  hasSeenWelcome: mockHasSeenWelcome,
+  updateProfile: mockUpdateProfile,
 }));
 
 describe('Auth - Navigation Race Conditions', () => {
@@ -37,8 +40,8 @@ describe('Auth - Navigation Race Conditions', () => {
 
   describe('Race Condition Prevention', () => {
     it('should not navigate twice when useEffect and handleLogin both try to redirect', async () => {
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
-      vi.mocked(profileUtils.hasSeenWelcome).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
+      mockHasSeenWelcome.mockResolvedValue(true);
 
       // User is already authenticated
       render(<Auth />, {
@@ -57,8 +60,8 @@ describe('Auth - Navigation Race Conditions', () => {
     });
 
     it('should use hasNavigatedRef to prevent duplicate navigation in useEffect', async () => {
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
-      vi.mocked(profileUtils.hasSeenWelcome).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
+      mockHasSeenWelcome.mockResolvedValue(true);
 
       // Simulate authenticated user
       render(<Auth />, {
@@ -79,7 +82,7 @@ describe('Auth - Navigation Race Conditions', () => {
     });
 
     it('should respect cancelled flag in useEffect cleanup', async () => {
-      vi.mocked(profileUtils.isProfileComplete).mockImplementation(
+      mockIsProfileComplete.mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve(true), 100))
       );
 
@@ -108,7 +111,7 @@ describe('Auth - Navigation Race Conditions', () => {
       mockSearchParams.set('plan', 'bronze');
       mockSearchParams.set('redirect', '/meu-corre');
 
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
 
       render(<Auth />, {
         authOverrides: {
@@ -126,7 +129,7 @@ describe('Auth - Navigation Race Conditions', () => {
 
     it('should prioritize onboarding when profile incomplete regardless of redirect', async () => {
       mockSearchParams.set('redirect', '/meu-corre');
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(false);
+      mockIsProfileComplete.mockResolvedValue(false);
 
       render(<Auth />, {
         authOverrides: {
@@ -143,8 +146,8 @@ describe('Auth - Navigation Race Conditions', () => {
     });
 
     it('should follow normal flow when no special params present', async () => {
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
-      vi.mocked(profileUtils.hasSeenWelcome).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
+      mockHasSeenWelcome.mockResolvedValue(true);
 
       render(<Auth />, {
         authOverrides: {

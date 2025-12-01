@@ -4,9 +4,11 @@ import userEvent from '@testing-library/user-event';
 import Auth from '../Auth';
 import { mockSupabaseAuth, resetSupabaseMocks } from '@/test/mocks/supabase';
 import { defaultMockUser, defaultMockSession } from '@/test/mocks/auth-context';
-import * as profileUtils from '@/lib/profile-utils';
 
-// Mock dependencies
+// Mock dependencies - declare before vi.mock
+const mockNavigate = vi.fn();
+const mockSearchParams = new URLSearchParams();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -16,13 +18,14 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const mockNavigate = vi.fn();
-const mockSearchParams = new URLSearchParams();
+const mockIsProfileComplete = vi.fn();
+const mockHasSeenWelcome = vi.fn();
+const mockUpdateProfile = vi.fn();
 
 vi.mock('@/lib/profile-utils', () => ({
-  isProfileComplete: vi.fn(),
-  hasSeenWelcome: vi.fn(),
-  updateProfile: vi.fn(),
+  isProfileComplete: mockIsProfileComplete,
+  hasSeenWelcome: mockHasSeenWelcome,
+  updateProfile: mockUpdateProfile,
 }));
 
 describe('Auth - Login Scenarios', () => {
@@ -44,8 +47,8 @@ describe('Auth - Login Scenarios', () => {
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
       
       // Mock profile complete and welcome seen
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
-      vi.mocked(profileUtils.hasSeenWelcome).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
+      mockHasSeenWelcome.mockResolvedValue(true);
 
       render(<Auth />, {
         authOverrides: {
@@ -74,8 +77,8 @@ describe('Auth - Login Scenarios', () => {
       const user = userEvent.setup();
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
 
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
-      vi.mocked(profileUtils.hasSeenWelcome).mockResolvedValue(false);
+      mockIsProfileComplete.mockResolvedValue(true);
+      mockHasSeenWelcome.mockResolvedValue(false);
 
       render(<Auth />, {
         authOverrides: {
@@ -134,7 +137,7 @@ describe('Auth - Login Scenarios', () => {
       mockSearchParams.set('plan', 'bronze');
 
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
 
       render(<Auth />, {
         authOverrides: {
@@ -164,7 +167,7 @@ describe('Auth - Login Scenarios', () => {
       mockSearchParams.set('redirect', '/meu-corre');
 
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(true);
+      mockIsProfileComplete.mockResolvedValue(true);
 
       render(<Auth />, {
         authOverrides: {
@@ -192,7 +195,7 @@ describe('Auth - Login Scenarios', () => {
       mockSearchParams.set('redirect', '/meu-corre');
 
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(false);
+      mockIsProfileComplete.mockResolvedValue(false);
 
       render(<Auth />, {
         authOverrides: {
@@ -221,7 +224,7 @@ describe('Auth - Login Scenarios', () => {
       const user = userEvent.setup();
 
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(profileUtils.isProfileComplete).mockResolvedValue(false);
+      mockIsProfileComplete.mockResolvedValue(false);
 
       render(<Auth />, {
         authOverrides: {

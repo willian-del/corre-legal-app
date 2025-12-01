@@ -34,10 +34,21 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
 } as any;
 
-// Mock toast
-vi.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({
-    toast: vi.fn(),
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as any;
+
+// Mock sonner toast
+vi.mock('sonner', () => ({
+  toast: vi.fn((props: any) => {
+    // Return a mock toast object
+    return {
+      id: 'mock-toast-id',
+      dismiss: vi.fn(),
+    };
   }),
-  toast: vi.fn(),
+  Toaster: () => null,
 }));
