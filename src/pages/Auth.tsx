@@ -341,12 +341,49 @@ const Auth = () => {
           });
         }
 
-        // Atualizar perfil com CPF
-        await updateProfile(currentUser.id, {
+        // Atualizar perfil com CPF - COM TRATAMENTO DE ERRO
+        if (import.meta.env.DEV) {
+          console.log("Atualizando perfil com CPF para usuário:", currentUser.id);
+        }
+
+        const { error: profileError } = await updateProfile(currentUser.id, {
           cpf: cpf,
           phone: phone,
           service_type: serviceType,
         });
+
+        if (profileError) {
+          if (import.meta.env.DEV) {
+            console.error("Erro ao atualizar perfil:", profileError);
+          }
+
+          // Mapear erros para mensagens amigáveis em português
+          let errorMessage = 'Erro ao salvar seus dados. Tente novamente.';
+          
+          const errorMsg = profileError.message?.toLowerCase() || '';
+          
+          if (errorMsg.includes('já cadastrado') || 
+              errorMsg.includes('already exists') ||
+              errorMsg.includes('duplicate') ||
+              errorMsg.includes('já está em uso')) {
+            errorMessage = 'Este CPF já está cadastrado no sistema. Tente fazer login com a conta existente ou use outro CPF.';
+          } else if (errorMsg.includes('inválido') || 
+                     errorMsg.includes('invalid')) {
+            errorMessage = 'O CPF informado é inválido. Verifique os números e tente novamente.';
+          } else if (profileError.message) {
+            errorMessage = profileError.message;
+          }
+          
+          toast.error(errorMessage);
+          setIsSubmitting(false);
+          navigationBlockedRef.current = false;
+          completingSignUpRef.current = false;
+          return; // CRÍTICO: Parar fluxo aqui
+        }
+
+        if (import.meta.env.DEV) {
+          console.log("Perfil atualizado com sucesso. Verificando completude...");
+        }
 
         // Aguardar confirmação de que o perfil foi salvo completamente
         let retries = 0;
@@ -365,12 +402,15 @@ const Auth = () => {
           if (import.meta.env.DEV) {
             console.error('Perfil não foi completado após tentativas de verificação');
           }
-          toast.error("Houve um problema ao salvar seus dados. Por favor, complete seu cadastro.");
+          toast.error("Houve um problema ao salvar seus dados. Por favor, tente novamente.");
           setIsSubmitting(false);
           navigationBlockedRef.current = false;
           completingSignUpRef.current = false;
-          navigate("/onboarding");
-          return;
+          return; // Não navegar para onboarding, deixar usuário corrigir na mesma tela
+        }
+
+        if (import.meta.env.DEV) {
+          console.log("Perfil completo verificado. Prosseguindo com navegação...");
         }
 
         await checkProfile();
