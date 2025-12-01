@@ -1,5 +1,6 @@
 import { ReactElement, ReactNode } from 'react';
 import { render as rtlRender, RenderOptions } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MockAuthProvider } from '../mocks/auth-context';
@@ -63,3 +64,4 @@ export const render = (
 
 // Re-export from @testing-library/react
 export * from '@testing-library/react';
+export { screen, waitFor };

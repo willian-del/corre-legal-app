@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/dom';
-import { render } from '@/test/utils/render';
+import { render, screen, waitFor } from '@/test/utils/render';
 import Auth from '../Auth';
 import { resetSupabaseMocks } from '@/test/mocks/supabase';
 import { defaultMockUser, defaultMockSession } from '@/test/mocks/auth-context';
