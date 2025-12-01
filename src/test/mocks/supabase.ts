@@ -36,14 +36,23 @@ export const mockSupabaseFrom = vi.fn(() => ({
   maybeSingle: vi.fn(),
 }));
 
+export const mockSupabaseRpc = vi.fn(() => Promise.resolve({
+  data: null,
+  error: null,
+}));
+
 export const mockSupabaseFunctions = {
-  invoke: vi.fn(),
+  invoke: vi.fn(() => Promise.resolve({
+    data: null,
+    error: null,
+  })),
 };
 
 export const mockSupabase = {
   auth: mockSupabaseAuth,
   from: mockSupabaseFrom,
   functions: mockSupabaseFunctions,
+  rpc: mockSupabaseRpc,
 };
 
 // Mock the Supabase client module
