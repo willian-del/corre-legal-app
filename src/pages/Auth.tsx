@@ -49,8 +49,10 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const { user, signIn, signUp, loading, profileComplete, checkProfile } = useAuth();
   
-  // Ref to prevent duplicate navigation
+  // Refs to prevent duplicate navigation and race conditions
   const hasNavigatedRef = useRef(false);
+  const navigationBlockedRef = useRef(false);
+  const completingSignUpRef = useRef(false);
 
   // Mode toggle
   const [isSignUpMode, setIsSignUpMode] = useState(false);
@@ -104,25 +106,22 @@ const Auth = () => {
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [resetPasswordErrors, setResetPasswordErrors] = useState<any>({});
 
-  // Sign-up flow state
-  const [completingSignUp, setCompletingSignUp] = useState(false);
-
   useEffect(() => {
     // Don't redirect if in password reset mode
     if (isResetMode) return;
     
-    // Don't redirect if manual navigation already happened
-    if (hasNavigatedRef.current) return;
+    // Don't redirect if manual navigation already happened or blocked
+    if (hasNavigatedRef.current || navigationBlockedRef.current) return;
 
     let cancelled = false;
 
     const handleRedirect = async () => {
-      // Only redirect if not completing sign-up
-      if (loading || !user || profileComplete === null || completingSignUp) {
+      // Only redirect if not completing sign-up (check ref instead of state)
+      if (loading || !user || profileComplete === null || completingSignUpRef.current) {
         return;
       }
       
-      if (cancelled || hasNavigatedRef.current) return;
+      if (cancelled || hasNavigatedRef.current || navigationBlockedRef.current) return;
 
       // Prioridade 1: Se veio do checkout
       const checkoutParam = searchParams.get("checkout");
@@ -170,7 +169,7 @@ const Auth = () => {
     return () => {
       cancelled = true;
     };
-  }, [user, loading, profileComplete, navigate, searchParams, completingSignUp, isResetMode]);
+  }, [user, loading, profileComplete, navigate, searchParams, isResetMode]);
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -286,15 +285,18 @@ const Auth = () => {
       return;
     }
 
+    // Block navigation IMMEDIATELY using refs (not state)
+    navigationBlockedRef.current = true;
+    completingSignUpRef.current = true;
     setIsSubmitting(true);
-    setCompletingSignUp(true);
 
     try {
       const { error } = await signUp(signUpEmail, signUpPassword, fullName, cpf, phone, serviceType);
 
       if (error) {
         setIsSubmitting(false);
-        setCompletingSignUp(false);
+        navigationBlockedRef.current = false;
+        completingSignUpRef.current = false;
         return;
       }
 
@@ -305,7 +307,8 @@ const Auth = () => {
         toast.error("Cadastro realizado! Faça login para continuar.");
         setIsSignUpMode(false);
         setIsSubmitting(false);
-        setCompletingSignUp(false);
+        navigationBlockedRef.current = false;
+        completingSignUpRef.current = false;
         return;
       }
 
@@ -364,7 +367,8 @@ const Auth = () => {
           }
           toast.error("Houve um problema ao salvar seus dados. Por favor, complete seu cadastro.");
           setIsSubmitting(false);
-          setCompletingSignUp(false);
+          navigationBlockedRef.current = false;
+          completingSignUpRef.current = false;
           navigate("/onboarding");
           return;
         }
@@ -388,7 +392,8 @@ const Auth = () => {
 
         // Resetar estados após navegação (componente será desmontado de qualquer forma)
         setIsSubmitting(false);
-        setCompletingSignUp(false);
+        navigationBlockedRef.current = false;
+        completingSignUpRef.current = false;
       }
     } catch (profileError) {
       if (import.meta.env.DEV) {
@@ -396,7 +401,8 @@ const Auth = () => {
       }
       toast.error("Erro ao completar cadastro. Tente novamente.");
       setIsSubmitting(false);
-      setCompletingSignUp(false);
+      navigationBlockedRef.current = false;
+      completingSignUpRef.current = false;
     }
   };
 
