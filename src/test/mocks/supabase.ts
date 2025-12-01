@@ -1,10 +1,23 @@
 import { vi } from 'vitest';
 
+const mockUser = {
+  id: 'test-user-id',
+  email: 'test@example.com',
+  aud: 'authenticated',
+  role: 'authenticated',
+  created_at: new Date().toISOString(),
+  app_metadata: {},
+  user_metadata: {},
+};
+
 export const mockSupabaseAuth = {
   signInWithPassword: vi.fn(),
   signUp: vi.fn(),
   signOut: vi.fn(),
-  getUser: vi.fn(),
+  getUser: vi.fn(() => Promise.resolve({
+    data: { user: mockUser },
+    error: null,
+  })),
   getSession: vi.fn(),
   resetPasswordForEmail: vi.fn(),
   updateUser: vi.fn(),

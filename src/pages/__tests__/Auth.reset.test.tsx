@@ -4,7 +4,10 @@ import userEvent from '@testing-library/user-event';
 import Auth from '../Auth';
 import { mockSupabaseAuth, resetSupabaseMocks } from '@/test/mocks/supabase';
 
-// Mock dependencies
+// Mock dependencies - declare before vi.mock
+const mockNavigate = vi.fn();
+let mockSearchParams = new URLSearchParams();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -14,8 +17,15 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const mockNavigate = vi.fn();
-const mockSearchParams = new URLSearchParams();
+const mockIsProfileComplete = vi.fn();
+const mockHasSeenWelcome = vi.fn();
+const mockUpdateProfile = vi.fn();
+
+vi.mock('@/lib/profile-utils', () => ({
+  isProfileComplete: mockIsProfileComplete,
+  hasSeenWelcome: mockHasSeenWelcome,
+  updateProfile: mockUpdateProfile,
+}));
 
 describe('Auth - Password Reset Scenarios', () => {
   beforeEach(() => {

@@ -4,9 +4,11 @@ import userEvent from '@testing-library/user-event';
 import Auth from '../Auth';
 import { resetSupabaseMocks } from '@/test/mocks/supabase';
 import { defaultMockUser, defaultMockSession } from '@/test/mocks/auth-context';
-import * as profileUtils from '@/lib/profile-utils';
 
-// Mock dependencies
+// Mock dependencies - declare before vi.mock
+const mockNavigate = vi.fn();
+const mockSearchParams = new URLSearchParams();
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -16,13 +18,14 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-const mockNavigate = vi.fn();
-const mockSearchParams = new URLSearchParams();
+const mockIsProfileComplete = vi.fn();
+const mockHasSeenWelcome = vi.fn();
+const mockUpdateProfile = vi.fn();
 
 vi.mock('@/lib/profile-utils', () => ({
-  isProfileComplete: vi.fn(),
-  hasSeenWelcome: vi.fn(),
-  updateProfile: vi.fn(),
+  isProfileComplete: mockIsProfileComplete,
+  hasSeenWelcome: mockHasSeenWelcome,
+  updateProfile: mockUpdateProfile,
 }));
 
 describe('Auth - Signup Scenarios', () => {
@@ -45,7 +48,7 @@ describe('Auth - Signup Scenarios', () => {
 
       const mockSignUp = vi.fn().mockResolvedValue({ error: null });
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(profileUtils.updateProfile).mockResolvedValue({ error: null });
+      mockUpdateProfile.mockResolvedValue({ error: null });
 
       render(<Auth />, {
         authOverrides: {
@@ -87,7 +90,7 @@ describe('Auth - Signup Scenarios', () => {
       await waitFor(() => {
         expect(mockSignUp).toHaveBeenCalled();
         expect(mockSignIn).toHaveBeenCalled();
-        expect(profileUtils.updateProfile).toHaveBeenCalled();
+        expect(mockUpdateProfile).toHaveBeenCalled();
         expect(mockNavigate).toHaveBeenCalledWith('/welcome');
       }, { timeout: 3000 });
     });
@@ -216,7 +219,7 @@ describe('Auth - Signup Scenarios', () => {
 
       const mockSignUp = vi.fn().mockResolvedValue({ error: null });
       const mockSignIn = vi.fn().mockResolvedValue({ error: null });
-      vi.mocked(profileUtils.updateProfile).mockResolvedValue({ error: null });
+      mockUpdateProfile.mockResolvedValue({ error: null });
 
       render(<Auth />, {
         authOverrides: {
