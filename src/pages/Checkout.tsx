@@ -446,26 +446,24 @@ const Checkout = () => {
               </div>
             ) : (
               <div id="payment-brick-container" className="space-y-4 animate-fade-in">
-                {!brickMounted.current && (
-                  <Payment
-                    key={initialization?.preferenceId}
-                    initialization={initialization}
-                    onSubmit={handlePaymentSubmit}
-                    onError={handlePaymentError}
-                    onReady={() => {
-                      brickMounted.current = true;
-                      setHasInteracted(true);
-                    }}
-                    locale="pt-BR"
-                    customization={{
-                      paymentMethods: {
-                        maxInstallments: 3,
-                        bankTransfer: ["all"],
-                        creditCard: ["all"],
-                      },
-                    }}
-                  />
-                )}
+                <Payment
+                  key={initialization?.preferenceId}
+                  initialization={initialization}
+                  onSubmit={handlePaymentSubmit}
+                  onError={handlePaymentError}
+                  onReady={() => {
+                    brickMounted.current = true;
+                    setHasInteracted(true);
+                  }}
+                  locale="pt-BR"
+                  customization={{
+                    paymentMethods: {
+                      maxInstallments: 3,
+                      bankTransfer: ["all"],
+                      creditCard: ["all"],
+                    },
+                  }}
+                />
               </div>
             )}
           </div>
