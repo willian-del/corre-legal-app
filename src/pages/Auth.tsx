@@ -295,6 +295,10 @@ const Auth = () => {
     navigationBlockedRef.current = true;
     completingSignUpRef.current = true;
     setIsSubmitting(true);
+    
+    // CRÍTICO: Marcar navegação ANTES do signIn para bloquear useEffect
+    // O signIn dispara onAuthStateChange que pode ativar useEffect antes deste código continuar
+    hasNavigatedRef.current = true;
 
     try {
       const { error } = await signUp(signUpEmail, signUpPassword, fullName, cpf, phone, serviceType);
@@ -303,6 +307,7 @@ const Auth = () => {
         setIsSubmitting(false);
         navigationBlockedRef.current = false;
         completingSignUpRef.current = false;
+        hasNavigatedRef.current = false; // Reset se signup falhou
         return;
       }
 
@@ -315,6 +320,7 @@ const Auth = () => {
         setIsSubmitting(false);
         navigationBlockedRef.current = false;
         completingSignUpRef.current = false;
+        hasNavigatedRef.current = false; // Reset se login falhou
         return;
       }
 
@@ -384,6 +390,7 @@ const Auth = () => {
           setIsSubmitting(false);
           navigationBlockedRef.current = false;
           completingSignUpRef.current = false;
+          hasNavigatedRef.current = false; // Reset para permitir nova tentativa
           return; // CRÍTICO: Parar fluxo aqui
         }
 
@@ -412,6 +419,7 @@ const Auth = () => {
           setIsSubmitting(false);
           navigationBlockedRef.current = false;
           completingSignUpRef.current = false;
+          hasNavigatedRef.current = false; // Reset para permitir nova tentativa
           return; // Não navegar para onboarding, deixar usuário corrigir na mesma tela
         }
 
@@ -421,10 +429,7 @@ const Auth = () => {
 
         await checkProfile();
 
-        // Marcar navegação e navegar
-        hasNavigatedRef.current = true;
-
-        // Check if came from checkout flow
+        // Check if came from checkout flow (hasNavigatedRef já foi marcado no início)
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
 
@@ -447,6 +452,7 @@ const Auth = () => {
       setIsSubmitting(false);
       navigationBlockedRef.current = false;
       completingSignUpRef.current = false;
+      hasNavigatedRef.current = false; // Reset para permitir nova tentativa
     }
   };
 

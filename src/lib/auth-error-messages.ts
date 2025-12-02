@@ -18,6 +18,17 @@ export const getAuthErrorMessage = (error: any): string => {
     return 'A senha é muito fraca. Use pelo menos 8 caracteres com letras maiúsculas, minúsculas, números e caracteres especiais (!@#$%).';
   }
   
+  // Erros de senha vazada/breached (verificação HIBP do Supabase)
+  if (errorMessage.includes('breached') || 
+      errorMessage.includes('hibp') ||
+      errorMessage.includes('commonly used') ||
+      errorMessage.includes('leaked') ||
+      errorMessage.includes('compromised') ||
+      errorMessage.includes('data breach') ||
+      errorMessage.includes('exposed')) {
+    return 'Esta senha foi encontrada em vazamentos de dados. Por segurança, escolha uma senha diferente e única.';
+  }
+  
   // Email já cadastrado
   if (errorMessage.includes('user already registered') || 
       errorMessage.includes('email already exists')) {
