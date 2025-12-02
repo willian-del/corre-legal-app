@@ -50,6 +50,7 @@ serve(async (req) => {
 
     // Buscar detalhes do pagamento no Mercado Pago
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    console.log(accessToken);
     if (!accessToken) {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
