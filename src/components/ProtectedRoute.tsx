@@ -32,7 +32,18 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
           }
           navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
         } else {
-          // Sessão existe mas React state não atualizou ainda
+          // Sessão existe - VALIDAR que usuário ainda existe no servidor
+          const { data: { user: serverUser }, error: userError } = await supabase.auth.getUser();
+          
+          if (userError || !serverUser) {
+            // Sessão stale - usuário foi deletado, fazer logout
+            console.log('[ProtectedRoute] Stale session detected (user deleted), signing out');
+            await supabase.auth.signOut();
+            navigate('/auth');
+            return;
+          }
+          
+          // Sessão válida mas React state não atualizou ainda
           // Aguardar o próximo ciclo - não redirecionar
           if (import.meta.env.DEV) {
             console.log('[ProtectedRoute] Session exists but state not updated yet, waiting...');
