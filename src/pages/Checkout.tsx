@@ -124,6 +124,11 @@ const Checkout = () => {
       return;
     }
 
+    // Only proceed if plan type is valid (quarterly only)
+    if (!validPlanTypes.includes(planType)) {
+      return;
+    }
+
     // Create payment preference and initialization
     const createPreference = async () => {
       try {
@@ -168,7 +173,7 @@ const Checkout = () => {
     };
 
     createPreference();
-  }, [user, planType, finalPrice, couponCode]);
+  }, [user, planType, finalPrice, couponCode, validPlanTypes]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("Payment data:", paymentData);
