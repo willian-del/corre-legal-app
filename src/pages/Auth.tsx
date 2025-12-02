@@ -852,6 +852,9 @@ const Auth = () => {
                       {signUpErrors.password}
                     </p>
                   )}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use uma senha única com letras maiúsculas, minúsculas, números e símbolos. Evite senhas comuns.
+                  </p>
                 </div>
 
                 <div className="space-y-2">

@@ -139,6 +139,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (error) {
+        // DEBUG: Log completo do erro para diagnóstico de senhas fracas
+        console.log('[AUTH SIGNUP DEBUG] Erro completo:', JSON.stringify(error, null, 2));
+        console.log('[AUTH SIGNUP DEBUG] error.message:', error.message);
+        console.log('[AUTH SIGNUP DEBUG] error.msg:', (error as any).msg);
+        console.log('[AUTH SIGNUP DEBUG] error.code:', error.code);
+        console.log('[AUTH SIGNUP DEBUG] error.weak_password:', (error as any).weak_password);
+        
         const friendlyMessage = getAuthErrorMessage(error);
         toast({
           variant: "destructive",
