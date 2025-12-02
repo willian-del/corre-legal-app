@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { checkActiveSubscription } from '@/lib/subscription-utils';
 import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
@@ -21,10 +22,22 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
   useEffect(() => {
     async function checkAccess() {
       if (!loading && !user) {
-        if (import.meta.env.DEV) {
-          console.log('No authenticated user, redirecting to auth');
+        // CORREÇÃO: Verificar sessão diretamente com Supabase antes de redirecionar
+        // Isso evita race conditions onde o React state ainda não atualizou após signup
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          if (import.meta.env.DEV) {
+            console.log('[ProtectedRoute] No session found, redirecting to auth');
+          }
+          navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
+        } else {
+          // Sessão existe mas React state não atualizou ainda
+          // Aguardar o próximo ciclo - não redirecionar
+          if (import.meta.env.DEV) {
+            console.log('[ProtectedRoute] Session exists but state not updated yet, waiting...');
+          }
         }
-        navigate(`/auth?redirect=${encodeURIComponent(location.pathname)}`);
         return;
       }
 
