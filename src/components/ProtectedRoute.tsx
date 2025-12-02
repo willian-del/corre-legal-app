@@ -18,6 +18,17 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
   const location = useLocation();
   const [hasSubscription, setHasSubscription] = useState<boolean | null>(null);
   const [checking, setChecking] = useState(true);
+  const [waitingForAuth, setWaitingForAuth] = useState(false);
+
+  // Limpar waitingForAuth quando user for atualizado pelo AuthContext
+  useEffect(() => {
+    if (user && waitingForAuth) {
+      if (import.meta.env.DEV) {
+        console.log('[ProtectedRoute] User propagated to state, clearing waitingForAuth');
+      }
+      setWaitingForAuth(false);
+    }
+  }, [user, waitingForAuth]);
 
   useEffect(() => {
     async function checkAccess() {
@@ -44,10 +55,11 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
           }
           
           // Sessão válida mas React state não atualizou ainda
-          // Aguardar o próximo ciclo - não redirecionar
+          // MARCAR que está esperando propagação - NÃO retornar null
           if (import.meta.env.DEV) {
-            console.log('[ProtectedRoute] Session exists but state not updated yet, waiting...');
+            console.log('[ProtectedRoute] Session exists but state not updated yet, setting waitingForAuth=true');
           }
+          setWaitingForAuth(true);
         }
         return;
       }
@@ -93,7 +105,7 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
     checkAccess();
   }, [user, loading, profileComplete, navigate, location, requireSubscription, requireCompleteProfile]);
 
-  if (loading || checking) {
+  if (loading || checking || waitingForAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-secondary/30">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -101,6 +113,8 @@ const ProtectedRoute = ({ children, requireSubscription = true, requireCompleteP
     );
   }
 
+  // Se ainda não tem user e não está esperando auth, não renderizar nada
+  // (o useEffect vai redirecionar para /auth ou setar waitingForAuth)
   if (!user) {
     return null;
   }
