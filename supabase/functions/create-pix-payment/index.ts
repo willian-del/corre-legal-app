@@ -121,7 +121,6 @@ serve(async (req) => {
     });
 
     
-
     if (!response.ok) {
       const error = await response.text();
       console.error("Mercado Pago API error:", error);
