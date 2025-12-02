@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Shield, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Shield, CheckCircle, Loader2, Eye, EyeOff } from "lucide-react";
 import Logo from "@/components/Logo";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,6 @@ import { toast } from "sonner";
 import { updateProfile, isProfileComplete } from "@/lib/profile-utils";
 import { SERVICE_TYPES } from "@/lib/service-type-utils";
 import { isValidCPF, formatCPF } from "@/lib/cpf-utils";
-
 const loginSchema = z.object({
   email: z.string().email({
     message: "Email inválido",
@@ -105,6 +104,13 @@ const Auth = () => {
   const [newPassword, setNewPassword] = useState("");
   const [newPasswordConfirm, setNewPasswordConfirm] = useState("");
   const [resetPasswordErrors, setResetPasswordErrors] = useState<any>({});
+
+  // Password visibility toggles
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showSignUpPasswordConfirm, setShowSignUpPasswordConfirm] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showNewPasswordConfirm, setShowNewPasswordConfirm] = useState(false);
 
   useEffect(() => {
     // Don't redirect if in password reset mode
@@ -591,15 +597,25 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="new-password">Nova Senha</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    placeholder="Mínimo 6 caracteres"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    className="focus:border-primary transition-colors"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      placeholder="Mínimo 6 caracteres"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="focus:border-primary transition-colors pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {resetPasswordErrors.newPassword && (
                     <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
                       {resetPasswordErrors.newPassword}
@@ -609,15 +625,25 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="new-password-confirm">Confirmar Nova Senha</Label>
-                  <Input
-                    id="new-password-confirm"
-                    type="password"
-                    placeholder="Digite a senha novamente"
-                    value={newPasswordConfirm}
-                    onChange={(e) => setNewPasswordConfirm(e.target.value)}
-                    className="focus:border-primary transition-colors"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="new-password-confirm"
+                      type={showNewPasswordConfirm ? "text" : "password"}
+                      placeholder="Digite a senha novamente"
+                      value={newPasswordConfirm}
+                      onChange={(e) => setNewPasswordConfirm(e.target.value)}
+                      className="focus:border-primary transition-colors pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPasswordConfirm(!showNewPasswordConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showNewPasswordConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {resetPasswordErrors.newPasswordConfirm && (
                     <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
                       {resetPasswordErrors.newPasswordConfirm}
@@ -798,15 +824,25 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Mínimo 6 caracteres"
-                    value={signUpPassword}
-                    onChange={(e) => setSignUpPassword(e.target.value)}
-                    className="focus:border-primary transition-colors"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showSignUpPassword ? "text" : "password"}
+                      placeholder="Mínimo 6 caracteres"
+                      value={signUpPassword}
+                      onChange={(e) => setSignUpPassword(e.target.value)}
+                      className="focus:border-primary transition-colors pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {signUpErrors.password && (
                     <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
                       {signUpErrors.password}
@@ -816,15 +852,25 @@ const Auth = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="signup-password-confirm">Confirmar Senha</Label>
-                  <Input
-                    id="signup-password-confirm"
-                    type="password"
-                    placeholder="Digite a senha novamente"
-                    value={signUpPasswordConfirm}
-                    onChange={(e) => setSignUpPasswordConfirm(e.target.value)}
-                    className="focus:border-primary transition-colors"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password-confirm"
+                      type={showSignUpPasswordConfirm ? "text" : "password"}
+                      placeholder="Digite a senha novamente"
+                      value={signUpPasswordConfirm}
+                      onChange={(e) => setSignUpPasswordConfirm(e.target.value)}
+                      className="focus:border-primary transition-colors pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSignUpPasswordConfirm(!showSignUpPasswordConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showSignUpPasswordConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {signUpErrors.passwordConfirm && (
                     <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
                       {signUpErrors.passwordConfirm}
@@ -892,15 +938,25 @@ const Auth = () => {
                       Esqueci minha senha
                     </Button>
                   </div>
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    className="focus:border-primary transition-colors"
-                    required
-                  />
+                  <div className="relative">
+                    <Input
+                      id="login-password"
+                      type={showLoginPassword ? "text" : "password"}
+                      placeholder="••••••"
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      className="focus:border-primary transition-colors pr-10"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLoginPassword(!showLoginPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      tabIndex={-1}
+                    >
+                      {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                   {loginErrors.password && (
                     <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-md">
                       {loginErrors.password}
