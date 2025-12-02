@@ -7,10 +7,15 @@ export const getAuthErrorMessage = (error: any): string => {
     return 'Email ou senha incorretos. Verifique seus dados e tente novamente.';
   }
   
-  // Erros de senha fraca
+  // Erros de senha fraca - cobrir todas variações do Supabase
   if (errorMessage.includes('password is too weak') || 
-      errorMessage.includes('password should be at least')) {
-    return 'A senha precisa ter no mínimo 6 caracteres e ser mais forte. Tente usar letras maiúsculas, números e caracteres especiais.';
+      errorMessage.includes('password should be at least') ||
+      errorMessage.includes('weak_password') ||
+      errorMessage.includes('weak and easy to guess') ||
+      errorMessage.includes('does not meet the security requirements') ||
+      errorMessage.includes('pwned') ||
+      errorMessage.includes('password') && errorMessage.includes('weak')) {
+    return 'A senha é muito fraca. Use pelo menos 8 caracteres com letras maiúsculas, minúsculas, números e caracteres especiais (!@#$%).';
   }
   
   // Email já cadastrado
