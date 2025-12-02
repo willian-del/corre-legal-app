@@ -429,6 +429,25 @@ const Auth = () => {
 
         await checkProfile();
 
+        // CORREÇÃO: Aguardar propagação do estado antes de navegar
+        // Isso evita que ProtectedRoute redirecione prematuramente para /auth
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Verificar se sessão está propagada antes de navegar
+        const maxWaitAttempts = 10;
+        let waitAttempts = 0;
+        while (waitAttempts < maxWaitAttempts) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            if (import.meta.env.DEV) {
+              console.log('[Auth] Session propagated, proceeding with navigation');
+            }
+            break;
+          }
+          await new Promise(resolve => setTimeout(resolve, 100));
+          waitAttempts++;
+        }
+
         // Check if came from checkout flow (hasNavigatedRef já foi marcado no início)
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
