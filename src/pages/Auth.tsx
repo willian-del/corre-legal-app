@@ -454,14 +454,14 @@ const Auth = () => {
 
         if (checkoutParam === "true" && planParam) {
           navigate(`/?checkout=true&plan=${planParam}`, { replace: true });
+          return; // CRÍTICO: Parar execução imediatamente - não resetar refs
         } else {
           navigate("/welcome", { replace: true });
+          return; // CRÍTICO: Parar execução imediatamente - não resetar refs
         }
-
-        // Resetar estados após navegação (componente será desmontado de qualquer forma)
-        setIsSubmitting(false);
-        navigationBlockedRef.current = false;
-        completingSignUpRef.current = false;
+        // NÃO resetar estados após navegação bem-sucedida
+        // O componente será desmontado naturalmente quando a navegação completar
+        // Resetar causava re-render que permitia useEffect interferir
       }
     } catch (profileError) {
       if (import.meta.env.DEV) {
