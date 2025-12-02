@@ -156,15 +156,15 @@ const MeuCorre = () => {
   };
 
   const handleSubscribe = async () => {
-    setLoadingPlan('ouro');
+    setLoadingPlan('quarterly');
     
     toast({
       title: "Redirecionando para pagamento",
       description: "Você será direcionado para o checkout do Mercado Pago.",
     });
     
-    // Redirecionar para a página de checkout com o plano
-    navigate('/checkout?plan=monthly');
+    // Redirecionar para a página de checkout com o plano trimestral
+    navigate('/checkout?plan=quarterly');
     setLoadingPlan(null);
   };
 
