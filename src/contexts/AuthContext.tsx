@@ -86,12 +86,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
+    // THEN check for existing session and VALIDATE user exists on server
+    supabase.auth.getSession().then(async ({ data: { session }, error }) => {
       if (error) {
         console.error('[AUTH] Session error on mount:', error);
         // Clear localStorage if there's an error
-        supabase.auth.signOut();
+        await supabase.auth.signOut();
         setSession(null);
         setUser(null);
         setLoading(false);
@@ -102,16 +102,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         console.log('[AUTH] Initial session check:', session ? 'session found' : 'no session');
       }
 
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      if (session?.user) {
+      // Se há sessão, VALIDAR no servidor que o usuário ainda existe
+      if (session) {
+        const { data: { user: serverUser }, error: userError } = await supabase.auth.getUser();
+        
+        // Se o usuário não existe mais no servidor (deletado), fazer logout
+        if (userError || !serverUser) {
+          console.log('[AUTH] User no longer exists on server, clearing stale session');
+          await supabase.auth.signOut();
+          setSession(null);
+          setUser(null);
+          setProfileComplete(null);
+          setLoading(false);
+          return;
+        }
+        
+        // Usuário válido - continuar normalmente
+        setSession(session);
+        setUser(serverUser);
+        setLoading(false);
+        
         setTimeout(() => {
-          isProfileComplete(session.user.id).then(complete => {
+          isProfileComplete(serverUser.id).then(complete => {
             setProfileComplete(complete);
           });
         }, 0);
+      } else {
+        // Sem sessão
+        setSession(null);
+        setUser(null);
+        setLoading(false);
       }
     });
 
