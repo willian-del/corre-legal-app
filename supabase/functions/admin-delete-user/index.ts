@@ -154,8 +154,17 @@ serve(async (req) => {
     console.log('[ADMIN-DELETE-USER] Step 5: Deleting auth user');
     const { error: authDeleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
     if (authDeleteError) {
-      console.error('[ADMIN-DELETE-USER] Error deleting auth user:', authDeleteError);
-      throw new Error('Erro ao deletar usuário do sistema de autenticação');
+      // Tratar "User not found" como sucesso - usuário já foi deletado
+      const isUserNotFound = authDeleteError.message?.toLowerCase().includes('not found') ||
+                             (authDeleteError as any).code === 'user_not_found' ||
+                             (authDeleteError as any).status === 404;
+      
+      if (isUserNotFound) {
+        console.log('[ADMIN-DELETE-USER] User already deleted from auth, continuing...');
+      } else {
+        console.error('[ADMIN-DELETE-USER] Error deleting auth user:', authDeleteError);
+        throw new Error('Erro ao deletar usuário do sistema de autenticação');
+      }
     }
 
     // Create audit log
