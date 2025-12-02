@@ -65,11 +65,20 @@ const PixPayment = () => {
       } else {
         throw new Error(data.error || "Erro ao criar pagamento PIX");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating PIX payment:", error);
+      
+      // Verificar se é erro de configuração PIX do Mercado Pago
+      const errorMsg = error?.message?.toLowerCase() || '';
+      const isPixConfigError = errorMsg.includes('key enabled') || 
+                               errorMsg.includes('qr render') ||
+                               errorMsg.includes('collector user');
+      
       toast({
         title: "Erro ao gerar PIX",
-        description: "Não foi possível gerar o código PIX. Tente novamente.",
+        description: isPixConfigError 
+          ? "O pagamento via PIX está temporariamente indisponível. Por favor, use cartão de crédito ou tente novamente mais tarde."
+          : "Não foi possível gerar o código PIX. Tente novamente.",
         variant: "destructive",
       });
       navigate("/checkout");
