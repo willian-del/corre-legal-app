@@ -11,7 +11,7 @@ interface MockAuthProviderProps {
     loading: boolean;
     profileComplete: boolean | null;
     signUp: any;
-    signIn: any;
+    signIn: (email: string, password: string, isPostSignUp?: boolean) => Promise<{ error: any }>;
     signOut: any;
     checkProfile: any;
   }>;

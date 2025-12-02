@@ -306,8 +306,8 @@ const Auth = () => {
         return;
       }
 
-      // Após cadastro, fazer login automático
-      const { error: signInError } = await signIn(signUpEmail, signUpPassword);
+      // Após cadastro, fazer login automático (passando flag para mensagem correta)
+      const { error: signInError } = await signIn(signUpEmail, signUpPassword, true);
 
       if (signInError) {
         toast.error("Cadastro realizado! Faça login para continuar.");
@@ -420,8 +420,6 @@ const Auth = () => {
         }
 
         await checkProfile();
-
-        toast.success("Cadastro completo! Bem-vindo ao Corre Legal.");
 
         // Marcar navegação e navegar
         hasNavigatedRef.current = true;

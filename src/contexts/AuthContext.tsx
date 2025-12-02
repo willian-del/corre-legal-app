@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   signUp: (email: string, password: string, fullName: string, cpf: string, phone: string, serviceType: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string, isPostSignUp?: boolean) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   loading: boolean;
   profileComplete: boolean | null;
@@ -165,7 +165,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string, isPostSignUp?: boolean) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -183,8 +183,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       toast({
-        title: "Login realizado!",
-        description: "Bem-vindo de volta."
+        title: isPostSignUp ? "Cadastro completo!" : "Login realizado!",
+        description: isPostSignUp ? "Bem-vindo ao Corre Legal." : "Bem-vindo de volta."
       });
 
       return { error: null };
