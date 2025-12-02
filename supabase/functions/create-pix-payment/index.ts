@@ -38,7 +38,7 @@ serve(async (req) => {
     const validated = PaymentRequestSchema.parse(body);
 
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
-    console.log('AccessTo', accessToken):
+    console.log('AccessToken:', accessToken);
     if (!accessToken) {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
