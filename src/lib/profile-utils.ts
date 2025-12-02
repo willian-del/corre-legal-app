@@ -189,15 +189,18 @@ export async function hasSeenWelcome(userId: string): Promise<boolean> {
       if (import.meta.env.DEV) {
         console.error('Error checking welcome status:', error);
       }
-      return true; // Default para true em caso de erro (não mostrar a tela)
+      // Em caso de erro, retornar false para mostrar a tela de boas-vindas (mais seguro)
+      return false;
     }
 
-    return data?.has_seen_welcome ?? true;
+    // Se undefined ou null, mostrar a tela de boas-vindas
+    return data?.has_seen_welcome === true;
   } catch (error) {
     if (import.meta.env.DEV) {
       console.error('Error checking welcome status:', error);
     }
-    return true;
+    // Em caso de exceção, mostrar a tela de boas-vindas
+    return false;
   }
 }
 
