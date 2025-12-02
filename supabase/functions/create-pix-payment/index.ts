@@ -19,16 +19,16 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-    );
+    const supabaseClient = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_ANON_KEY") ?? "");
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization")!;
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabaseClient.auth.getUser(token);
+
     if (userError || !user?.email) {
       throw new Error("User not authenticated");
     }
@@ -38,7 +38,7 @@ serve(async (req) => {
     const validated = PaymentRequestSchema.parse(body);
 
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
-    console.log('AccessToken:', accessToken);
+
     if (!accessToken) {
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
@@ -46,7 +46,7 @@ serve(async (req) => {
     // Fetch authoritative price from database (using admin client for security)
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     const { data: planData, error: planError } = await supabaseAdmin
@@ -69,10 +69,10 @@ serve(async (req) => {
     if (validated.coupon_code) {
       // Load coupons from config (in production, fetch from database)
       const couponsConfig = {
-        "PRIMEIRACOMPRA": { discountType: "percentage", discountValue: 15, active: true, validUntil: "2025-12-31" },
-        "BEMVINDO10": { discountType: "fixed", discountValue: 10, active: true, validUntil: "2025-12-31" },
-        "BLACK50": { discountType: "percentage", discountValue: 50, active: true, validUntil: "2025-11-30" },
-        "NATAL20": { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
+        PRIMEIRACOMPRA: { discountType: "percentage", discountValue: 15, active: true, validUntil: "2025-12-31" },
+        BEMVINDO10: { discountType: "fixed", discountValue: 10, active: true, validUntil: "2025-12-31" },
+        BLACK50: { discountType: "percentage", discountValue: 50, active: true, validUntil: "2025-11-30" },
+        NATAL20: { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
       };
 
       const coupon = couponsConfig[validated.coupon_code as keyof typeof couponsConfig];
@@ -120,7 +120,6 @@ serve(async (req) => {
       body: JSON.stringify(paymentData),
     });
 
-    
     if (!response.ok) {
       const error = await response.text();
       console.error("Mercado Pago API error:", error);
@@ -132,7 +131,7 @@ serve(async (req) => {
 
     // Extract PIX data
     const pixData = payment.point_of_interaction?.transaction_data;
-    
+
     if (!pixData?.qr_code || !pixData?.qr_code_base64) {
       throw new Error("PIX data not available");
     }
@@ -149,17 +148,14 @@ serve(async (req) => {
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
-      }
+      },
     );
   } catch (error) {
     console.error("Error creating PIX payment:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
-      }
-    );
+    return new Response(JSON.stringify({ success: false, error: errorMessage }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
   }
 });
