@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useInView } from "@/hooks/use-in-view";
+import { checkActiveSubscription } from "@/lib/subscription-utils";
 import plansConfig from "@/config/plans.json";
 
 interface Plan {
@@ -25,22 +26,40 @@ const Pricing = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null);
   const { ref: cardRef, isInView } = useInView({
     threshold: 0.2,
     triggerOnce: true,
     rootMargin: "-50px",
   });
 
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (user) {
+        const isActive = await checkActiveSubscription(user.id);
+        setHasActiveSubscription(isActive);
+      } else {
+        setHasActiveSubscription(null);
+      }
+    };
+    checkSubscription();
+  }, [user]);
+
   const handleSubscribe = (planId: string) => {
     // Check if user is logged in
     if (!user) {
-      // Redirecionar para cadastro sem parâmetros de checkout
       navigate('/auth?signup=true');
       return;
     }
 
-    // Navigate to checkout page
-    navigate(`/checkout?plan=${planId}`);
+    // Navigate to meu-corre (unified flow)
+    navigate('/meu-corre');
+  };
+
+  const getButtonText = () => {
+    if (!user) return "CADASTRE-SE AGORA";
+    if (hasActiveSubscription === false) return "CONTRATAR AGORA";
+    return "MEU CORRE";
   };
 
   const plans = Object.values(plansConfig) as Plan[];
@@ -123,7 +142,7 @@ const Pricing = () => {
                         Processando...
                       </>
                     ) : (
-                      <>{user ? "CONTRATAR AGORA" : "CADASTRE-SE AGORA"}</>
+                      getButtonText()
                     )}
                   </Button>
                 </div>
