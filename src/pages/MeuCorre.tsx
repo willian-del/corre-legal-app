@@ -420,7 +420,7 @@ const MeuCorre = () => {
                             <span className="button-loading-pulse">Processando...</span>
                           </>
                         ) : (
-                          'Contratar Plano'
+                          'Contrate Agora'
                         )}
                       </Button>
                     </>
