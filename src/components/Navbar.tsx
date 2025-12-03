@@ -65,11 +65,11 @@ const Navbar = () => {
               Meu Corre
             </Button>
             <Button
-              onClick={() => scrollToSection("pricing")}
+              onClick={() => navigate('/auth?signup=true')}
               size="default"
               className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
             >
-              Contrate Agora
+              Cadastre-se Agora
             </Button>
           </div>
 
@@ -98,11 +98,11 @@ const Navbar = () => {
               Meu Corre
             </Button>
             <Button
-              onClick={() => scrollToSection("pricing")}
+              onClick={() => navigate('/auth?signup=true')}
               size="default"
               className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
             >
-              Contrate Agora
+              Cadastre-se Agora
             </Button>
           </div>
         )}

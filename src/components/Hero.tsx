@@ -1,19 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
+import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-image.webp";
 
 const Hero = () => {
   const { theme } = useTheme();
-  
-  const scrollToPricing = () => {
-    const element = document.getElementById("pricing");
-    if (element) {
-      element.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  };
+  const navigate = useNavigate();
 
   return (
     <section id="home" className="relative min-h-screen flex items-center pt-16">
@@ -50,10 +42,10 @@ const Hero = () => {
           </p>
           <Button 
             size="lg" 
-            onClick={scrollToPricing} 
+            onClick={() => navigate('/auth?signup=true')} 
             className="bg-primary text-primary-foreground hover:bg-primary-glow text-lg px-8 py-6 shadow-glow button-glow-pulse"
           >
-            Contrate Agora
+            Cadastre-se Agora
           </Button>
         </div>
       </div>
