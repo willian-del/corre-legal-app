@@ -57,9 +57,9 @@ const Pricing = () => {
   };
 
   const getButtonText = () => {
-    if (!user) return "CADASTRE-SE AGORA";
-    if (hasActiveSubscription === false) return "CONTRATAR AGORA";
-    return "MEU CORRE";
+    if (!user) return "Cadastre-se Agora";
+    if (hasActiveSubscription === false) return "Contrate Agora";
+    return "Meu Corre";
   };
 
   const plans = Object.values(plansConfig) as Plan[];
