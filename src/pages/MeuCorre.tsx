@@ -430,44 +430,44 @@ const MeuCorre = () => {
                 <div className="grid grid-cols-2 gap-4">
                   {/* Card Atendimento */}
                   <Card 
-                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
+                    className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('atendimento')}
                   >
                     <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
-                      <MessageSquare className="w-12 h-12 sm:w-14 sm:h-14 text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
+                      <MessageSquare className="w-12 h-12 sm:w-14 sm:h-14 text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)] transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(34,197,94,0.7)]" />
                       <span className="font-semibold text-base sm:text-lg">Atendimento</span>
                     </CardContent>
                   </Card>
 
                   {/* Card Corre+ */}
                   <Card 
-                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
+                    className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('corre-mais')}
                   >
                     <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
-                      <Trophy className="w-12 h-12 sm:w-14 sm:h-14 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
+                      <Trophy className="w-12 h-12 sm:w-14 sm:h-14 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)] transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(234,179,8,0.7)]" />
                       <span className="font-semibold text-base sm:text-lg">Corre+</span>
                     </CardContent>
                   </Card>
 
                   {/* Card Meu Plano */}
                   <Card 
-                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
+                    className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('meu-plano')}
                   >
                     <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
-                      <Shield className="w-12 h-12 sm:w-14 sm:h-14 text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                      <Shield className="w-12 h-12 sm:w-14 sm:h-14 text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(59,130,246,0.7)]" />
                       <span className="font-semibold text-base sm:text-lg">Meu Plano</span>
                     </CardContent>
                   </Card>
 
                   {/* Card Meu Cadastro */}
                   <Card 
-                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
+                    className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('meu-cadastro')}
                   >
                     <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
-                      <UserCircle className="w-12 h-12 sm:w-14 sm:h-14 text-purple-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                      <UserCircle className="w-12 h-12 sm:w-14 sm:h-14 text-purple-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]" />
                       <span className="font-semibold text-base sm:text-lg">Meu Cadastro</span>
                     </CardContent>
                   </Card>
