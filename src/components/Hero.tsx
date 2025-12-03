@@ -1,11 +1,42 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { checkActiveSubscription } from "@/lib/subscription-utils";
 import heroImage from "@/assets/hero-image.webp";
 
 const Hero = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (user) {
+        const isActive = await checkActiveSubscription(user.id);
+        setHasActiveSubscription(isActive);
+      } else {
+        setHasActiveSubscription(null);
+      }
+    };
+    checkSubscription();
+  }, [user]);
+
+  const getButtonText = () => {
+    if (!user) return "Cadastre-se Agora";
+    if (hasActiveSubscription === false) return "Contrate Agora";
+    return "Meu Corre";
+  };
+
+  const handleClick = () => {
+    if (!user) {
+      navigate('/auth?signup=true');
+    } else {
+      navigate('/meu-corre');
+    }
+  };
 
   return (
     <section id="home" className="relative min-h-screen flex items-center pt-16">
@@ -42,10 +73,10 @@ const Hero = () => {
           </p>
           <Button 
             size="lg" 
-            onClick={() => navigate('/auth?signup=true')} 
+            onClick={handleClick} 
             className="bg-primary text-primary-foreground hover:bg-primary-glow text-lg px-8 py-6 shadow-glow button-glow-pulse"
           >
-            Cadastre-se Agora
+            {getButtonText()}
           </Button>
         </div>
       </div>

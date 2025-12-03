@@ -64,13 +64,23 @@ const Navbar = () => {
               <User size={18} />
               Meu Corre
             </Button>
-            <Button
-              onClick={() => navigate('/auth?signup=true')}
-              size="default"
-              className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
-            >
-              Cadastre-se Agora
-            </Button>
+            {!user ? (
+              <Button
+                onClick={() => navigate('/auth?signup=true')}
+                size="default"
+                className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
+              >
+                Cadastre-se Agora
+              </Button>
+            ) : hasActiveSubscription === false ? (
+              <Button
+                onClick={() => navigate('/meu-corre')}
+                size="default"
+                className="bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
+              >
+                Contrate Agora
+              </Button>
+            ) : null}
           </div>
 
           {/* Mobile Menu Button */}
@@ -97,13 +107,23 @@ const Navbar = () => {
               <User size={18} />
               Meu Corre
             </Button>
-            <Button
-              onClick={() => navigate('/auth?signup=true')}
-              size="default"
-              className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
-            >
-              Cadastre-se Agora
-            </Button>
+            {!user ? (
+              <Button
+                onClick={() => navigate('/auth?signup=true')}
+                size="default"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
+              >
+                Cadastre-se Agora
+              </Button>
+            ) : hasActiveSubscription === false ? (
+              <Button
+                onClick={() => navigate('/meu-corre')}
+                size="default"
+                className="w-full bg-primary text-primary-foreground hover:bg-primary-glow h-10 button-glow-pulse"
+              >
+                Contrate Agora
+              </Button>
+            ) : null}
           </div>
         )}
       </div>
