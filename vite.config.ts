@@ -34,7 +34,8 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         skipWaiting: true,
         clientsClaim: true,
-        globPatterns: ['**/*.{js,css,ico,png,svg,webp,jpg}'],
+        globPatterns: ['**/*.{js,css,ico,svg}'],
+        globIgnores: ['**/levels/**'],
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === 'navigate',
