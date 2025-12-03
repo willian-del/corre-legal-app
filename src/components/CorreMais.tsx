@@ -288,7 +288,7 @@ export const CorreMais = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-muted rounded-lg p-3 font-mono text-xs sm:text-sm break-all">
+              <div className="flex-1 bg-muted rounded-lg p-3 font-mono text-[10px] sm:text-xs break-all">
                 {loading ? (
                   <Skeleton className="h-4 w-full" />
                 ) : referralLink ? (
@@ -388,8 +388,8 @@ export const CorreMais = () => {
         <Card className="bg-muted/50">
           <CardContent className="p-4">
             <h4 className="font-semibold mb-2 text-sm">Como funciona?</h4>
-            <ul className="text-xs text-muted-foreground space-y-1">
-              <li>• Cada indicação confirmada = <span className="text-foreground font-medium">+5 dias</span> de cobertura extra</li>
+            <ul className="text-[11px] text-muted-foreground space-y-1">
+              <li>• Indicação confirmada = <span className="text-foreground font-medium">+5 dias</span> extras</li>
               <li>• Suba de nível indicando mais amigos</li>
               <li>• Nível 5 = <span className="text-foreground font-medium">GS do Patrão</span> (50+ indicações)</li>
             </ul>
