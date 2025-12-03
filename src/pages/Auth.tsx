@@ -1013,7 +1013,7 @@ const Auth = () => {
                       onClick={() => setIsSignUpMode(true)}
                       className="text-primary hover:underline font-semibold"
                     >
-                      Cadastre-se agora
+                      Cadastre-se Agora
                     </button>
                   </p>
                 </div>
