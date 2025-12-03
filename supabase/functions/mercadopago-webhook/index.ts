@@ -19,12 +19,134 @@ interface WebhookPayload {
   user_id: string;
 }
 
+// Verify Mercado Pago webhook signature using HMAC-SHA256
+async function verifyWebhookSignature(
+  req: Request,
+  payload: WebhookPayload
+): Promise<{ valid: boolean; error?: string }> {
+  const webhookSecret = Deno.env.get("MERCADOPAGO_WEBHOOK_SECRET");
+  
+  if (!webhookSecret) {
+    console.warn("MERCADOPAGO_WEBHOOK_SECRET not configured - skipping signature verification");
+    // In production, you should return { valid: false } here
+    // For now, we allow requests to pass but log a warning
+    return { valid: true };
+  }
+
+  const xSignature = req.headers.get("x-signature");
+  const xRequestId = req.headers.get("x-request-id");
+
+  if (!xSignature || !xRequestId) {
+    console.error("Missing x-signature or x-request-id headers");
+    return { valid: false, error: "Missing required signature headers" };
+  }
+
+  // Parse x-signature header (format: ts=TIMESTAMP,v1=SIGNATURE)
+  const signatureParts: Record<string, string> = {};
+  xSignature.split(",").forEach((part) => {
+    const [key, value] = part.split("=");
+    if (key && value) {
+      signatureParts[key.trim()] = value.trim();
+    }
+  });
+
+  const ts = signatureParts["ts"];
+  const v1 = signatureParts["v1"];
+
+  if (!ts || !v1) {
+    console.error("Invalid x-signature format");
+    return { valid: false, error: "Invalid signature format" };
+  }
+
+  // Validate timestamp (reject requests older than 5 minutes to prevent replay attacks)
+  const timestamp = parseInt(ts, 10);
+  const currentTime = Math.floor(Date.now() / 1000);
+  const tolerance = 300; // 5 minutes
+
+  if (Math.abs(currentTime - timestamp) > tolerance) {
+    console.error("Webhook timestamp too old - possible replay attack");
+    return { valid: false, error: "Request timestamp expired" };
+  }
+
+  // Build the manifest string for signature verification
+  // Format: id:{data.id};request-id:{x-request-id};ts:{timestamp};
+  const dataId = payload.data?.id;
+  const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`;
+
+  // Generate HMAC-SHA256 signature
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(webhookSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const signatureBytes = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(manifest)
+  );
+
+  const expectedSignature = Array.from(new Uint8Array(signatureBytes))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  // Constant-time comparison to prevent timing attacks
+  if (expectedSignature.length !== v1.length) {
+    console.error("Signature length mismatch");
+    return { valid: false, error: "Invalid signature" };
+  }
+
+  let mismatch = 0;
+  for (let i = 0; i < expectedSignature.length; i++) {
+    mismatch |= expectedSignature.charCodeAt(i) ^ v1.charCodeAt(i);
+  }
+
+  if (mismatch !== 0) {
+    console.error("Signature verification failed");
+    return { valid: false, error: "Invalid signature" };
+  }
+
+  console.log("Webhook signature verified successfully");
+  return { valid: true };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Parse payload first for signature verification
+    const rawBody = await req.text();
+    let payload: WebhookPayload;
+    
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      console.error("Invalid JSON payload");
+      return new Response(JSON.stringify({ success: false, error: "Invalid JSON" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
+
+    // Verify webhook signature
+    const signatureResult = await verifyWebhookSignature(req, payload);
+    if (!signatureResult.valid) {
+      console.error("Webhook signature verification failed:", signatureResult.error);
+      return new Response(
+        JSON.stringify({ success: false, error: "Unauthorized" }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        }
+      );
+    }
+
+    console.log("Webhook received:", JSON.stringify(payload, null, 2));
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -36,8 +158,7 @@ serve(async (req) => {
       },
     );
 
-    const payload: WebhookPayload = await req.json();
-    console.log("Webhook received:", JSON.stringify(payload, null, 2));
+    // Payload already parsed and logged above
 
     // Processar apenas eventos de pagamento
     if (payload.type !== "payment") {
