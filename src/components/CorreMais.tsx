@@ -61,6 +61,10 @@ export const CorreMais = () => {
     }
   }, [user]);
 
+  const generateUniqueCode = () => {
+    return Math.random().toString(36).substring(2, 10).toUpperCase();
+  };
+
   const fetchReferralData = async () => {
     try {
       const { data, error } = await supabase
@@ -70,6 +74,21 @@ export const CorreMais = () => {
         .single();
 
       if (error) throw error;
+      
+      // Se não tem referral_code, gera um novo
+      if (!data.referral_code) {
+        const newCode = generateUniqueCode();
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ referral_code: newCode })
+          .eq('id', user?.id);
+        
+        if (!updateError) {
+          setReferralData({ ...data, referral_code: newCode });
+          return;
+        }
+      }
+      
       setReferralData(data);
     } catch (error) {
       console.error('Error fetching referral data:', error);
@@ -162,38 +181,38 @@ export const CorreMais = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5 border-primary/20">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center text-center">
-              <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", delay: 0.2 }}
-                className="relative mb-4"
-              >
-                <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
-                <img
-                  src={getLevelImage(currentLevel)}
-                  alt={getLevelName(currentLevel)}
-                  className="w-36 h-36 sm:w-44 sm:h-44 object-contain relative z-10"
-                />
-              </motion.div>
-
-              <p className="text-sm text-muted-foreground mb-1">Seu nível atual:</p>
-              <h2 className="text-2xl font-bold text-primary mb-2">
+        <Card className="overflow-hidden border-primary/20 relative aspect-[4/3] sm:aspect-[16/9]">
+          {/* Imagem como background */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${getLevelImage(currentLevel)})` }}
+          />
+          
+          {/* Overlay gradiente para legibilidade */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          
+          {/* Conteúdo sobre a imagem */}
+          <CardContent className="relative z-10 h-full flex flex-col justify-end p-6">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", delay: 0.2 }}
+            >
+              <p className="text-sm text-white/80 mb-1">Seu nível atual:</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
                 {getLevelName(currentLevel)}
               </h2>
 
               {nextLevelName ? (
-                <p className="text-sm text-muted-foreground">
-                  Você está a <span className="font-semibold text-foreground">{referralsToNext}</span> indicações do próximo nível
+                <p className="text-sm text-white/70">
+                  Você está a <span className="font-semibold text-white">{referralsToNext}</span> indicações do próximo nível
                 </p>
               ) : (
-                <p className="text-sm text-primary font-medium">
+                <p className="text-sm text-yellow-400 font-medium">
                   🎉 Você atingiu o nível máximo!
                 </p>
               )}
-            </div>
+            </motion.div>
           </CardContent>
         </Card>
       </motion.div>
@@ -270,7 +289,13 @@ export const CorreMais = () => {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-2">
               <div className="flex-1 bg-muted rounded-lg p-3 font-mono text-xs sm:text-sm break-all">
-                {referralLink || 'Carregando...'}
+                {loading ? (
+                  <Skeleton className="h-4 w-full" />
+                ) : referralLink ? (
+                  referralLink
+                ) : (
+                  'Gerando link...'
+                )}
               </div>
             </div>
 
