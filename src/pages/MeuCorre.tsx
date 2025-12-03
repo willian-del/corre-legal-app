@@ -468,7 +468,7 @@ const MeuCorre = () => {
                   >
                     <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
                       <UserCircle className="w-12 h-12 sm:w-14 sm:h-14 text-purple-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)] transition-all duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_20px_rgba(168,85,247,0.7)]" />
-                      <span className="font-semibold text-base sm:text-lg">Meu Cadastro</span>
+                      <span className="font-semibold text-base sm:text-lg whitespace-nowrap">Meu Cadastro</span>
                     </CardContent>
                   </Card>
                 </div>
