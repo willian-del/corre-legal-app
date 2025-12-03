@@ -19,7 +19,7 @@ import {
   AlertDialogTitle, 
   AlertDialogTrigger 
 } from '@/components/ui/alert-dialog';
-import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ShieldCheck, Info, Edit } from 'lucide-react';
+import { LogOut, Clock, CreditCard, Calendar, Shield, RefreshCw, User, MessageSquare, UserCircle, Trash2, Loader2, ShieldCheck, Info, Edit, Trophy } from 'lucide-react';
 import Logo from '@/components/Logo';
 import { PLAN_DETAILS } from '@/lib/plans-config';
 import { getProfile, updateProfile, getMaskedCPF } from '@/lib/profile-utils';
@@ -34,6 +34,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
+import { CorreMais } from '@/components/CorreMais';
 
 interface UserSubscription {
   id: string;
@@ -357,21 +358,26 @@ const MeuCorre = () => {
           </div>
 
           <Tabs defaultValue="chamados" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="chamados" className="gap-2">
                 <MessageSquare className="w-4 h-4" />
-                <span className="hidden sm:inline">Meus Chamados</span>
+                <span className="hidden sm:inline">Chamados</span>
                 <span className="sm:hidden">Chamados</span>
               </TabsTrigger>
               <TabsTrigger value="cadastro" className="gap-2">
                 <UserCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Meu Cadastro</span>
+                <span className="hidden sm:inline">Cadastro</span>
                 <span className="sm:hidden">Cadastro</span>
               </TabsTrigger>
               <TabsTrigger value="plano" className="gap-2">
                 <Shield className="w-4 h-4" />
-                <span className="hidden sm:inline">Meu Plano</span>
+                <span className="hidden sm:inline">Plano</span>
                 <span className="sm:hidden">Plano</span>
+              </TabsTrigger>
+              <TabsTrigger value="corre-mais" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                <span className="hidden sm:inline">Corre+</span>
+                <span className="sm:hidden">Corre+</span>
               </TabsTrigger>
             </TabsList>
 
@@ -829,6 +835,11 @@ const MeuCorre = () => {
                 </div>
               </div>
             )}
+          </TabsContent>
+
+          {/* Aba Corre+ */}
+          <TabsContent value="corre-mais" className="mt-6">
+            <CorreMais />
           </TabsContent>
           </Tabs>
         </div>

@@ -448,6 +448,31 @@ const Auth = () => {
           waitAttempts++;
         }
 
+        // Processar indicação se veio de link de referral
+        const refParam = searchParams.get("ref");
+        if (refParam) {
+          try {
+            const { error: refError } = await supabase.rpc('process_referral', {
+              _referrer_code: refParam,
+              _referred_user_id: currentUser.id,
+              _referred_name: fullName
+            });
+            if (refError) {
+              if (import.meta.env.DEV) {
+                console.log('Erro ao processar indicação:', refError);
+              }
+            } else {
+              if (import.meta.env.DEV) {
+                console.log('Indicação processada com sucesso');
+              }
+            }
+          } catch (e) {
+            if (import.meta.env.DEV) {
+              console.log('Erro ao processar indicação:', e);
+            }
+          }
+        }
+
         // Check if came from checkout flow (hasNavigatedRef já foi marcado no início)
         const checkoutParam = searchParams.get("checkout");
         const planParam = searchParams.get("plan");
