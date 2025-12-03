@@ -94,36 +94,96 @@ export type Database = {
           cpf: string | null
           cpf_hash: string | null
           created_at: string | null
+          current_level: number | null
+          earned_days: number | null
           full_name: string | null
           has_seen_welcome: boolean | null
           id: string
+          level_updated_at: string | null
           phone: string | null
+          referral_code: string | null
+          referred_by: string | null
           service_type: string | null
+          total_referrals: number | null
           updated_at: string | null
         }
         Insert: {
           cpf?: string | null
           cpf_hash?: string | null
           created_at?: string | null
+          current_level?: number | null
+          earned_days?: number | null
           full_name?: string | null
           has_seen_welcome?: boolean | null
           id: string
+          level_updated_at?: string | null
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           service_type?: string | null
+          total_referrals?: number | null
           updated_at?: string | null
         }
         Update: {
           cpf?: string | null
           cpf_hash?: string | null
           created_at?: string | null
+          current_level?: number | null
+          earned_days?: number | null
           full_name?: string | null
           has_seen_welcome?: boolean | null
           id?: string
+          level_updated_at?: string | null
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           service_type?: string | null
+          total_referrals?: number | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      referral_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          referred_id: string
+          referred_name: string | null
+          referrer_id: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          referred_id: string
+          referred_name?: string | null
+          referrer_id: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          referred_id?: string
+          referred_name?: string | null
+          referrer_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_history_referred_id_fkey"
+            columns: ["referred_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_history_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tickets: {
         Row: {
@@ -289,6 +349,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_referral_level: {
+        Args: { total_refs: number }
+        Returns: number
+      }
       get_active_subscription: {
         Args: { _user_id: string }
         Returns: {
@@ -311,6 +375,14 @@ export type Database = {
       }
       hash_cpf: { Args: { cpf_plain: string }; Returns: string }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      process_referral: {
+        Args: {
+          _referred_name?: string
+          _referred_user_id: string
+          _referrer_code: string
+        }
+        Returns: Json
+      }
       verify_cpf_unchanged: {
         Args: { _new_cpf: string; _new_cpf_hash: string; _user_id: string }
         Returns: boolean
