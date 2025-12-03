@@ -430,71 +430,45 @@ const MeuCorre = () => {
                 <div className="grid grid-cols-2 gap-4">
                   {/* Card Atendimento */}
                   <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
+                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('atendimento')}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
-                      </div>
-                      <span className="font-semibold text-center text-sm sm:text-base">Atendimento</span>
-                      {subscription && subscription.status !== 'cancelled' ? (
-                        <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full">Ativo</span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Inativo</span>
-                      )}
+                    <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
+                      <MessageSquare className="w-12 h-12 sm:w-14 sm:h-14 text-green-500 drop-shadow-[0_0_15px_rgba(34,197,94,0.5)]" />
+                      <span className="font-semibold text-base sm:text-lg">Atendimento</span>
                     </CardContent>
                   </Card>
 
                   {/* Card Corre+ */}
                   <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
+                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-yellow-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('corre-mais')}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
-                        <Trophy className="w-7 h-7 sm:w-8 sm:h-8 text-yellow-600" />
-                      </div>
-                      <span className="font-semibold text-center text-sm sm:text-base">Corre+</span>
-                      <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                        Nível {referralLevel}
-                      </span>
+                    <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
+                      <Trophy className="w-12 h-12 sm:w-14 sm:h-14 text-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
+                      <span className="font-semibold text-base sm:text-lg">Corre+</span>
                     </CardContent>
                   </Card>
 
                   {/* Card Meu Plano */}
                   <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
+                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('meu-plano')}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <Shield className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
-                      </div>
-                      <span className="font-semibold text-center text-sm sm:text-base">Meu Plano</span>
-                      {subscription && subscription.status !== 'cancelled' ? (
-                        <span className="text-xs text-blue-600 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
-                          {subscription.days_remaining} dias
-                        </span>
-                      ) : (
-                        <span className="text-xs text-orange-600 bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 rounded-full">Contratar</span>
-                      )}
+                    <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
+                      <Shield className="w-12 h-12 sm:w-14 sm:h-14 text-blue-500 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+                      <span className="font-semibold text-base sm:text-lg">Meu Plano</span>
                     </CardContent>
                   </Card>
 
                   {/* Card Meu Cadastro */}
                   <Card 
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] border-border/50"
+                    className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.03] active:scale-[0.98] border-border/40"
                     onClick={() => setActiveSection('meu-cadastro')}
                   >
-                    <CardContent className="flex flex-col items-center justify-center p-6 space-y-3">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <UserCircle className="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" />
-                      </div>
-                      <span className="font-semibold text-center text-sm sm:text-base">Meu Cadastro</span>
-                      <span className="text-xs text-green-600 bg-green-100 dark:bg-green-900/30 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <Check className="w-3 h-3" /> Completo
-                      </span>
+                    <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
+                      <UserCircle className="w-12 h-12 sm:w-14 sm:h-14 text-purple-500 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                      <span className="font-semibold text-base sm:text-lg">Meu Cadastro</span>
                     </CardContent>
                   </Card>
                 </div>
