@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft, HeartHandshake, ShieldCheck } from "lucide-react";
+import { PartyPopper, MessageSquare, UserCircle, Rocket, ChevronRight, ChevronLeft, HeartHandshake, ShieldCheck, Gift } from "lucide-react";
 import Logo from "@/components/Logo";
 import { useConfetti } from "@/hooks/use-confetti";
 import { markWelcomeAsSeen } from "@/lib/profile-utils";
@@ -40,6 +40,12 @@ const welcomeSteps = [
     title: "Transparência e segurança para você!",
     description: "Caso nosso advogado identifique potencial para uma ação, os honorários serão negociados diretamente com você.",
     color: "text-amber-500",
+  },
+  {
+    icon: Gift,
+    title: "Corre+ — Indique e Ganhe!",
+    description: "Cada amigo que você indicar e assinar o plano, você ganha +5 dias extras de cobertura. Quanto mais indicações, mais você sobe de nível!",
+    color: "text-yellow-500",
   },
   {
     icon: Rocket,
