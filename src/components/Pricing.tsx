@@ -34,7 +34,8 @@ const Pricing = () => {
   const handleSubscribe = (planId: string) => {
     // Check if user is logged in
     if (!user) {
-      navigate(`/auth?signup=true&checkout=true&plan=${planId}`);
+      // Redirecionar para cadastro sem parâmetros de checkout
+      navigate('/auth?signup=true');
       return;
     }
 
@@ -122,7 +123,7 @@ const Pricing = () => {
                         Processando...
                       </>
                     ) : (
-                      <>{user ? "CONTRATAR AGORA" : "COMEÇAR AGORA"}</>
+                      <>{user ? "CONTRATAR AGORA" : "CADASTRE-SE AGORA"}</>
                     )}
                   </Button>
                 </div>
