@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Local test fixtures
+// Local test fixtures - Updated to only support quarterly plan
 const validProcessPaymentRequest = {
   planType: 'quarterly',
-  amount: 60.0,
+  // amount removed - server calculates from plan_prices
   paymentMethod: 'credit_card',
 };
 
@@ -66,20 +66,21 @@ describe('process-payment edge function', () => {
       const validBody = validProcessPaymentRequest;
 
       expect(validBody.planType).toBe('quarterly');
-      expect(validBody.amount).toBeGreaterThan(0);
       expect(validBody.paymentMethod).toBeTruthy();
+      // amount is no longer part of the schema - server fetches from DB
     });
 
-    it('should reject invalid plan type', async () => {
-      const invalidBody = { ...validProcessPaymentRequest, planType: 'invalid' };
+    it('should reject invalid plan type (only quarterly allowed)', async () => {
+      const invalidBody = { ...validProcessPaymentRequest, planType: 'monthly' };
 
+      // Only 'quarterly' is valid
       expect(['quarterly']).not.toContain(invalidBody.planType);
     });
 
-    it('should reject negative amounts', async () => {
-      const invalidBody = { ...validProcessPaymentRequest, amount: -10 };
-
-      expect(invalidBody.amount).toBeLessThan(0);
+    it('should not accept amount from client', async () => {
+      // Amount should NOT be in the schema - server calculates it
+      const schemaFields = ['planType', 'couponCode', 'paymentMethod'];
+      expect(schemaFields).not.toContain('amount');
     });
   });
 

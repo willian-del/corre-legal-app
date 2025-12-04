@@ -87,8 +87,15 @@ const Checkout = () => {
     }
   }, [sdkReady]);
 
-  // Cleanup payment brick container on unmount
+  // Cleanup payment brick container on unmount and when preferenceId changes
   useEffect(() => {
+    // Clear container before mounting new brick
+    const container = document.getElementById("payment-brick-container");
+    if (container && initialization?.preferenceId) {
+      container.innerHTML = "";
+      brickMounted.current = false;
+    }
+    
     return () => {
       const container = document.getElementById("payment-brick-container");
       if (container) {
@@ -96,7 +103,7 @@ const Checkout = () => {
       }
       brickMounted.current = false;
     };
-  }, []);
+  }, [initialization?.preferenceId]);
 
   // Protect against browser navigation (close tab, refresh)
   useEffect(() => {
@@ -176,7 +183,10 @@ const Checkout = () => {
   }, [user, planType, finalPrice, couponCode, validPlanTypes]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
-    console.log("Payment data:", paymentData);
+    console.log("[CHECKOUT] Payment data received:", {
+      paymentType: paymentData.paymentType,
+      hasFormData: !!paymentData.formData,
+    });
 
     try {
       // If payment method is PIX, redirect to PIX payment page
@@ -187,11 +197,11 @@ const Checkout = () => {
 
       setLoading(true);
 
+      // Server calculates the price - don't send amount from client
       const { data, error } = await supabase.functions.invoke("process-payment", {
         body: {
           paymentData: paymentData,
           planType: planType,
-          amount: finalPrice,
           couponCode: couponCode || null,
           paymentMethod: paymentData.paymentType,
         },
@@ -199,7 +209,11 @@ const Checkout = () => {
 
       // Handle network/server errors
       if (error) {
-        console.error("Error invoking payment function:", error);
+        console.error("[CHECKOUT] Error invoking payment function:", {
+          error,
+          message: error?.message,
+          name: error?.name,
+        });
         toast({
           title: "Erro de conexão",
           description: "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.",
@@ -222,11 +236,12 @@ const Checkout = () => {
 
       // Handle payment rejection with specific error message
       const errorMessage = data?.error || "O pagamento não foi aprovado. Tente novamente.";
-      const statusDetail = data?.details?.status_detail;
 
-      console.error("Payment rejected:", {
+      console.error("[CHECKOUT] Payment rejected:", {
         error: errorMessage,
         details: data?.details,
+        status: data?.details?.status,
+        statusDetail: data?.details?.status_detail,
       });
 
       toast({
@@ -238,10 +253,14 @@ const Checkout = () => {
 
       setLoading(false);
     } catch (error) {
-      console.error("Error in handlePaymentSubmit:", error);
+      console.error("[CHECKOUT] Exception in handlePaymentSubmit:", {
+        error,
+        message: error instanceof Error ? error.message : "Unknown",
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       toast({
         title: "Erro",
-        description: "Ocorreu um erro ao processar o pagamento.",
+        description: "Ocorreu um erro ao processar o pagamento. Tente novamente.",
         variant: "destructive",
       });
       setLoading(false);
@@ -249,10 +268,16 @@ const Checkout = () => {
   };
 
   const handlePaymentError = (error: any) => {
-    console.error("Payment error:", error);
+    console.error("[CHECKOUT] Payment brick error:", {
+      error,
+      message: error?.message,
+      cause: error?.cause,
+      type: typeof error,
+      stringified: JSON.stringify(error),
+    });
     toast({
       title: "Erro no pagamento",
-      description: "Ocorreu um erro ao processar o pagamento. Tente novamente.",
+      description: error?.message || "Ocorreu um erro ao processar o pagamento. Tente novamente.",
       variant: "destructive",
     });
   };
