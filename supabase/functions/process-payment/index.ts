@@ -7,15 +7,26 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Input validation schema
+// Input validation schema - ONLY quarterly plan allowed
 const PaymentDataSchema = z.object({
-  planType: z.enum(["monthly", "quarterly", "annual"]),
-  amount: z.number().positive("Amount must be positive").max(999999).optional(),
+  planType: z.enum(["quarterly"]),
   couponCode: z.string().max(50).optional().nullable(),
   paymentMethod: z.string().max(50),
 });
 
 type PaymentData = z.infer<typeof PaymentDataSchema>;
+
+// Coupon configuration (same as create-mercadopago-preference)
+const couponsConfig: Record<string, {
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  active: boolean;
+  validUntil: string;
+}> = {
+  "CORRE10": { discountType: "percentage", discountValue: 10, active: true, validUntil: "2025-12-31" },
+  "AMIGO20": { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
+  "PROMO15": { discountType: "fixed", discountValue: 15, active: true, validUntil: "2025-06-30" },
+};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -39,6 +50,7 @@ serve(async (req) => {
     } = await supabaseClient.auth.getUser(token);
 
     if (userError || !user) {
+      console.error("[PROCESS-PAYMENT] Authentication error:", userError);
       throw new Error("User not authenticated");
     }
 
@@ -47,17 +59,48 @@ serve(async (req) => {
     const paymentData = PaymentDataSchema.parse(rawData);
     const paymentDataMP = rawData.paymentData;
 
-    console.log("Processing payment:", {
-      userId: user.id,
-      planType: paymentData.planType,
-      amount: paymentData.amount,
-      datMP: paymentDataMP,
-    });
+    console.log("[PROCESS-PAYMENT] Processing payment for user:", user.id);
+    console.log("[PROCESS-PAYMENT] Plan type:", paymentData.planType);
+    console.log("[PROCESS-PAYMENT] Coupon code:", paymentData.couponCode);
+
+    // SERVER-SIDE PRICE CALCULATION - Never trust client amount
+    const { data: planData, error: planError } = await supabaseAdmin
+      .from("plan_prices")
+      .select("amount_cents")
+      .eq("plan_type", paymentData.planType)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (planError || !planData) {
+      console.error("[PROCESS-PAYMENT] Error fetching plan price:", planError);
+      throw new Error("Invalid plan type or plan not found");
+    }
+
+    let finalAmount = planData.amount_cents / 100; // Convert cents to BRL
+    console.log("[PROCESS-PAYMENT] Base plan price:", finalAmount);
+
+    // Apply coupon discount server-side
+    if (paymentData.couponCode) {
+      const coupon = couponsConfig[paymentData.couponCode];
+      if (coupon && coupon.active && new Date(coupon.validUntil) >= new Date()) {
+        if (coupon.discountType === "percentage") {
+          const discount = (finalAmount * coupon.discountValue) / 100;
+          finalAmount = finalAmount - discount;
+          console.log("[PROCESS-PAYMENT] Applied percentage discount:", coupon.discountValue, "%, new amount:", finalAmount);
+        } else {
+          finalAmount = Math.max(0, finalAmount - coupon.discountValue);
+          console.log("[PROCESS-PAYMENT] Applied fixed discount:", coupon.discountValue, ", new amount:", finalAmount);
+        }
+      } else {
+        console.warn("[PROCESS-PAYMENT] Invalid or expired coupon:", paymentData.couponCode);
+      }
+    }
 
     // Verify payment with Mercado Pago API
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
 
     if (!accessToken) {
+      console.error("[PROCESS-PAYMENT] MERCADOPAGO_ACCESS_TOKEN not configured");
       throw new Error("MERCADOPAGO_ACCESS_TOKEN not configured");
     }
 
@@ -69,31 +112,35 @@ serve(async (req) => {
       binary_mode: true,
       installments: paymentDataMP.formData.installments,
       token: paymentDataMP.formData.token,
-      transaction_amount: paymentData.amount,
+      transaction_amount: finalAmount, // USE SERVER-CALCULATED AMOUNT
     };
 
-    console.log("Processing MP:", mpData);
+    console.log("[PROCESS-PAYMENT] Sending to Mercado Pago:", {
+      email: mpData.payer.email,
+      amount: mpData.transaction_amount,
+      installments: mpData.installments,
+    });
 
+    const idempotencyKey = crypto.randomUUID();
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
-        "X-Idempotency-Key": crypto.randomUUID(),
+        "X-Idempotency-Key": idempotencyKey,
       },
       body: JSON.stringify(mpData),
     });
 
-    console.log(mpResponse);
-
     if (!mpResponse.ok) {
-      console.error("Mercado Pago API error:", await mpResponse.text());
-      throw new Error("Failed to verify payment with Mercado Pago");
+      const errorText = await mpResponse.text();
+      console.error("[PROCESS-PAYMENT] Mercado Pago API error:", errorText);
+      throw new Error("Failed to process payment with Mercado Pago");
     }
 
     const mpPayment = await mpResponse.json();
 
-    console.log("Mercado Pago payment verified:", {
+    console.log("[PROCESS-PAYMENT] Mercado Pago response:", {
       id: mpPayment.id,
       status: mpPayment.status,
       status_detail: mpPayment.status_detail,
@@ -114,13 +161,13 @@ serve(async (req) => {
       "cc_rejected_other_reason": "Pagamento não autorizado pelo banco",
     };
 
-    // Verify payment status and amount
+    // Verify payment status
     if (mpPayment.status !== "approved") {
       const statusDetail = mpPayment.status_detail || "unknown";
       const userMessage = errorMessages[statusDetail] || 
         "Pagamento não aprovado. Entre em contato com seu banco para mais informações.";
       
-      console.error("Payment rejected:", {
+      console.error("[PROCESS-PAYMENT] Payment rejected:", {
         status: mpPayment.status,
         status_detail: statusDetail,
         payment_id: mpPayment.id,
@@ -138,39 +185,14 @@ serve(async (req) => {
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200, // Changed to 200 so Supabase client doesn't treat as error
+          status: 200,
         },
       );
     }
 
-    // Optional: Log amount if provided for comparison
-    if (paymentData.amount) {
-      const amountDiff = Math.abs(mpPayment.transaction_amount - paymentData.amount);
-      if (amountDiff > 0.01) {
-        console.warn("Amount mismatch (informational):", {
-          expected: paymentData.amount,
-          received: mpPayment.transaction_amount,
-        });
-      }
-    }
-
-    // Calculate subscription expiration based on plan type
+    // Calculate subscription expiration (quarterly = 3 months)
     const now = new Date();
-    let expiresAt: Date;
-
-    switch (paymentData.planType) {
-      case "monthly":
-        expiresAt = new Date(now.setMonth(now.getMonth() + 1));
-        break;
-      case "quarterly":
-        expiresAt = new Date(now.setMonth(now.getMonth() + 3));
-        break;
-      case "annual":
-        expiresAt = new Date(now.setFullYear(now.getFullYear() + 1));
-        break;
-      default:
-        expiresAt = new Date(now.setMonth(now.getMonth() + 1));
-    }
+    const expiresAt = new Date(now.setMonth(now.getMonth() + 3));
 
     // Create subscription record with all payment data using admin client
     const { data: subscription, error: subscriptionError } = await supabaseAdmin
@@ -192,14 +214,15 @@ serve(async (req) => {
       .single();
 
     if (subscriptionError) {
-      console.error("Error creating subscription:", subscriptionError);
+      console.error("[PROCESS-PAYMENT] Error creating subscription:", subscriptionError);
       throw new Error("Failed to create subscription");
     }
 
-    console.log("Subscription created successfully:", {
+    console.log("[PROCESS-PAYMENT] Subscription created successfully:", {
       id: subscription.id,
       userId: user.id,
       planType: subscription.plan_type,
+      amountPaid: subscription.amount_paid,
       expiresAt: subscription.expires_at,
     });
 
@@ -219,15 +242,14 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    console.error("Error processing payment:", error);
+    console.error("[PROCESS-PAYMENT] Error:", error);
 
     if (error instanceof z.ZodError) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Invalid input data",
+          error: "Dados de pagamento inválidos",
           details: error.errors,
-          scheme: PaymentDataSchema,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
