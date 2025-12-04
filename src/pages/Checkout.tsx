@@ -87,23 +87,12 @@ const Checkout = () => {
     }
   }, [sdkReady]);
 
-  // Cleanup payment brick container on unmount and when preferenceId changes
+  // Cleanup only on unmount - let React handle re-rendering via key prop
   useEffect(() => {
-    // Clear container before mounting new brick
-    const container = document.getElementById("payment-brick-container");
-    if (container && initialization?.preferenceId) {
-      container.innerHTML = "";
-      brickMounted.current = false;
-    }
-    
     return () => {
-      const container = document.getElementById("payment-brick-container");
-      if (container) {
-        container.innerHTML = "";
-      }
       brickMounted.current = false;
     };
-  }, [initialization?.preferenceId]);
+  }, []);
 
   // Protect against browser navigation (close tab, refresh)
   useEffect(() => {
