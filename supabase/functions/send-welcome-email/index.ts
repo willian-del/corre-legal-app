@@ -34,7 +34,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Sending welcome email to ${email} (${firstName})`);
 
     const emailResponse = await resend.emails.send({
-      from: "Corre Legal <onboarding@resend.dev>",
+      from: "Corre Legal <noreply@correlegal.com.br>",
       to: [email],
       subject: "🎉 Bem-vindo ao Corre Legal!",
       html: `
