@@ -15,12 +15,41 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+    // SECURITY FIX: Validate the caller's identity from JWT BEFORE processing
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('[process-referral] Missing authorization header');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Não autorizado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create auth client to verify the user from JWT
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser();
+
+    if (authError || !user) {
+      console.error('[process-referral] Auth error:', authError?.message || 'No user found');
+      return new Response(
+        JSON.stringify({ success: false, error: 'Não autorizado' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const { referral_code, referred_user_id, referred_name } = await req.json();
 
-    console.log('[process-referral] Processing referral:', { referral_code, referred_user_id, referred_name });
+    console.log('[process-referral] Processing referral:', { 
+      referral_code, 
+      referred_user_id, 
+      referred_name,
+      authenticated_user: user.id 
+    });
 
     if (!referral_code || !referred_user_id) {
       return new Response(
@@ -28,6 +57,22 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // SECURITY FIX: Verify the authenticated user matches the referred_user_id
+    // This prevents users from manipulating referral credits for other users
+    if (user.id !== referred_user_id) {
+      console.error('[process-referral] Authorization bypass attempt:', {
+        authenticated_user: user.id,
+        attempted_referred_user: referred_user_id
+      });
+      return new Response(
+        JSON.stringify({ success: false, error: 'Não autorizado: você só pode processar indicações para sua própria conta' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Now safe to use service role for database operations
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Call the database function to process the referral
     const { data, error } = await supabase.rpc('process_referral', {
