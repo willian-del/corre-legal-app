@@ -175,6 +175,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return { error };
       }
 
+      // Enviar email de boas-vindas em background (não bloqueia o fluxo)
+      if (data?.user) {
+        supabase.functions.invoke('send-welcome-email', {
+          body: {
+            email: email,
+            name: fullName
+          }
+        }).then(response => {
+          if (response.error) {
+            console.error('Failed to send welcome email:', response.error);
+          } else {
+            console.log('Welcome email sent successfully');
+          }
+        }).catch(err => {
+          console.error('Failed to send welcome email:', err);
+        });
+      }
+
       toast({
         title: "Cadastro realizado!",
         description: "Você já pode fazer login."
