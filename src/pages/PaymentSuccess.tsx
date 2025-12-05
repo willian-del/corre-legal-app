@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,9 @@ const PaymentSuccess = () => {
   const isFirstPurchase = searchParams.get('first_purchase') === 'true';
   const { celebrate } = useConfetti();
   
+  // Prevent double payment processing
+  const hasProcessedPayment = useRef(false);
+  
   // Mercado Pago return parameters
   const paymentId = searchParams.get('payment_id');
   const paymentStatus = searchParams.get('status');
@@ -43,15 +46,24 @@ const PaymentSuccess = () => {
     return () => clearTimeout(timer);
   }, [celebrate]);
 
-  // Process Mercado Pago payment if payment_id present
+  // Process Mercado Pago payment if payment_id present (only once)
   useEffect(() => {
     if (!user || !paymentId || !externalReference) return;
     
+    // Prevent double processing
+    if (hasProcessedPayment.current) {
+      console.log("[PAYMENT_SUCCESS] Payment already processed, skipping");
+      return;
+    }
+    
+    hasProcessedPayment.current = true;
     setVerifying(true);
+    
+    console.log("[PAYMENT_SUCCESS] Processing payment:", { paymentId, paymentStatus, externalReference });
     
     // Extract plan type from external_reference (format: userId_planType_timestamp)
     const parts = externalReference.split('_');
-    const planType = parts[1] || 'monthly';
+    const planType = parts[1] || 'quarterly';
     
     supabase.functions
       .invoke('process-payment', {
@@ -63,10 +75,15 @@ const PaymentSuccess = () => {
           paymentMethod: 'mercadopago',
         },
       })
-      .catch((e) => {
-        if (import.meta.env.DEV) {
-          console.error('process-payment error', e);
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('[PAYMENT_SUCCESS] process-payment error:', error);
+        } else {
+          console.log('[PAYMENT_SUCCESS] process-payment success:', data);
         }
+      })
+      .catch((e) => {
+        console.error('[PAYMENT_SUCCESS] process-payment exception:', e);
       })
       .finally(() => setVerifying(false));
   }, [user, paymentId, paymentStatus, externalReference]);
@@ -167,7 +184,7 @@ const PaymentSuccess = () => {
               </p>
               <ol className="text-sm text-muted-foreground text-left space-y-2 max-w-md mx-auto">
                 <li>1. {isFirstPurchase ? 'Verifique seu email para receber suas credenciais de acesso' : 'Seu plano foi renovado com sucesso'}</li>
-                <li>2. Faça login na área de cliente</li>
+                <li>2. {user ? 'Acesse sua área de cliente' : 'Faça login na área de cliente'}</li>
                 <li>3. {isFirstPurchase ? 'Complete seu cadastro com CPF e telefone' : 'Aproveite todos os benefícios do seu plano!'}</li>
                 <li>4. {isFirstPurchase ? 'Altere sua senha temporária por uma segura' : 'Consulte os detalhes da sua cobertura no painel'}</li>
               </ol>
@@ -194,13 +211,23 @@ const PaymentSuccess = () => {
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-              <Button 
-                onClick={() => navigate('/auth')}
-                size="lg"
-                className="shadow-glow hover:shadow-glow"
-              >
-                Fazer Login
-              </Button>
+              {user ? (
+                <Button 
+                  onClick={() => navigate('/meu-corre')}
+                  size="lg"
+                  className="shadow-glow hover:shadow-glow"
+                >
+                  Ir para Meu Corre
+                </Button>
+              ) : (
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  size="lg"
+                  className="shadow-glow hover:shadow-glow"
+                >
+                  Fazer Login
+                </Button>
+              )}
               <Button 
                 onClick={() => navigate('/')}
                 variant="outline"
