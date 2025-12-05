@@ -29,13 +29,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+// Initialize Mercado Pago SDK ONCE at module level (outside component)
+let mpInitialized = false;
+const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
+
+if (publicKey && !mpInitialized) {
+  console.log("[CHECKOUT] Initializing Mercado Pago SDK at module level");
+  initMercadoPago(publicKey, { locale: "pt-BR" });
+  mpInitialized = true;
+}
+
 const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [sdkReady, setSdkReady] = useState(false);
   const planType = searchParams.get("plan") || "quarterly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
@@ -78,21 +87,35 @@ const Checkout = () => {
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, plan.price - discount);
 
-  // Initialize Mercado Pago SDK only once
-  useEffect(() => {
-    const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
-    if (publicKey && !sdkReady) {
-      initMercadoPago(publicKey, { locale: "pt-BR" });
-      setSdkReady(true);
-    }
-  }, [sdkReady]);
-
-  // Cleanup only on unmount - let React handle re-rendering via key prop
+  // Cleanup Payment Brick on unmount using Mercado Pago's unmount method
   useEffect(() => {
     return () => {
+      console.log("[CHECKOUT] Component unmounting, cleaning up brick");
+      // Try to unmount the brick controller if it exists
+      const brickController = (window as any).paymentBrickController;
+      if (brickController?.unmount) {
+        try {
+          brickController.unmount();
+          console.log("[CHECKOUT] Brick unmounted successfully");
+        } catch (e) {
+          console.log("[CHECKOUT] Brick unmount error:", e);
+        }
+      }
       brickMounted.current = false;
     };
   }, []);
+
+  // Clear container when preferenceId changes to prevent duplicates
+  useEffect(() => {
+    if (initialization?.preferenceId) {
+      const container = document.getElementById("payment-brick-container");
+      if (container && container.children.length > 0) {
+        console.log("[CHECKOUT] Clearing container for new preference");
+        container.innerHTML = "";
+        brickMounted.current = false;
+      }
+    }
+  }, [initialization?.preferenceId]);
 
   // Protect against browser navigation (close tab, refresh)
   useEffect(() => {
@@ -131,6 +154,8 @@ const Checkout = () => {
         setLoading(true);
         hasCreatedPreference.current = true;
 
+        console.log("[CHECKOUT] Creating preference...", { planType, couponCode, userId: user?.id });
+
         const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
           body: {
             plan_type: planType,
@@ -139,7 +164,7 @@ const Checkout = () => {
         });
 
         if (error) {
-          console.error("Error creating preference:", error);
+          console.error("[CHECKOUT] Error creating preference:", error);
           hasCreatedPreference.current = false;
           toast({
             title: "Erro ao preparar pagamento",
@@ -150,13 +175,14 @@ const Checkout = () => {
         }
 
         if (data?.preference_id) {
+          console.log("[CHECKOUT] Preference created:", { preferenceId: data.preference_id });
           setInitialization({
             amount: finalPrice,
             preferenceId: data.preference_id,
           });
         }
       } catch (error) {
-        console.error("Error in createPreference:", error);
+        console.error("[CHECKOUT] Error in createPreference:", error);
         hasCreatedPreference.current = false;
         toast({
           title: "Erro",
@@ -170,6 +196,18 @@ const Checkout = () => {
 
     createPreference();
   }, [user, planType, finalPrice, couponCode, validPlanTypes]);
+
+  // Debug log for render state
+  useEffect(() => {
+    console.log("[CHECKOUT] Render state:", {
+      loading,
+      mpInitialized,
+      hasInitialization: !!initialization,
+      preferenceId: initialization?.preferenceId,
+      brickMounted: brickMounted.current,
+      userId: user?.id,
+    });
+  }, [loading, initialization, user?.id]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("[CHECKOUT] Payment data received:", {
@@ -296,6 +334,9 @@ const Checkout = () => {
     setPendingNavigation(null);
   };
 
+  // Check if SDK is ready (initialized at module level)
+  const isSdkReady = mpInitialized && !!publicKey;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -404,7 +445,7 @@ const Checkout = () => {
               <h2 className="text-2xl font-bold">Pagamento</h2>
             </div>
 
-            {loading || !initialization || !sdkReady ? (
+            {loading || !initialization || !isSdkReady ? (
               <div className="space-y-6 animate-fade-in">
                 {/* Payment Methods Skeleton */}
                 <div className="space-y-3">
@@ -471,6 +512,10 @@ const Checkout = () => {
                   onSubmit={handlePaymentSubmit}
                   onError={handlePaymentError}
                   onReady={() => {
+                    console.log("[CHECKOUT] Payment Brick onReady fired!", {
+                      preferenceId: initialization?.preferenceId,
+                      timestamp: new Date().toISOString(),
+                    });
                     brickMounted.current = true;
                     setHasInteracted(true);
                   }}
@@ -489,16 +534,9 @@ const Checkout = () => {
 
           {/* Security Notice */}
           <div className="mt-8 text-center">
-            <div className="inline-flex items-center gap-2 bg-muted/50 rounded-full px-6 py-3 text-sm text-foreground/70">
-              <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span className="font-medium">Pagamento seguro processado pelo Mercado Pago</span>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Pagamento processado com segurança pelo Mercado Pago 🔒
+            </p>
           </div>
         </div>
       </main>
@@ -509,17 +547,12 @@ const Checkout = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Sair do checkout?</AlertDialogTitle>
             <AlertDialogDescription>
-              Você tem dados de pagamento preenchidos. Se sair agora, eles serão perdidos. Tem certeza que deseja sair?
+              Você tem um pagamento em andamento. Tem certeza que deseja sair? Seus dados não serão salvos.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Continuar no checkout</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmExit}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Sair mesmo assim
-            </AlertDialogAction>
+            <AlertDialogCancel>Continuar pagando</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmExit}>Sair</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
