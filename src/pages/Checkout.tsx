@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2, ArrowLeft, Tag } from "lucide-react";
+import { Loader2, ArrowLeft, Tag, RefreshCw, QrCode } from "lucide-react";
 import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,15 +29,22 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// Initialize Mercado Pago SDK ONCE at module level (outside component)
+// SDK initialization state
 let mpInitialized = false;
 const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
 
-if (publicKey && !mpInitialized) {
-  console.log("[CHECKOUT] Initializing Mercado Pago SDK at module level");
-  initMercadoPago(publicKey, { locale: "pt-BR" });
-  mpInitialized = true;
-}
+// Helper function to wait for SDK to be fully loaded
+const waitForMercadoPagoSdk = async (maxAttempts = 50, interval = 100): Promise<boolean> => {
+  for (let i = 0; i < maxAttempts; i++) {
+    if ((window as any).MercadoPago) {
+      console.log("[CHECKOUT] window.MercadoPago detected after", i * interval, "ms");
+      return true;
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  console.error("[CHECKOUT] window.MercadoPago not detected after", maxAttempts * interval, "ms");
+  return false;
+};
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -53,6 +60,72 @@ const Checkout = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  
+  // SDK loading states
+  const [sdkReady, setSdkReady] = useState(false);
+  const [sdkError, setSdkError] = useState(false);
+  const sdkInitAttempted = useRef(false);
+
+  // Initialize SDK and wait for it to be fully loaded
+  useEffect(() => {
+    if (sdkInitAttempted.current) return;
+    sdkInitAttempted.current = true;
+
+    const initSdk = async () => {
+      console.log("[CHECKOUT] Starting SDK initialization...", {
+        publicKey: !!publicKey,
+        mpInitialized,
+        windowMercadoPago: !!(window as any).MercadoPago,
+      });
+
+      if (!publicKey) {
+        console.error("[CHECKOUT] No public key available");
+        setSdkError(true);
+        return;
+      }
+
+      // Initialize SDK if not already done
+      if (!mpInitialized) {
+        try {
+          console.log("[CHECKOUT] Calling initMercadoPago...");
+          initMercadoPago(publicKey, { locale: "pt-BR" });
+          mpInitialized = true;
+          console.log("[CHECKOUT] initMercadoPago called successfully");
+        } catch (e) {
+          console.error("[CHECKOUT] Error calling initMercadoPago:", e);
+          setSdkError(true);
+          return;
+        }
+      }
+
+      // Wait for window.MercadoPago to be available
+      const sdkLoaded = await waitForMercadoPagoSdk();
+      
+      if (sdkLoaded) {
+        console.log("[CHECKOUT] SDK fully loaded and ready!");
+        setSdkReady(true);
+      } else {
+        console.error("[CHECKOUT] SDK failed to load");
+        setSdkError(true);
+        toast({
+          title: "Erro ao carregar pagamento",
+          description: "Não foi possível carregar o sistema de pagamento. Tente recarregar a página.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    initSdk();
+  }, [toast]);
+
+  // Retry SDK load
+  const handleRetryLoad = useCallback(() => {
+    console.log("[CHECKOUT] Retrying SDK load...");
+    setSdkError(false);
+    sdkInitAttempted.current = false;
+    mpInitialized = false;
+    window.location.reload();
+  }, []);
 
   // Validate plan type - only quarterly is valid
   const validPlanTypes = Object.keys(PLAN_DETAILS);
@@ -202,12 +275,15 @@ const Checkout = () => {
     console.log("[CHECKOUT] Render state:", {
       loading,
       mpInitialized,
+      sdkReady,
+      sdkError,
+      windowMercadoPago: !!(window as any).MercadoPago,
       hasInitialization: !!initialization,
       preferenceId: initialization?.preferenceId,
       brickMounted: brickMounted.current,
       userId: user?.id,
     });
-  }, [loading, initialization, user?.id]);
+  }, [loading, initialization, user?.id, sdkReady, sdkError]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("[CHECKOUT] Payment data received:", {
@@ -334,8 +410,8 @@ const Checkout = () => {
     setPendingNavigation(null);
   };
 
-  // Check if SDK is ready (initialized at module level)
-  const isSdkReady = mpInitialized && !!publicKey;
+  // Check if everything is ready to render the Payment brick
+  const canRenderBrick = sdkReady && initialization && !loading && !sdkError;
 
   return (
     <div className="min-h-screen bg-background">
@@ -445,7 +521,37 @@ const Checkout = () => {
               <h2 className="text-2xl font-bold">Pagamento</h2>
             </div>
 
-            {loading || !initialization || !isSdkReady ? (
+            {/* SDK Error State - Show retry options */}
+            {sdkError && (
+              <div className="text-center py-8 space-y-4 animate-fade-in">
+                <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                  <span className="text-3xl">⚠️</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">Erro ao carregar pagamento</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Não foi possível carregar o sistema de pagamento. Isso pode acontecer por instabilidade na conexão.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+                  <Button onClick={handleRetryLoad} className="gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Tentar novamente
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/pix-payment?plan=${planType}&coupon=${couponCode || ""}`)}
+                    className="gap-2"
+                  >
+                    <QrCode className="h-4 w-4" />
+                    Pagar via PIX
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Loading State */}
+            {!sdkError && (loading || !initialization || !sdkReady) && (
               <div className="space-y-6 animate-fade-in">
                 {/* Payment Methods Skeleton */}
                 <div className="space-y-3">
@@ -501,10 +607,15 @@ const Checkout = () => {
                 {/* Loading Text */}
                 <div className="flex items-center justify-center gap-2 pt-2">
                   <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">Preparando formulário de pagamento...</p>
+                  <p className="text-sm text-muted-foreground">
+                    {!sdkReady ? "Carregando sistema de pagamento..." : "Preparando formulário de pagamento..."}
+                  </p>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {/* Payment Brick */}
+            {canRenderBrick && (
               <div id="payment-brick-container" className="space-y-4 animate-fade-in">
                 <Payment
                   key={initialization?.preferenceId}
@@ -514,6 +625,7 @@ const Checkout = () => {
                   onReady={() => {
                     console.log("[CHECKOUT] Payment Brick onReady fired!", {
                       preferenceId: initialization?.preferenceId,
+                      windowMercadoPago: !!(window as any).MercadoPago,
                       timestamp: new Date().toISOString(),
                     });
                     brickMounted.current = true;
