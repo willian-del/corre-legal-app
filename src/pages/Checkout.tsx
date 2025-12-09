@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, ArrowLeft, Tag, RefreshCw, QrCode } from "lucide-react";
 import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
+import { loadMercadoPago } from "@mercadopago/sdk-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import plansConfig from "@/config/plans.json";
@@ -33,19 +34,6 @@ import {
 let mpInitialized = false;
 const publicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY;
 
-// Helper function to wait for SDK to be fully loaded
-const waitForMercadoPagoSdk = async (maxAttempts = 50, interval = 100): Promise<boolean> => {
-  for (let i = 0; i < maxAttempts; i++) {
-    if ((window as any).MercadoPago) {
-      console.log("[CHECKOUT] window.MercadoPago detected after", i * interval, "ms");
-      return true;
-    }
-    await new Promise(resolve => setTimeout(resolve, interval));
-  }
-  console.error("[CHECKOUT] window.MercadoPago not detected after", maxAttempts * interval, "ms");
-  return false;
-};
-
 const Checkout = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -66,13 +54,13 @@ const Checkout = () => {
   const [sdkError, setSdkError] = useState(false);
   const sdkInitAttempted = useRef(false);
 
-  // Initialize SDK and wait for it to be fully loaded
+  // Initialize SDK using loadMercadoPago to explicitly load the external script
   useEffect(() => {
     if (sdkInitAttempted.current) return;
     sdkInitAttempted.current = true;
 
     const initSdk = async () => {
-      console.log("[CHECKOUT] Starting SDK initialization...", {
+      console.log("[CHECKOUT] Starting SDK initialization with loadMercadoPago...", {
         publicKey: !!publicKey,
         mpInitialized,
         windowMercadoPago: !!(window as any).MercadoPago,
@@ -84,28 +72,26 @@ const Checkout = () => {
         return;
       }
 
-      // Initialize SDK if not already done
-      if (!mpInitialized) {
-        try {
+      try {
+        // Step 1: Explicitly load the external Mercado Pago script
+        // This injects the SDK script and returns a Promise that resolves when ready
+        console.log("[CHECKOUT] Loading external Mercado Pago script...");
+        await loadMercadoPago();
+        console.log("[CHECKOUT] External script loaded, window.MercadoPago:", !!(window as any).MercadoPago);
+
+        // Step 2: Initialize the React SDK with public key
+        if (!mpInitialized) {
           console.log("[CHECKOUT] Calling initMercadoPago...");
           initMercadoPago(publicKey, { locale: "pt-BR" });
           mpInitialized = true;
           console.log("[CHECKOUT] initMercadoPago called successfully");
-        } catch (e) {
-          console.error("[CHECKOUT] Error calling initMercadoPago:", e);
-          setSdkError(true);
-          return;
         }
-      }
 
-      // Wait for window.MercadoPago to be available
-      const sdkLoaded = await waitForMercadoPagoSdk();
-      
-      if (sdkLoaded) {
+        // SDK is now ready
         console.log("[CHECKOUT] SDK fully loaded and ready!");
         setSdkReady(true);
-      } else {
-        console.error("[CHECKOUT] SDK failed to load");
+      } catch (e) {
+        console.error("[CHECKOUT] Error loading Mercado Pago SDK:", e);
         setSdkError(true);
         toast({
           title: "Erro ao carregar pagamento",
