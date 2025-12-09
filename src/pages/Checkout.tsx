@@ -51,7 +51,8 @@ const Checkout = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-  
+  const [canRenderBrick, setCanRenderBrick] = useState(false);
+
   // Fallback state for when brick fails to load
   const [showPixFallback, setShowPixFallback] = useState(false);
   const [brickError, setBrickError] = useState(false);
@@ -88,49 +89,6 @@ const Checkout = () => {
 
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, plan.price - discount);
-
-  // Cleanup Payment Brick on unmount
-  useEffect(() => {
-    return () => {
-      console.log("[CHECKOUT] Component unmounting, cleaning up brick");
-      const brickController = (window as any).paymentBrickController;
-      if (brickController?.unmount) {
-        try {
-          brickController.unmount();
-          console.log("[CHECKOUT] Brick unmounted successfully");
-        } catch (e) {
-          console.log("[CHECKOUT] Brick unmount error:", e);
-        }
-      }
-      brickMounted.current = false;
-    };
-  }, []);
-
-  // Clear container when preferenceId changes to prevent duplicates
-  useEffect(() => {
-    if (initialization?.preferenceId) {
-      const container = document.getElementById("payment-brick-container");
-      if (container && container.children.length > 0) {
-        console.log("[CHECKOUT] Clearing container for new preference");
-        container.innerHTML = "";
-        brickMounted.current = false;
-      }
-    }
-  }, [initialization?.preferenceId]);
-
-  // Fallback timeout - if brick doesn't mount in 20s, show PIX option
-  useEffect(() => {
-    if (!initialization || brickMounted.current || showPixFallback || brickError) return;
-    
-    const timeout = setTimeout(() => {
-      if (!brickMounted.current) {
-        console.log("[CHECKOUT] Brick failed to mount after 20s, showing PIX fallback");
-        setShowPixFallback(true);
-      }
-    }, 20000);
-    
-    return () => clearTimeout(timeout);
-  }, [initialization, showPixFallback, brickError]);
 
   // Protect against browser navigation (close tab, refresh)
   useEffect(() => {
@@ -195,6 +153,8 @@ const Checkout = () => {
             amount: finalPrice,
             preferenceId: data.preference_id,
           });
+
+          setCanRenderBrick(true);
         }
       } catch (error) {
         console.error("[CHECKOUT] Error in createPreference:", error);
@@ -204,6 +164,8 @@ const Checkout = () => {
           description: "Ocorreu um erro ao preparar o pagamento.",
           variant: "destructive",
         });
+
+        setBrickError(true);
       } finally {
         setLoading(false);
       }
@@ -211,20 +173,6 @@ const Checkout = () => {
 
     createPreference();
   }, [user, planType, finalPrice, couponCode, validPlanTypes]);
-
-  // Debug log for render state
-  useEffect(() => {
-    console.log("[CHECKOUT] Render state:", {
-      loading,
-      publicKey: !!publicKey,
-      hasInitialization: !!initialization,
-      preferenceId: initialization?.preferenceId,
-      brickMounted: brickMounted.current,
-      showPixFallback,
-      brickError,
-      userId: user?.id,
-    });
-  }, [loading, initialization, user?.id, showPixFallback, brickError]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("[CHECKOUT] Payment data received:", {
@@ -319,10 +267,10 @@ const Checkout = () => {
       type: typeof error,
       stringified: JSON.stringify(error),
     });
-    
+
     // Set error state to show fallback options
     setBrickError(true);
-    
+
     toast({
       title: "Erro no pagamento",
       description: "Não foi possível carregar o formulário. Tente via PIX ou recarregue a página.",
@@ -360,9 +308,6 @@ const Checkout = () => {
     setPendingNavigation(null);
   };
 
-  // Check if everything is ready to render the Payment brick
-  const canRenderBrick = initialization && !loading && !brickError && !showPixFallback && publicKey;
-  
   // Show error/fallback state
   const showErrorState = brickError || showPixFallback;
 
@@ -485,7 +430,7 @@ const Checkout = () => {
                     {brickError ? "Erro ao carregar pagamento" : "O formulário demorou para carregar"}
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    {brickError 
+                    {brickError
                       ? "Não foi possível carregar o sistema de pagamento. Isso pode acontecer por instabilidade na conexão."
                       : "O formulário de pagamento está demorando. Você pode tentar novamente ou pagar via PIX."}
                   </p>
@@ -495,8 +440,8 @@ const Checkout = () => {
                     <RefreshCw className="h-4 w-4" />
                     Tentar novamente
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => navigate(`/pix-payment?plan=${planType}&coupon=${couponCode || ""}`)}
                     className="gap-2"
                   >
@@ -602,9 +547,7 @@ const Checkout = () => {
 
           {/* Security Notice */}
           <div className="mt-8 text-center">
-            <p className="text-xs text-muted-foreground">
-              Pagamento processado com segurança pelo Mercado Pago 🔒
-            </p>
+            <p className="text-xs text-muted-foreground">Pagamento processado com segurança pelo Mercado Pago 🔒</p>
           </div>
         </div>
       </main>
