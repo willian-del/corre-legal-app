@@ -54,6 +54,14 @@ const Checkout = () => {
   const [sdkError, setSdkError] = useState(false);
   const sdkInitAttempted = useRef(false);
 
+  // Helper function to add timeout to a promise
+  const withTimeout = <T,>(promise: Promise<T>, ms: number, errorMessage: string): Promise<T> => {
+    const timeout = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error(errorMessage)), ms);
+    });
+    return Promise.race([promise, timeout]);
+  };
+
   // Initialize SDK using loadMercadoPago to explicitly load the external script
   useEffect(() => {
     if (sdkInitAttempted.current) return;
@@ -73,10 +81,13 @@ const Checkout = () => {
       }
 
       try {
-        // Step 1: Explicitly load the external Mercado Pago script
-        // This injects the SDK script and returns a Promise that resolves when ready
-        console.log("[CHECKOUT] Loading external Mercado Pago script...");
-        await loadMercadoPago();
+        // Step 1: Explicitly load the external Mercado Pago script with 10s timeout
+        console.log("[CHECKOUT] Loading external Mercado Pago script (timeout: 10s)...");
+        await withTimeout(
+          loadMercadoPago(),
+          10000,
+          "Timeout: O sistema de pagamento demorou muito para carregar"
+        );
         console.log("[CHECKOUT] External script loaded, window.MercadoPago:", !!(window as any).MercadoPago);
 
         // Step 2: Initialize the React SDK with public key
@@ -93,9 +104,13 @@ const Checkout = () => {
       } catch (e) {
         console.error("[CHECKOUT] Error loading Mercado Pago SDK:", e);
         setSdkError(true);
+        
+        const isTimeout = e instanceof Error && e.message.includes("Timeout");
         toast({
           title: "Erro ao carregar pagamento",
-          description: "Não foi possível carregar o sistema de pagamento. Tente recarregar a página.",
+          description: isTimeout 
+            ? "O carregamento está demorando. Verifique sua conexão e tente novamente."
+            : "Não foi possível carregar o sistema de pagamento. Tente recarregar a página.",
           variant: "destructive",
         });
       }
