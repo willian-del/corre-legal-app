@@ -188,6 +188,7 @@ const Checkout = () => {
       }
 
       setLoading(true);
+      setCanRenderBrick(false);
 
       // Server calculates the price - don't send amount from client
       const { data, error } = await supabase.functions.invoke("process-payment", {
@@ -213,6 +214,8 @@ const Checkout = () => {
           duration: 6000,
         });
         setLoading(false);
+        setCanRenderBrick(true);
+
         return;
       }
 
@@ -244,6 +247,7 @@ const Checkout = () => {
       });
 
       setLoading(false);
+      setCanRenderBrick(true);
     } catch (error) {
       console.error("[CHECKOUT] Exception in handlePaymentSubmit:", {
         error,
@@ -256,6 +260,7 @@ const Checkout = () => {
         variant: "destructive",
       });
       setLoading(false);
+      setCanRenderBrick(true);
     }
   };
 
