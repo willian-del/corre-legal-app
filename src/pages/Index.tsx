@@ -15,7 +15,7 @@ const Index = () => {
 
   useEffect(() => {
     // Capturar parâmetro de indicação e redirecionar para signup
-    const refParam = seErro ao carregar pagamentoarchParams.get("ref");
+    const refParam = searchParams.get("ref");
     if (refParam) {
       // Redirecionar para página de cadastro preservando o código de indicação
       navigate(`/auth?signup=true&ref=${refParam}`);
