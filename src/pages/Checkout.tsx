@@ -165,7 +165,7 @@ const Checkout = () => {
           variant: "destructive",
         });
 
-        setBrickError(true);
+        //setBrickError(true);
       } finally {
         setLoading(false);
       }
