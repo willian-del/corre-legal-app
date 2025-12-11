@@ -269,7 +269,7 @@ const Checkout = () => {
     });
 
     // Set error state to show fallback options
-    setBrickError(true);
+    //setBrickError(true);
 
     toast({
       title: "Erro no pagamento",
@@ -523,13 +523,12 @@ const Checkout = () => {
                   key={initialization?.preferenceId}
                   initialization={initialization}
                   onSubmit={handlePaymentSubmit}
-                  onError={handlePaymentError}
                   onReady={() => {
                     console.log("[CHECKOUT] Payment Brick onReady fired!", {
                       preferenceId: initialization?.preferenceId,
                       timestamp: new Date().toISOString(),
                     });
-                    brickMounted.current = true;
+
                     setHasInteracted(true);
                   }}
                   locale="pt-BR"
