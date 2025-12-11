@@ -165,8 +165,8 @@ const Checkout = () => {
               console.log("Loading false");
               setLoading(false);
               setBrickError(true);
-            }, 3000);
-          }, 4000);
+            }, 10000);
+          }, 5000);
         }
       } catch (error) {
         console.error("[CHECKOUT] Error in createPreference:", error);
