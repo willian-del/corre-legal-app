@@ -155,18 +155,6 @@ const Checkout = () => {
           });
 
           setCanRenderBrick(true);
-
-          setTimeout(function () {
-            console.log("Loading true");
-            setLoading(true);
-            setBrickError(false);
-
-            setTimeout(function () {
-              console.log("Loading false");
-              setLoading(false);
-              setBrickError(true);
-            }, 10000);
-          }, 5000);
         }
       } catch (error) {
         console.error("[CHECKOUT] Error in createPreference:", error);
