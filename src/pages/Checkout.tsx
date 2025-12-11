@@ -159,10 +159,12 @@ const Checkout = () => {
           setTimeout(function () {
             console.log("Loading true");
             setLoading(true);
+            setBrickError(false);
 
             setTimeout(function () {
               console.log("Loading false");
               setLoading(false);
+              setBrickError(true);
             }, 3000);
           }, 4000);
         }
