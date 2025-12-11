@@ -156,12 +156,12 @@ const Checkout = () => {
 
           setCanRenderBrick(true);
 
-          setTimeout(function {
-            console.log('Loading false');
+          setTimeout(function () {
+            console.log("Loading false");
             setLoading(false);
 
-            setTimeout(function {
-              console.log('Loading true');
+            setTimeout(function () {
+              console.log("Loading true");
               setLoading(true);
             }, 3000);
           }, 4000);
