@@ -101,6 +101,14 @@ const Checkout = () => {
     }
   }, [user, planType, finalPrice, couponCode, validPlanTypes]);
 
+  useEffect(() => {
+    setInitialization(false);
+    const timer = setTimeout(() => {
+      setInitialization(true);
+    }, 100); // Um delay imperceptível de 100ms
+    return () => clearTimeout(timer);
+  }, [finalPrice]);
+
   const handlePaymentSubmit = async (paymentData: any) => {
     console.log("[CHECKOUT] Payment data received:", {
       paymentType: paymentData.paymentType,
@@ -347,21 +355,23 @@ const Checkout = () => {
 
             {/* Payment Brick */}
             <div id="payment-brick-container" className="space-y-4 animate-fade-in">
-              <Payment
-                key={`${planType}-${finalPrice}`}
-                initialization={{
-                  amount: finalPrice,
-                }}
-                customization={{
-                  paymentMethods: {
-                    maxInstallments: 3,
-                    bankTransfer: ["all"],
-                    creditCard: ["all"],
-                  },
-                }}
-                locale="pt-BR"
-                onSubmit={handlePaymentSubmit}
-              />
+              {initialization && (
+                <Payment
+                  key={`${planType}-${finalPrice}`}
+                  initialization={{
+                    amount: finalPrice,
+                  }}
+                  customization={{
+                    paymentMethods: {
+                      maxInstallments: 3,
+                      bankTransfer: ["all"],
+                      creditCard: ["all"],
+                    },
+                  }}
+                  locale="pt-BR"
+                  onSubmit={handlePaymentSubmit}
+                />
+              )}
             </div>
           </div>
 
