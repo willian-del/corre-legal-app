@@ -46,8 +46,6 @@ const Checkout = () => {
   const planType = searchParams.get("plan") || "quarterly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
   const [initialization, setInitialization] = useState<any>(null);
-  const hasCreatedPreference = useRef(false);
-  const brickMounted = useRef(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
@@ -55,7 +53,6 @@ const Checkout = () => {
 
   // Fallback state for when brick fails to load
   const [showPixFallback, setShowPixFallback] = useState(false);
-  const [brickError, setBrickError] = useState(false);
 
   // Validate plan type - only quarterly is valid
   const validPlanTypes = Object.keys(PLAN_DETAILS);
@@ -90,19 +87,6 @@ const Checkout = () => {
   const discount = calculateDiscount();
   const finalPrice = Math.max(0, plan.price - discount);
 
-  // Protect against browser navigation (close tab, refresh)
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (hasInteracted && !loading) {
-        e.preventDefault();
-        e.returnValue = "";
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [hasInteracted, loading]);
-
   // Create payment preference
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -111,67 +95,10 @@ const Checkout = () => {
       return;
     }
 
-    // Evitar múltiplas criações
-    if (hasCreatedPreference.current) {
-      return;
-    }
-
     // Only proceed if plan type is valid (quarterly only)
     if (!validPlanTypes.includes(planType)) {
       return;
     }
-
-    // Create payment preference and initialization
-    const createPreference = async () => {
-      try {
-        setLoading(true);
-        hasCreatedPreference.current = true;
-
-        console.log("[CHECKOUT] Creating preference...", { planType, couponCode, userId: user?.id });
-
-        const { data, error } = await supabase.functions.invoke("create-mercadopago-preference", {
-          body: {
-            plan_type: planType,
-            coupon_code: couponCode || null,
-          },
-        });
-
-        if (error) {
-          console.error("[CHECKOUT] Error creating preference:", error);
-          hasCreatedPreference.current = false;
-          toast({
-            title: "Erro ao preparar pagamento",
-            description: "Não foi possível preparar o checkout. Tente novamente.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (data?.preference_id) {
-          console.log("[CHECKOUT] Preference created:", { preferenceId: data.preference_id });
-          setInitialization({
-            amount: finalPrice,
-            preferenceId: data.preference_id,
-          });
-
-          setCanRenderBrick(true);
-        }
-      } catch (error) {
-        console.error("[CHECKOUT] Error in createPreference:", error);
-        hasCreatedPreference.current = false;
-        toast({
-          title: "Erro",
-          description: "Ocorreu um erro ao preparar o pagamento.",
-          variant: "destructive",
-        });
-
-        //setBrickError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    createPreference();
   }, [user, planType, finalPrice, couponCode, validPlanTypes]);
 
   const handlePaymentSubmit = async (paymentData: any) => {
@@ -424,129 +351,23 @@ const Checkout = () => {
               <h2 className="text-2xl font-bold">Pagamento</h2>
             </div>
 
-            {/* Error/Fallback State - Show retry and PIX options */}
-            {showErrorState && (
-              <div className="text-center py-8 space-y-4 animate-fade-in">
-                <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
-                  <span className="text-3xl">⚠️</span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg mb-1">
-                    {brickError ? "Erro ao carregar pagamento" : "O formulário demorou para carregar"}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {brickError
-                      ? "Não foi possível carregar o sistema de pagamento. Isso pode acontecer por instabilidade na conexão."
-                      : "O formulário de pagamento está demorando. Você pode tentar novamente ou pagar via PIX."}
-                  </p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-                  <Button onClick={handleRetryLoad} className="gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    Tentar novamente
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate(`/pix-payment?plan=${planType}&coupon=${couponCode || ""}`)}
-                    className="gap-2"
-                  >
-                    <QrCode className="h-4 w-4" />
-                    Pagar via PIX
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Loading State */}
-            {!showErrorState && (loading || !initialization) && (
-              <div className="space-y-6 animate-fade-in">
-                {/* Payment Methods Skeleton */}
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-32" />
-                  <div className="grid grid-cols-2 gap-3">
-                    <Skeleton className="h-16 rounded-lg" />
-                    <Skeleton className="h-16 rounded-lg" />
-                  </div>
-                </div>
-
-                {/* Card Form Skeleton */}
-                <div className="space-y-4">
-                  {/* Card Number */}
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-12 rounded-lg" />
-                  </div>
-
-                  {/* Card Holder Name */}
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-36" />
-                    <Skeleton className="h-12 rounded-lg" />
-                  </div>
-
-                  {/* Expiry & CVV */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-12 rounded-lg" />
-                    </div>
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-16" />
-                      <Skeleton className="h-12 rounded-lg" />
-                    </div>
-                  </div>
-
-                  {/* CPF */}
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-12 rounded-lg" />
-                  </div>
-
-                  {/* Installments */}
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-28" />
-                    <Skeleton className="h-12 rounded-lg" />
-                  </div>
-                </div>
-
-                {/* Submit Button Skeleton */}
-                <Skeleton className="h-12 w-full rounded-lg" />
-
-                {/* Loading Text */}
-                <div className="flex items-center justify-center gap-2 pt-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    {!initialization ? "Preparando formulário de pagamento..." : "Carregando opções de pagamento..."}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* Payment Brick */}
-            {canRenderBrick && (
-              <div id="payment-brick-container" className="space-y-4 animate-fade-in">
-                <Payment
-                  key={initialization?.preferenceId}
-                  initialization={initialization}
-                  onSubmit={handlePaymentSubmit}
-                  onReady={() => {
-                    console.log("[CHECKOUT] Payment Brick onReady fired!", {
-                      preferenceId: initialization?.preferenceId,
-                      timestamp: new Date().toISOString(),
-                    });
-
-                    setHasInteracted(true);
-                  }}
-                  locale="pt-BR"
-                  customization={{
-                    paymentMethods: {
-                      maxInstallments: 3,
-                      bankTransfer: ["all"],
-                      creditCard: ["all"],
-                    },
-                  }}
-                />
-              </div>
-            )}
+            <div id="payment-brick-container" className="space-y-4 animate-fade-in">
+              <Payment
+                initialization={{
+                  amount: finalPrice,
+                }}
+                customization={{
+                  paymentMethods: {
+                    maxInstallments: 3,
+                    bankTransfer: ["all"],
+                    creditCard: ["all"],
+                  },
+                }}
+                locale="pt-BR"
+                onSubmit={handlePaymentSubmit}
+              />
+            </div>
           </div>
 
           {/* Security Notice */}
