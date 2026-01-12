@@ -348,6 +348,7 @@ const Checkout = () => {
             {/* Payment Brick */}
             <div id="payment-brick-container" className="space-y-4 animate-fade-in">
               <Payment
+                key={`${planType}-${finalPrice}`}
                 initialization={{
                   amount: finalPrice,
                 }}
