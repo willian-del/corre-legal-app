@@ -200,9 +200,6 @@ const Checkout = () => {
       stringified: JSON.stringify(error),
     });
 
-    // Set error state to show fallback options
-    //setBrickError(true);
-
     toast({
       title: "Erro no pagamento",
       description: "Não foi possível carregar o formulário. Tente via PIX ou recarregue a página.",
@@ -239,9 +236,6 @@ const Checkout = () => {
     setShowExitDialog(false);
     setPendingNavigation(null);
   };
-
-  // Show error/fallback state
-  const showErrorState = brickError || showPixFallback;
 
   return (
     <div className="min-h-screen bg-background">
