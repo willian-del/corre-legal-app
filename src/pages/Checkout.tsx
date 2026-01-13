@@ -182,7 +182,6 @@ const Checkout = () => {
       });
 
       setLoading(false);
-      setCanRenderBrick(true);
     } catch (error) {
       console.error("[CHECKOUT] Exception in handlePaymentSubmit:", {
         error,
@@ -195,7 +194,6 @@ const Checkout = () => {
         variant: "destructive",
       });
       setLoading(false);
-      setCanRenderBrick(true);
     }
   };
 
