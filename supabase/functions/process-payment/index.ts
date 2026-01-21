@@ -98,6 +98,7 @@ serve(async (req) => {
 
     // Verify payment with Mercado Pago API
     const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN");
+    // const accessToken = Deno.env.get("MERCADOPAGO_ACCESS_TOKEN_QA");
 
     if (!accessToken) {
       console.error("[PROCESS-PAYMENT] MERCADOPAGO_ACCESS_TOKEN not configured");

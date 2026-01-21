@@ -1,12 +1,13 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, ArrowLeft, Tag, RefreshCw, QrCode } from "lucide-react";
-import { Payment, initMercadoPago } from "@mercadopago/sdk-react";
+import { initMercadoPago } from "@mercadopago/sdk-react";
+import { TransparentCheckoutForm } from "@/components/checkout/TransparentCheckoutForm";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import plansConfig from "@/config/plans.json";
 import couponsConfig from "@/config/coupons.json";
 import { PLAN_DETAILS } from "@/lib/plans-config";
@@ -37,25 +38,23 @@ if (publicKey) {
   initMercadoPago(publicKey, { locale: "pt-BR" });
 }
 
-const Checkout = () => {
+
+const validPlanTypes = Object.keys(PLAN_DETAILS);
+
+export const Checkout = () => {
+  console.log('[Checkout]');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [loading, setLoading] = useState(true);
+  // Removed useToast() hook cause it triggers re-renders on global toast state changes
+  const [loading, setLoading] = useState(false);
   const planType = searchParams.get("plan") || "quarterly";
   const couponCode = searchParams.get("coupon")?.toUpperCase();
-  const [initialization, setInitialization] = useState<any>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
-  const [canRenderBrick, setCanRenderBrick] = useState(false);
 
-  // Fallback state for when brick fails to load
-  const [showPixFallback, setShowPixFallback] = useState(false);
-
-  // Validate plan type - only quarterly is valid
-  const validPlanTypes = Object.keys(PLAN_DETAILS);
+  // Validate plan type
   useEffect(() => {
     if (!validPlanTypes.includes(planType)) {
       toast({
@@ -67,49 +66,40 @@ const Checkout = () => {
     }
   }, [planType, couponCode, navigate]);
 
-  // Get coupon details
-  const coupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
-  const isCouponValid = coupon && coupon.active && new Date(coupon.validUntil) >= new Date();
+  // Memoize plan and coupon details
+  const { plan, coupon, isCouponValid, discount, finalPrice } = useMemo(() => {
+    const activeCoupon = couponCode ? couponsConfig[couponCode as keyof typeof couponsConfig] : null;
+    const isValid = Boolean(activeCoupon && activeCoupon.active && new Date(activeCoupon.validUntil) >= new Date());
+    
+    const selectedPlan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.quarterly;
 
-  const plan = plansConfig[planType as keyof typeof plansConfig] || plansConfig.quarterly;
-
-  // Calculate discount
-  const calculateDiscount = () => {
-    if (!isCouponValid || !coupon) return 0;
-
-    if (coupon.discountType === "percentage") {
-      return (plan.price * coupon.discountValue) / 100;
-    } else {
-      return coupon.discountValue;
+    let discountValue = 0;
+    if (isValid && activeCoupon) {
+        if (activeCoupon.discountType === "percentage") {
+            discountValue = (selectedPlan.price * activeCoupon.discountValue) / 100;
+        } else {
+            discountValue = activeCoupon.discountValue;
+        }
     }
-  };
+    
+    return {
+        plan: selectedPlan,
+        coupon: activeCoupon,
+        isCouponValid: isValid,
+        discount: discountValue,
+        finalPrice: Math.max(0, selectedPlan.price - discountValue)
+    };
+  }, [planType, couponCode]);
 
-  const discount = calculateDiscount();
-  const finalPrice = Math.max(0, plan.price - discount);
-
-  // Create payment preference
+  // Auth check
   useEffect(() => {
-    // Redirect to auth if not logged in
     if (!user) {
       navigate(`/auth?signup=true&checkout=true&plan=${planType}`);
       return;
     }
+  }, [user, planType, navigate]);
 
-    // Only proceed if plan type is valid (quarterly only)
-    if (!validPlanTypes.includes(planType)) {
-      return;
-    }
-  }, [user, planType, finalPrice, couponCode, validPlanTypes]);
-
-  useEffect(() => {
-    setInitialization(false);
-    const timer = setTimeout(() => {
-      setInitialization(true);
-    }, 100); // Um delay imperceptível de 100ms
-    return () => clearTimeout(timer);
-  }, [finalPrice]);
-
-  const handlePaymentSubmit = async (paymentData: any) => {
+  const handlePaymentSubmit = useCallback(async (paymentData: any) => {
     console.log("[CHECKOUT] Payment data received:", {
       paymentType: paymentData.paymentType,
       hasFormData: !!paymentData.formData,
@@ -123,7 +113,6 @@ const Checkout = () => {
       }
 
       setLoading(true);
-      setCanRenderBrick(false);
 
       // Server calculates the price - don't send amount from client
       const { data, error } = await supabase.functions.invoke("process-payment", {
@@ -149,8 +138,6 @@ const Checkout = () => {
           duration: 6000,
         });
         setLoading(false);
-        setCanRenderBrick(true);
-
         return;
       }
 
@@ -195,53 +182,32 @@ const Checkout = () => {
       });
       setLoading(false);
     }
-  };
+  }, [planType, couponCode, navigate]);
 
-  const handlePaymentError = (error: any) => {
-    console.error("[CHECKOUT] Payment brick error:", {
-      error,
-      message: error?.message,
-      cause: error?.cause,
-      type: typeof error,
-      stringified: JSON.stringify(error),
-    });
-
-    toast({
-      title: "Erro no pagamento",
-      description: "Não foi possível carregar o formulário. Tente via PIX ou recarregue a página.",
-      variant: "destructive",
-    });
-  };
-
-  const handleRetryLoad = useCallback(() => {
-    console.log("[CHECKOUT] Retrying page load...");
-    window.location.reload();
-  }, []);
-
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (hasInteracted) {
       setPendingNavigation("/");
       setShowExitDialog(true);
     } else {
       navigate("/");
     }
-  };
+  }, [hasInteracted, navigate]);
 
-  const handleBreadcrumbClick = (e: React.MouseEvent, path: string) => {
+  const handleBreadcrumbClick = useCallback((e: React.MouseEvent, path: string) => {
     if (hasInteracted) {
       e.preventDefault();
       setPendingNavigation(path);
       setShowExitDialog(true);
     }
-  };
+  }, [hasInteracted]);
 
-  const confirmExit = () => {
+  const confirmExit = useCallback(() => {
     if (pendingNavigation) {
       navigate(pendingNavigation);
     }
     setShowExitDialog(false);
     setPendingNavigation(null);
-  };
+  }, [pendingNavigation, navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -351,25 +317,13 @@ const Checkout = () => {
               <h2 className="text-2xl font-bold">Pagamento</h2>
             </div>
 
-            {/* Payment Brick */}
+            {/* Payment Brick - Replaced by Transparent Checkout */}
             <div id="payment-brick-container" className="space-y-4 animate-fade-in">
-              {initialization && (
-                <Payment
-                  key={`${planType}-${finalPrice}`}
-                  initialization={{
-                    amount: finalPrice,
-                  }}
-                  customization={{
-                    paymentMethods: {
-                      maxInstallments: 3,
-                      bankTransfer: ["all"],
-                      creditCard: ["all"],
-                    },
-                  }}
-                  locale="pt-BR"
-                  onSubmit={handlePaymentSubmit}
+                <TransparentCheckoutForm
+                    amount={finalPrice}
+                    onPaymentSubmit={handlePaymentSubmit}
+                    loading={loading}
                 />
-              )}
             </div>
           </div>
 
@@ -398,5 +352,4 @@ const Checkout = () => {
     </div>
   );
 };
-
 export default Checkout;
