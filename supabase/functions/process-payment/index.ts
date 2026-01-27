@@ -62,10 +62,21 @@ serve(async (req) => {
     const paymentData = PaymentDataSchema.parse(rawData);
     const paymentDataMP = rawData.paymentData;
 
-    console.log("[PROCESS-PAYMENT] Processing payment for user:", user.id);
+    console.log("[PROCESS-PAYMENT] Processing payment for user:", user.id, "email:", user.email);
     console.log("[PROCESS-PAYMENT] Plan type:", paymentData.planType);
     console.log("[PROCESS-PAYMENT] Coupon code:", paymentData.couponCode);
 
+    // Validate user email is available from auth context
+    if (!user.email) {
+      console.error("[PROCESS-PAYMENT] User email not available from auth context");
+      throw new Error("Email do usuário não disponível");
+    }
+
+    // Validate card token from frontend
+    if (!paymentDataMP?.formData?.token) {
+      console.error("[PROCESS-PAYMENT] Card token not provided");
+      throw new Error("Token do cartão não fornecido");
+    }
     // SERVER-SIDE PRICE CALCULATION - Never trust client amount
     const { data: planData, error: planError } = await supabaseAdmin
       .from("plan_prices")
@@ -115,16 +126,23 @@ serve(async (req) => {
 
     const mpData = {
       payer: {
-        email: paymentDataMP.formData.payer.email,
-        identification: paymentDataMP.formData.payer.identification,
+        email: user.email, // Use authenticated user's email from auth context
+        identification: paymentDataMP.formData?.payer?.identification,
       },
       binary_mode: true,
-      installments: paymentDataMP.formData.installments,
+      installments: paymentDataMP.formData?.installments || 1,
       token: paymentDataMP.formData.token,
+      payment_method_id: paymentDataMP.formData?.payment_method_id,
       transaction_amount: finalAmount, // USE SERVER-CALCULATED AMOUNT
     };
 
-    console.log("[PROCESS-PAYMENT] Sending to Mercado Pago:", mpData);
+    console.log("[PROCESS-PAYMENT] Sending to Mercado Pago:", {
+      email: mpData.payer.email,
+      amount: mpData.transaction_amount,
+      installments: mpData.installments,
+      payment_method_id: mpData.payment_method_id,
+      hasToken: !!mpData.token,
+    });
 
     const idempotencyKey = crypto.randomUUID();
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
