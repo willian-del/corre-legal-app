@@ -17,15 +17,18 @@ const PaymentDataSchema = z.object({
 type PaymentData = z.infer<typeof PaymentDataSchema>;
 
 // Coupon configuration (same as create-mercadopago-preference)
-const couponsConfig: Record<string, {
-  discountType: "percentage" | "fixed";
-  discountValue: number;
-  active: boolean;
-  validUntil: string;
-}> = {
-  "CORRE10": { discountType: "percentage", discountValue: 10, active: true, validUntil: "2025-12-31" },
-  "AMIGO20": { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
-  "PROMO15": { discountType: "fixed", discountValue: 15, active: true, validUntil: "2025-06-30" },
+const couponsConfig: Record<
+  string,
+  {
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+    active: boolean;
+    validUntil: string;
+  }
+> = {
+  CORRE10: { discountType: "percentage", discountValue: 10, active: true, validUntil: "2025-12-31" },
+  AMIGO20: { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
+  PROMO15: { discountType: "fixed", discountValue: 15, active: true, validUntil: "2025-06-30" },
 };
 
 serve(async (req) => {
@@ -36,8 +39,8 @@ serve(async (req) => {
   try {
     // Use service role for database operations (bypass RLS)
     const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "", 
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
 
     // Authenticate user with anon key
@@ -86,7 +89,12 @@ serve(async (req) => {
         if (coupon.discountType === "percentage") {
           const discount = (finalAmount * coupon.discountValue) / 100;
           finalAmount = finalAmount - discount;
-          console.log("[PROCESS-PAYMENT] Applied percentage discount:", coupon.discountValue, "%, new amount:", finalAmount);
+          console.log(
+            "[PROCESS-PAYMENT] Applied percentage discount:",
+            coupon.discountValue,
+            "%, new amount:",
+            finalAmount,
+          );
         } else {
           finalAmount = Math.max(0, finalAmount - coupon.discountValue);
           console.log("[PROCESS-PAYMENT] Applied fixed discount:", coupon.discountValue, ", new amount:", finalAmount);
@@ -116,11 +124,7 @@ serve(async (req) => {
       transaction_amount: finalAmount, // USE SERVER-CALCULATED AMOUNT
     };
 
-    console.log("[PROCESS-PAYMENT] Sending to Mercado Pago:", {
-      email: mpData.payer.email,
-      amount: mpData.transaction_amount,
-      installments: mpData.installments,
-    });
+    console.log("[PROCESS-PAYMENT] Sending to Mercado Pago:", mpData);
 
     const idempotencyKey = crypto.randomUUID();
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments`, {
@@ -150,24 +154,24 @@ serve(async (req) => {
 
     // Map Mercado Pago error codes to user-friendly messages
     const errorMessages: Record<string, string> = {
-      "cc_rejected_insufficient_amount": "Saldo insuficiente no cartão",
-      "cc_rejected_bad_filled_security_code": "Código de segurança inválido",
-      "cc_rejected_bad_filled_date": "Data de validade inválida",
-      "cc_rejected_bad_filled_card_number": "Número do cartão inválido",
-      "cc_rejected_call_for_authorize": "Cartão requer autorização - entre em contato com seu banco",
-      "cc_rejected_duplicated_payment": "Pagamento duplicado detectado",
-      "cc_rejected_max_attempts": "Número máximo de tentativas excedido",
-      "cc_rejected_high_risk": "Pagamento recusado por segurança",
-      "cc_amount_rate_limit_exceeded": "Limite de transações excedido - aguarde alguns minutos e tente novamente",
-      "cc_rejected_other_reason": "Pagamento não autorizado pelo banco",
+      cc_rejected_insufficient_amount: "Saldo insuficiente no cartão",
+      cc_rejected_bad_filled_security_code: "Código de segurança inválido",
+      cc_rejected_bad_filled_date: "Data de validade inválida",
+      cc_rejected_bad_filled_card_number: "Número do cartão inválido",
+      cc_rejected_call_for_authorize: "Cartão requer autorização - entre em contato com seu banco",
+      cc_rejected_duplicated_payment: "Pagamento duplicado detectado",
+      cc_rejected_max_attempts: "Número máximo de tentativas excedido",
+      cc_rejected_high_risk: "Pagamento recusado por segurança",
+      cc_amount_rate_limit_exceeded: "Limite de transações excedido - aguarde alguns minutos e tente novamente",
+      cc_rejected_other_reason: "Pagamento não autorizado pelo banco",
     };
 
     // Verify payment status
     if (mpPayment.status !== "approved") {
       const statusDetail = mpPayment.status_detail || "unknown";
-      const userMessage = errorMessages[statusDetail] || 
-        "Pagamento não aprovado. Entre em contato com seu banco para mais informações.";
-      
+      const userMessage =
+        errorMessages[statusDetail] || "Pagamento não aprovado. Entre em contato com seu banco para mais informações.";
+
       console.error("[PROCESS-PAYMENT] Payment rejected:", {
         status: mpPayment.status,
         status_detail: statusDetail,
