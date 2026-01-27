@@ -145,7 +145,6 @@ export const TransparentCheckoutForm = memo(function TransparentCheckoutForm({ a
             if (!cardToken) {
                  throw new Error("Card token creation failed");
             }
-            console.log("[TransparentCheckout] Card token created:", cardToken.id);
 
             const paymentData = {
                 paymentType: "credit_card",
