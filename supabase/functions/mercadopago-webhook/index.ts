@@ -27,10 +27,8 @@ async function verifyWebhookSignature(
   const webhookSecret = Deno.env.get("MERCADOPAGO_WEBHOOK_SECRET");
   
   if (!webhookSecret) {
-    console.warn("MERCADOPAGO_WEBHOOK_SECRET not configured - skipping signature verification");
-    // In production, you should return { valid: false } here
-    // For now, we allow requests to pass but log a warning
-    return { valid: true };
+    console.error("MERCADOPAGO_WEBHOOK_SECRET not configured - rejecting webhook (fail-closed)");
+    return { valid: false, error: "Webhook secret not configured" };
   }
 
   const xSignature = req.headers.get("x-signature");
