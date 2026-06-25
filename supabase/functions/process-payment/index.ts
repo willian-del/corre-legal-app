@@ -16,7 +16,7 @@ const PaymentDataSchema = z.object({
 
 type PaymentData = z.infer<typeof PaymentDataSchema>;
 
-// Coupon configuration (same as create-mercadopago-preference)
+// Coupon configuration - MUST match src/config/coupons.json and other payment endpoints
 const couponsConfig: Record<
   string,
   {
@@ -26,9 +26,10 @@ const couponsConfig: Record<
     validUntil: string;
   }
 > = {
-  CORRE10: { discountType: "percentage", discountValue: 10, active: true, validUntil: "2025-12-31" },
-  AMIGO20: { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
-  PROMO15: { discountType: "fixed", discountValue: 15, active: true, validUntil: "2025-06-30" },
+  PRIMEIRACOMPRA: { discountType: "percentage", discountValue: 15, active: true, validUntil: "2025-12-31" },
+  BEMVINDO10: { discountType: "fixed", discountValue: 10, active: true, validUntil: "2025-12-31" },
+  BLACK50: { discountType: "percentage", discountValue: 50, active: true, validUntil: "2025-12-31" },
+  NATAL20: { discountType: "percentage", discountValue: 20, active: true, validUntil: "2025-12-31" },
 };
 
 serve(async (req) => {
